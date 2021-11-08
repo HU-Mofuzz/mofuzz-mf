@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'de.hub.mse.emf'
+version '1.0-SNAPSHOT'
+sourceCompatibility = '16'
+targetCompatibility  = '16'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.pholser:junit-quickcheck-generators:1.0'
+    implementation 'org.eclipse.emf:org.eclipse.emf.ecore:2.25.0'
+    implementation 'org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.16.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'com.pholser:junit-quickcheck-generators:1.0'
+
+}
