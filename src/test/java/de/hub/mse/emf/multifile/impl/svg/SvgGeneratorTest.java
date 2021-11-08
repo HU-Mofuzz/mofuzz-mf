@@ -19,9 +19,9 @@ public class SvgGeneratorTest {
     @Test
     public void testFileGeneration() {
         var generator = new SvgGenerator(GeneratorConfig.builder()
-                .workingDirectory("C:\\Users\\Laokoon\\Desktop\\Test\\te\\st")
+                .workingDirectory("C:\\Users\\juene\\Desktop\\Test")
                 .preparationMode(PreparationMode.GENERATE_FILES)
-                .objectsToGenerate(10)
+                .objectsToGenerate(1)
                 .build());
         generator.generate(new SourceOfRandomness(new Random()), null);
     }

@@ -4,17 +4,19 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.AbstractGenerator;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.LinkPool;
+import de.hub.mse.emf.multifile.base.emf.EmfCache;
+import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.SneakyThrows;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLInfoImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLMapImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
 
 import java.io.IOException;
@@ -23,11 +25,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorConfig> {
 
+    private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
+
     private final ResourceSet resourceSet = new ResourceSetImpl();
     private final EPackage svgPackage;
+    private final EClass svgClass;
 
     @SneakyThrows
     protected SvgGenerator(GeneratorConfig config) {
@@ -48,6 +56,7 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
 
         EcoreUtil.resolveAll(svgPackage);
 
+        svgClass = (EClass) svgPackage.getEClassifier("SvgType");
     }
 
     @Override
@@ -84,21 +93,66 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
     }
 
     private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException {
-        EClass clazz = SvgUtil.getRandomEClassFromPackage(svgPackage, source);
+        EClass clazz;
+        do  {
+            clazz = EmfUtil.getRandomEClassFromPackage(svgPackage, source);
+        } while (clazz.getEIDAttribute() == null);
 
         XMLResource modelResource = (XMLResource)resourceSet.createResource(URI.createFileURI("a.svg"));
+        modelResource.setEncoding("UTF-8");
 
-        EObject object = generateEObject(clazz);
+        EObject svgObject = generateEObject(svgClass, source);
+        EObject object = generateEObject(clazz, source);
         object.eSet(clazz.getEIDAttribute(), objectId);
+
+        modelResource.getContents().add(svgObject);
         modelResource.getContents().add(object);
         StringWriter writer = new StringWriter();
-        modelResource.save(writer, Collections.emptyMap());
+        modelResource.save(writer, Map.of(
+                XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
+                XMLResource.OPTION_XML_MAP, new SvgXmlMap(svgPackage)
+        ));
 
         return writer.toString();
     }
 
-    private EObject generateEObject(EClass clazz) {
+    private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
         var object =  svgPackage.getEFactoryInstance().create(clazz);
+        for(var attribute : EmfCache.getAttributes(clazz)) {
+            if(randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
+                EmfUtil.setRandomValueForAttribute(object, attribute, randomness);
+            }
+        }
+
         return object;
+    }
+
+    private static class SvgXmlMap extends XMLMapImpl {
+
+        Map<String, String> nameMap = new HashMap<>();
+
+
+        public SvgXmlMap(EPackage svgPackage) {
+            super();
+            var aType = (EClass) svgPackage.getEClassifier("AType");
+            nameMap.putAll(aType.getEAllReferences().stream()
+                    .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
+            );
+
+        }
+
+        @Override
+        public XMLResource.XMLInfo getInfo(ENamedElement element) {
+            var info =  super.getInfo(element);
+            String search;
+            if(info == null) {
+                info = new XMLInfoImpl();
+                search = element.getName();
+            } else {
+                search = info.getName();
+            }
+            info.setName(nameMap.getOrDefault(search, search));
+            return info;
+        }
     }
 }

@@ -59,13 +59,4 @@ public class SvgUtil {
         return UUID.randomUUID().toString()
                 .replace("-", "");
     }
-
-    public EClass getRandomEClassFromPackage(EPackage ePackage, SourceOfRandomness source) {
-        var classifier = ePackage.getEClassifiers();
-        Object clazz = null;
-        do {
-            clazz = classifier.get(source.nextInt(0, classifier.size()));
-        } while (clazz == null || !(clazz instanceof EClass));
-        return (EClass) clazz;
-    }
 }
