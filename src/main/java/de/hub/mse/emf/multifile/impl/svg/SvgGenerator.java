@@ -15,16 +15,25 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMLInfoImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMLMapImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,6 +45,10 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
     private final ResourceSet resourceSet = new ResourceSetImpl();
     private final EPackage svgPackage;
     private final EClass svgClass;
+
+    private final Map<String, String> nameMap = new HashMap<>();
+
+    private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
     @SneakyThrows
     protected SvgGenerator(GeneratorConfig config) {
@@ -57,6 +70,11 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
         EcoreUtil.resolveAll(svgPackage);
 
         svgClass = (EClass) svgPackage.getEClassifier("SvgType");
+
+        var aType = (EClass) svgPackage.getEClassifier("AType");
+        nameMap.putAll(aType.getEAllReferences().stream()
+                .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
+        );
     }
 
     @Override
@@ -92,27 +110,37 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
         return pool;
     }
 
-    private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException {
+    private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         EClass clazz;
         do  {
             clazz = EmfUtil.getRandomEClassFromPackage(svgPackage, source);
         } while (clazz.getEIDAttribute() == null);
 
-        XMLResource modelResource = (XMLResource)resourceSet.createResource(URI.createFileURI("a.svg"));
-        modelResource.setEncoding("UTF-8");
-
         EObject svgObject = generateEObject(svgClass, source);
         EObject object = generateEObject(clazz, source);
         object.eSet(clazz.getEIDAttribute(), objectId);
 
-        modelResource.getContents().add(svgObject);
-        modelResource.getContents().add(object);
-        StringWriter writer = new StringWriter();
-        modelResource.save(writer, Map.of(
-                XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
-                XMLResource.OPTION_XML_MAP, new SvgXmlMap(svgPackage)
-        ));
+        var builder = documentBuilderFactory.newDocumentBuilder();
 
+        var svgDoc = builder.parse(new InputSource(
+                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, svgObject))));
+
+        var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
+
+        var objectDoc = builder.parse(new InputSource(
+                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, object))));
+
+        var objectNode = objectDoc.getDocumentElement();
+        svgDoc.adoptNode(objectNode);
+
+        svgNode.appendChild(objectNode);
+
+        DOMSource domSource = new DOMSource(svgDoc);
+        StringWriter writer = new StringWriter();
+        StreamResult result = new StreamResult(writer);
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.transform(domSource, result);
         return writer.toString();
     }
 
@@ -125,34 +153,5 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
         }
 
         return object;
-    }
-
-    private static class SvgXmlMap extends XMLMapImpl {
-
-        Map<String, String> nameMap = new HashMap<>();
-
-
-        public SvgXmlMap(EPackage svgPackage) {
-            super();
-            var aType = (EClass) svgPackage.getEClassifier("AType");
-            nameMap.putAll(aType.getEAllReferences().stream()
-                    .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
-            );
-
-        }
-
-        @Override
-        public XMLResource.XMLInfo getInfo(ENamedElement element) {
-            var info =  super.getInfo(element);
-            String search;
-            if(info == null) {
-                info = new XMLInfoImpl();
-                search = element.getName();
-            } else {
-                search = info.getName();
-            }
-            info.setName(nameMap.getOrDefault(search, search));
-            return info;
-        }
     }
 }

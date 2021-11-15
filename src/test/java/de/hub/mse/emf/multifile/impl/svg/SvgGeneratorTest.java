@@ -7,8 +7,6 @@ import org.junit.Test;
 
 import java.util.Random;
 
-import static org.junit.Assert.*;
-
 public class SvgGeneratorTest {
 
     @Test
@@ -19,9 +17,9 @@ public class SvgGeneratorTest {
     @Test
     public void testFileGeneration() {
         var generator = new SvgGenerator(GeneratorConfig.builder()
-                .workingDirectory("C:\\Users\\juene\\Desktop\\Test")
+                .workingDirectory("C:\\Users\\Laokoon\\Desktop\\Test")
                 .preparationMode(PreparationMode.GENERATE_FILES)
-                .objectsToGenerate(1)
+                .objectsToGenerate(100)
                 .build());
         generator.generate(new SourceOfRandomness(new Random()), null);
     }
