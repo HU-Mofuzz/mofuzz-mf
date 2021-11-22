@@ -29,7 +29,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
     }
 
     protected abstract LinkPool<L> collectLinksFromConfig(SourceOfRandomness sourceOfRandomness);
-    public abstract D internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<L> linkPool);
+    public abstract D internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<L> linkPool) throws Exception;
 
     @Override
     public D generate(SourceOfRandomness sourceOfRandomness, GenerationStatus generationStatus) {
@@ -66,6 +66,11 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
             }
             prepared = true;
         }
-        return internalExecute(sourceOfRandomness, linkPool);
+        try {
+            return internalExecute(sourceOfRandomness, linkPool);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

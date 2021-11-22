@@ -28,9 +28,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -38,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorConfig> {
+public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfig> {
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
 
@@ -52,7 +50,7 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
 
     @SneakyThrows
     protected SvgGenerator(GeneratorConfig config) {
-        super(Resource.class, config);
+        super(File.class, config);
 
         resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new XMIResourceFactoryImpl());
 
@@ -75,11 +73,20 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
         nameMap.putAll(aType.getEAllReferences().stream()
                 .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
         );
-    }
-
-    @Override
-    public Resource internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<String> linkPool) {
-        return null;
+        aType.getEStructuralFeatures().forEach(feature -> {
+            var attribName = feature.getName();
+            String targetName = null;
+            for(var annotation : feature.getEAnnotations()) {
+                for(var detail : annotation.getDetails()) {
+                    if(detail.getKey().equals("name")) {
+                        targetName = detail.getValue();
+                    }
+                }
+            }
+            if(targetName != null) {
+                nameMap.put(attribName, targetName);
+            }
+        });
     }
 
     @Override
@@ -113,7 +120,7 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
     private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         EClass clazz;
         do  {
-            clazz = EmfUtil.getRandomEClassFromPackage(svgPackage, source);
+            clazz = EmfUtil.getRandomEClassFromPackage(svgClass, source);
         } while (clazz.getEIDAttribute() == null);
 
         EObject svgObject = generateEObject(svgClass, source);
@@ -153,5 +160,39 @@ public class SvgGenerator extends AbstractGenerator<Resource, String, GeneratorC
         }
 
         return object;
+    }
+
+    @Override
+    public File internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<String> linkPool) throws Exception {
+        File target = new File(Paths.get(config.getWorkingDirectory(), SvgUtil.getRandomFileName()).toUri());
+
+        if (!target.createNewFile()) {
+           throw new IllegalStateException("Target file could not be created!");
+        }
+
+        EObject svgObject = generateEObject(svgClass, sourceOfRandomness);
+
+        var builder = documentBuilderFactory.newDocumentBuilder();
+        documentBuilderFactory.setNamespaceAware(false);
+
+        var svgDoc = builder.parse(new InputSource(
+                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, svgObject))));
+
+        var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
+
+        var useElement = svgDoc.createElement("use");
+        useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href",
+                linkPool.getRandomLink(sourceOfRandomness));
+
+        svgNode.appendChild(useElement);
+
+        DOMSource domSource = new DOMSource(svgDoc);
+        FileWriter writer = new FileWriter(target);
+        StreamResult result = new StreamResult(writer);
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.transform(domSource, result);
+
+        return target;
     }
 }

@@ -18,13 +18,12 @@ public class EmfUtil {
     private final int MAXIMUM_MANY_ATTRIBUTE_COUNT = 100;
     private final float EMPTY_STRING_CHANCE = 0.1f;
 
-    public EClass getRandomEClassFromPackage(EPackage ePackage, SourceOfRandomness source) {
-        var classifier = ePackage.getEClassifiers();
-        Object clazz;
-        do {
-            clazz = classifier.get(source.nextInt(0, classifier.size() - 1));
-        } while (!(clazz instanceof EClass));
-        return (EClass) clazz;
+    public EClass getRandomEClassFromPackage(EClass svgClass, SourceOfRandomness source) {
+        var classifier = svgClass.getEAllReferences().stream()
+                .map(EReference::getEType)
+                .map(clazz -> (EClass) clazz)
+                .toList();
+        return classifier.get(source.nextInt(0, classifier.size() - 1));
     }
 
     public void setRandomValueForAttribute(EObject object, EAttribute attribute, SourceOfRandomness source) {
