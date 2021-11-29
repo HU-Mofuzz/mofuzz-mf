@@ -10,6 +10,8 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -24,6 +26,8 @@ public class EmfCache {
                     return ImmutableSet.copyOf(key.getEAllAttributes());
                 }
             });
+
+    private final Map<String, String> nameMap = new HashMap<>();
 
     public Set<EAttribute> getAttributes(EClass clazz) {
         try {

@@ -2,15 +2,19 @@ package de.hub.mse.emf.multifile.impl.svg;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
+import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMLInfoImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLMapImpl;
-import ru.vyarus.java.generics.resolver.error.GenericsException;
+import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -19,11 +23,53 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
 
 @UtilityClass
 public class SvgUtil {
 
     private Pattern SVG_ID_PATTERN = Pattern.compile("(id=\"[a-zA-Z0-9]+\")");
+
+    public static final EPackage SVG_PACKAGE;
+    public static final EClass SVG_CLASS;
+    public static final Map<String, String> TYPE_NAME_MAPPING = new HashMap<>();
+
+    static {
+        Resource svgPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/svg.ecore", false), true);
+        Resource xlinkPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/xlink.ecore", false), true);
+
+        SVG_PACKAGE = (EPackage)svgPackageResource.getContents().get(0);
+        EPackage xlinkPackage = (EPackage)xlinkPackageResource.getContents().get(0);
+
+        RESOURCE_SET.getPackageRegistry().put(SVG_PACKAGE.getNsURI(), SVG_PACKAGE);
+        RESOURCE_SET.getPackageRegistry().put(xlinkPackage.getNsURI(), xlinkPackage);
+        RESOURCE_SET.getResourceFactoryRegistry().getExtensionToFactoryMap().put("svg", new XMLResourceFactoryImpl());
+
+        EcoreUtil.resolveAll(SVG_PACKAGE);
+
+        SVG_CLASS = (EClass) SVG_PACKAGE.getEClassifier("SvgType");
+
+        var aType = (EClass) SVG_PACKAGE.getEClassifier("AType");
+        TYPE_NAME_MAPPING.putAll(aType.getEAllReferences().stream()
+                .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
+        );
+        aType.getEStructuralFeatures().forEach(feature -> {
+            var attribName = feature.getName();
+            String targetName = null;
+            for(var annotation : feature.getEAnnotations()) {
+                for(var detail : annotation.getDetails()) {
+                    if(detail.getKey().equals("name")) {
+                        targetName = detail.getValue();
+                    }
+                }
+            }
+            if(targetName != null) {
+                TYPE_NAME_MAPPING.put(attribName, targetName);
+            }
+        });
+    }
 
     public Set<String> extractLinks(GeneratorConfig config) {
 
@@ -63,45 +109,30 @@ public class SvgUtil {
                 .replace("-", "");
     }
 
-    public String eObjectToXml(ResourceSet resourceSet, Map<String, String> nameMap, EObject eObject) {
-        XMLResource modelResource = (XMLResource)resourceSet.createResource(URI.createFileURI("a.svg"));
-        modelResource.setEncoding("UTF-8");
-        modelResource.getContents().add(eObject);
-        StringWriter writer = new StringWriter();
-        try {
-            modelResource.save(writer, Map.of(
-                    XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
-                    XMLResource.OPTION_XML_MAP, new SvgXmlMap(nameMap)
-            ));
-        } catch (IOException e) {
-            return StringUtils.EMPTY;
-        }
-
-        return writer.toString();
+    public EClass getRandomSVGReference(SourceOfRandomness source) {
+        return  EmfUtil.getRandomReferenceEClassFromEClass(SVG_CLASS, source);
     }
 
-    private static class SvgXmlMap extends XMLMapImpl {
+    public void addLinkAndAttributesToSvgElement(Document svgDoc, String link) {
+        var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
 
+        XmlUtil.clearChildren(svgNode);
 
-        private final Map<String, String> nameMap;
+        svgNode.setAttribute("viewBox", "0 0 100 100");
+        svgNode.setAttribute("width", "100");
+        svgNode.setAttribute("height", "100");
+        svgNode.setAttribute("version", "1.1");
+        svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-        public SvgXmlMap(Map<String, String> nameMap) {
-            super();
-            this.nameMap = nameMap;
-        }
+        var useElement = svgDoc.createElement("use");
 
-        @Override
-        public XMLResource.XMLInfo getInfo(ENamedElement element) {
-            var info =  super.getInfo(element);
-            String search;
-            if(info == null) {
-                info = new XMLInfoImpl();
-                search = element.getName();
-            } else {
-                search = info.getName();
-            }
-            info.setName(nameMap.getOrDefault(search, search));
-            return info;
-        }
+        useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href",
+                link);
+        useElement.setAttribute("height", "100");
+        useElement.setAttribute("width", "100");
+        useElement.setAttribute("x", "100");
+        useElement.setAttribute("y", "100");
+
+        svgNode.appendChild(useElement);
     }
 }

@@ -12,14 +12,12 @@ public class SvgUtilTest {
 
     @Test
     public void extractLinks() {
-
-        GeneratorConfig config = GeneratorConfig.builder()
-                .workingDirectory("C:\\Users\\Laokoon\\Desktop\\Test\\test")
-                .existingFiles(Arrays.asList(
-                        "a.svg",
-                        "b.svg"
-                ))
-                .build();
+        GeneratorConfig config = GeneratorConfig.getInstance();
+        config.setWorkingDirectory("C:\\Users\\Laokoon\\Desktop\\Test\\test");
+        config.setExistingFiles(Arrays.asList(
+                "a.svg",
+                "b.svg"
+        ));
         SvgUtil.extractLinks(config);
 
     }

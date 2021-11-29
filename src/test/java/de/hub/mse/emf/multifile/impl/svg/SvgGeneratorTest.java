@@ -23,16 +23,17 @@ public class SvgGeneratorTest {
 
     @Test
     public void testConstruct() {
-        new SvgGenerator(GeneratorConfig.builder().build());
+        new SvgGenerator();
     }
 
     @Test
     public void testFileGeneration() {
-        var generator = new SvgGenerator(GeneratorConfig.builder()
-                .workingDirectory("C:\\Users\\\\juene\\Desktop\\Test")
-                .preparationMode(PreparationMode.GENERATE_FILES)
-                .objectsToGenerate(1)
-                .build());
+        var instance = GeneratorConfig.getInstance();
+        instance.setWorkingDirectory("C:\\Users\\Laokoon\\Desktop\\Test");
+        instance.setPreparationMode(PreparationMode.GENERATE_FILES);
+        instance.setObjectsToGenerate(1);
+        var generator = new SvgGenerator();
+
         File file = generator.generate(new SourceOfRandomness(new Random()), null);
         System.out.println(file.getAbsolutePath());
     }

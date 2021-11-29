@@ -7,9 +7,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.eclipse.emf.ecore.*;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 @UtilityClass
@@ -18,7 +20,14 @@ public class EmfUtil {
     private final int MAXIMUM_MANY_ATTRIBUTE_COUNT = 100;
     private final float EMPTY_STRING_CHANCE = 0.1f;
 
-    public EClass getRandomEClassFromPackage(EClass svgClass, SourceOfRandomness source) {
+    public static final ResourceSet RESOURCE_SET = new ResourceSetImpl();
+
+    static {
+        RESOURCE_SET.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new XMIResourceFactoryImpl());
+    }
+
+
+    public EClass getRandomReferenceEClassFromEClass(EClass svgClass, SourceOfRandomness source) {
         var classifier = svgClass.getEAllReferences().stream()
                 .map(EReference::getEType)
                 .map(clazz -> (EClass) clazz)
@@ -90,7 +99,7 @@ public class EmfUtil {
                 if(source.nextFloat() < EMPTY_STRING_CHANCE) {
                     return StringUtils.EMPTY;
                 } else {
-                    return  RandomStringUtils.random(source.nextByte((byte)1, Byte.MAX_VALUE), 0, 0, true, true, null,
+                    return  RandomStringUtils.random(source.nextInt(32), 0, 0, true, true, null,
                             source.toJDKRandom());
                 }
             }

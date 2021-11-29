@@ -3,12 +3,8 @@ package de.hub.mse.emf.multifile.base;
 import lombok.*;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
-@AllArgsConstructor
 @Data
-@Builder
 public class GeneratorConfig {
 
     private PreparationMode preparationMode;
@@ -18,7 +14,17 @@ public class GeneratorConfig {
     private String existingFilesBasePath;
     private Collection<String> existingFiles;
 
-    @Builder.Default
+    private static GeneratorConfig instance;
+
+    public static GeneratorConfig getInstance() {
+        if(instance == null) {
+            instance = new GeneratorConfig();
+        }
+        return instance;
+    }
+
+    private GeneratorConfig() {}
+
     private int objectsToGenerate = 1;
 
     public boolean shouldGenerateFiles() {

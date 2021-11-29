@@ -7,86 +7,27 @@ import de.hub.mse.emf.multifile.base.LinkPool;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.SneakyThrows;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.XMLResource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.SVG_CLASS;
+import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.SVG_PACKAGE;
 
 public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfig> {
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
 
-    private final ResourceSet resourceSet = new ResourceSetImpl();
-    private final EPackage svgPackage;
-    private final EClass svgClass;
-
-    private final Map<String, String> nameMap = new HashMap<>();
-
-    private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-
     @SneakyThrows
-    protected SvgGenerator(GeneratorConfig config) {
-        super(File.class, config);
-
-        resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new XMIResourceFactoryImpl());
-
-
-        Resource svgPackageResource = resourceSet.getResource(URI.createURI("src/main/resources/model/svg.ecore", false), true);
-        Resource xlinkPackageResource = resourceSet.getResource(URI.createURI("src/main/resources/model/xlink.ecore", false), true);
-
-        svgPackage = (EPackage)svgPackageResource.getContents().get(0);
-        EPackage xlinkPackage = (EPackage)xlinkPackageResource.getContents().get(0);
-
-        this.resourceSet.getPackageRegistry().put(svgPackage.getNsURI(), svgPackage);
-        this.resourceSet.getPackageRegistry().put(xlinkPackage.getNsURI(), xlinkPackage);
-        this.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("svg", new XMLResourceFactoryImpl());
-
-        EcoreUtil.resolveAll(svgPackage);
-
-        svgClass = (EClass) svgPackage.getEClassifier("SvgType");
-
-        var aType = (EClass) svgPackage.getEClassifier("AType");
-        nameMap.putAll(aType.getEAllReferences().stream()
-                .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
-        );
-        aType.getEStructuralFeatures().forEach(feature -> {
-            var attribName = feature.getName();
-            String targetName = null;
-            for(var annotation : feature.getEAnnotations()) {
-                for(var detail : annotation.getDetails()) {
-                    if(detail.getKey().equals("name")) {
-                        targetName = detail.getValue();
-                    }
-                }
-            }
-            if(targetName != null) {
-                nameMap.put(attribName, targetName);
-            }
-        });
+    public SvgGenerator() {
+        super(File.class, GeneratorConfig.getInstance());
     }
 
     @Override
@@ -120,39 +61,37 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         EClass clazz;
         do  {
-            clazz = EmfUtil.getRandomEClassFromPackage(svgClass, source);
+            clazz = SvgUtil.getRandomSVGReference(source);
         } while (clazz.getEIDAttribute() == null);
 
-        EObject svgObject = generateEObject(svgClass, source);
+        EObject svgObject = generateEObject(SVG_CLASS, source);
         EObject object = generateEObject(clazz, source);
         object.eSet(clazz.getEIDAttribute(), objectId);
 
-        var builder = documentBuilderFactory.newDocumentBuilder();
-
-        var svgDoc = builder.parse(new InputSource(
-                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, svgObject))));
+        var svgDoc = XmlUtil.eObjectToDocument(svgObject);
 
         var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
 
-        var objectDoc = builder.parse(new InputSource(
-                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, object))));
+        var objectDoc = XmlUtil.eObjectToDocument(object);
 
         var objectNode = objectDoc.getDocumentElement();
+
         svgDoc.adoptNode(objectNode);
 
+        XmlUtil.clearChildren(svgNode);
         svgNode.appendChild(objectNode);
 
-        DOMSource domSource = new DOMSource(svgDoc);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        transformer.transform(domSource, result);
-        return writer.toString();
+        svgNode.setAttribute("viewBox", "0 0 100 100");
+        svgNode.setAttribute("width", "100");
+        svgNode.setAttribute("height", "100");
+        svgNode.setAttribute("version", "1.1");
+        svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+        return XmlUtil.documentToString(svgDoc);
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
-        var object =  svgPackage.getEFactoryInstance().create(clazz);
+        var object =  SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for(var attribute : EmfCache.getAttributes(clazz)) {
             if(randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
                 EmfUtil.setRandomValueForAttribute(object, attribute, randomness);
@@ -170,28 +109,13 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
            throw new IllegalStateException("Target file could not be created!");
         }
 
-        EObject svgObject = generateEObject(svgClass, sourceOfRandomness);
+        EObject svgObject = generateEObject(SVG_CLASS, sourceOfRandomness);
 
-        var builder = documentBuilderFactory.newDocumentBuilder();
-        documentBuilderFactory.setNamespaceAware(false);
+        var svgDoc = XmlUtil.eObjectToDocument(svgObject);
 
-        var svgDoc = builder.parse(new InputSource(
-                new StringReader(SvgUtil.eObjectToXml(resourceSet, nameMap, svgObject))));
+        SvgUtil.addLinkAndAttributesToSvgElement(svgDoc, linkPool.getRandomLink(sourceOfRandomness));
 
-        var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
-
-        var useElement = svgDoc.createElement("use");
-        useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href",
-                linkPool.getRandomLink(sourceOfRandomness));
-
-        svgNode.appendChild(useElement);
-
-        DOMSource domSource = new DOMSource(svgDoc);
-        FileWriter writer = new FileWriter(target);
-        StreamResult result = new StreamResult(writer);
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        transformer.transform(domSource, result);
+        Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
         return target;
     }
