@@ -20,6 +20,10 @@ import java.util.function.Consumer;
 
 public class TestExecutor {
 
+    static {
+        System.setProperty("jqf.ei.MAX_INPUT_SIZE", Integer.toString(1048576));
+    }
+
     public static void main(String[] args) throws IOException {
         final String workingDir = Files.createTempDirectory("svg_test").toFile().getAbsolutePath();
         final String testDirectory = Files.createTempDirectory("test").toFile().getAbsolutePath();
@@ -31,65 +35,6 @@ public class TestExecutor {
         config.setWorkingDirectory(workingDir);
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        GuidedFuzzing.run(SvgTest.class, "testBatikTranscoder", new MyGuidance("testBatikTranscoder", Duration.ofSeconds(10), new File(testDirectory)), System.out);
-    }
-
-    private static class MyGuidance implements Guidance {
-
-        private final MyIS is = new MyIS();
-        private String testName;
-        private Duration duration;
-        private File outputDirectory;
-
-        protected long endTime = -1;
-
-        /**
-         * Creates a new guidance instance.
-         *
-         * @param testName        the name of test to display on the status screen.
-         * @param duration        the amount of time to run fuzzing for, where
-         *                        {@code null} indicates unlimited time.
-         * @param outputDirectory the directory where fuzzing results will be written.
-         * @throws IOException if the output directory could not be prepared
-         */
-        public MyGuidance(String testName, Duration duration, File outputDirectory) throws IOException {
-            this.testName = testName;
-            this.duration = duration;
-            this.outputDirectory = outputDirectory;
-        }
-
-        @Override
-        public InputStream getInput() throws IllegalStateException, GuidanceException {
-            return is;
-        }
-
-        @Override
-        public boolean hasInput() {
-            if(endTime == -1) {
-                endTime = (new Date()).getTime() + (duration.getSeconds() * 1000);
-            }
-            var now = new Date();
-            return now.getTime() < endTime;
-        }
-
-        @Override
-        public void handleResult(Result result, Throwable error) throws GuidanceException {
-
-        }
-
-        @Override
-        public Consumer<TraceEvent> generateCallBack(Thread thread) {
-            return null;
-        }
-    }
-
-    private static class MyIS extends InputStream {
-
-        private final Random random = new Random();
-
-        @Override
-        public int read() throws IOException {
-            return random.nextInt();
-        }
+        GuidedFuzzing.run(SvgTest.class, "svgSalamanderTest", new ZestGuidance("svgSalamanderTest", Duration.ofSeconds(10), new File(testDirectory)), System.out);
     }
 }

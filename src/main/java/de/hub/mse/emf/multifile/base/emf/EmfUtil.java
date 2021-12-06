@@ -1,6 +1,8 @@
 package de.hub.mse.emf.multifile.base.emf;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import de.hub.mse.emf.multifile.impl.svg.SvgUtil;
+import de.hub.mse.emf.multifile.impl.svg.attributes.AttributeUtil;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -95,12 +97,14 @@ public class EmfUtil {
             }
         } else {
             // higher object
+            // TODO: CATCH "color-profile"
             if(clazz == String.class) {
                 if(source.nextFloat() < EMPTY_STRING_CHANCE) {
                     return StringUtils.EMPTY;
                 } else {
-                    return  RandomStringUtils.random(source.nextInt(32), 0, 0, true, true, null,
-                            source.toJDKRandom());
+                    String value = AttributeUtil.generateRandomValueForAttribute(SvgUtil.TYPE_NAME_MAPPING.get(attribute.getName()), source);
+                    return  value == null? RandomStringUtils.random(source.nextInt(32), 0, 0, true, true, null,
+                            source.toJDKRandom()) : value;
                 }
             }
             return tryInstantiate(clazz);
