@@ -4,33 +4,26 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import lombok.experimental.Delegate;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * attributeName (??)
  * base (??)
- * clip-path (basic-shape)
  * clipPath  (??)
  * content (??)
  * contentScriptType (MIME-TYPE)
  * contentStyleType (MIME-TYPE
  * enable-background (text or coordinates)
- * filter (IRI)
- * gradientTransform (transform function list)
  * keySplines (float point list with formatting)
- * marker-end (IRI)
- * marker-mid (IRI)
- * marker-start (IRI)
- * mask (IRI)
- * patternTransform (transform function list)
  * preserveAspectRatio (enum value +  enum value)
  * requiredExtensions (??)
  * requiredFeatures (list of enums)
  * style (list of generator results)
  * systemLanguage (enum value)
- * transform (transform function list)
  * type (must be solved in attrib util)
  * type1 (propably to avoid colision with type
  * viewTarget (Non existend anymore)
@@ -45,12 +38,14 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static final SvgAttributeGenerator ANGLE_GENERATOR = new AngleGenerator();
     private static final SvgAttributeGenerator ATTRIBUTE_TYPE_GENERATOR = new AttributeTypeGenerator();
     private static final SvgAttributeGenerator BASELINE_SHIFT_GENERATOR = new BaselineShiftGenerator();
+    private static final SvgAttributeGenerator BASIC_SHAPE_GENERATOR = new BasicShapeGenerator();
     private static final SvgAttributeGenerator CLIP_GENERATOR = new ClipGenerator();
     private static final SvgAttributeGenerator CLOCK_GENERATOR = new ClockGenerator();
     private static final SvgAttributeGenerator COLOR_GENERATOR = new ColorGenerator();
     private static final SvgAttributeGenerator CURSOR_GENERATOR = new CursorGenerator();
     private static final SvgAttributeGenerator FREQUENCY_GENERATOR = new FrequencyGenerator();
     private static final SvgAttributeGenerator FONT_FAMILY_GENERATOR = new FontFamilyGenerator();
+    private static final SvgAttributeGenerator IRI_GENERATOR = new IriGenerator();
     private static final SvgAttributeGenerator LENGTH_GENERATOR = new LengthGenerator();
     private static final SvgAttributeGenerator NAME_GENERATOR = new NameGenerator();
     private static final SvgAttributeGenerator NUMBER_GENERATOR = new NumberGenerator();
@@ -59,10 +54,13 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static final SvgAttributeGenerator ORIENT_GENERATOR = new OrientGenerator();
     private static final SvgAttributeGenerator PERCENT_GENERATOR = new PercentGenerator();
     private static final SvgAttributeGenerator POINT_GENERATOR = new PointGenerator();
+    private static final SvgAttributeGenerator POLYGON_GENERATOR = new PolygonGenerator();
     private static final SvgAttributeGenerator PATH_GENERATOR = new PathGenerator();
     private static final SvgAttributeGenerator REF_X_GENERATOR = new RefXGenerator();
+    private static final SvgAttributeGenerator STYLE_GENERATOR = new StyleGenerator();
     private static final SvgAttributeGenerator TEXT_DECORATION_GENERATOR = new TextDecorationGenerator();
     private static final SvgAttributeGenerator TIME_GENERATOR = new TimeGenerator();
+    private static final SvgAttributeGenerator TRANSFORM_FUNCTION_GENERATOR = new TransformFunctionGenerator();
     private static final SvgAttributeGenerator VALUE_LIST_GENERATOR = new ValueListGenerator();
     private static final SvgAttributeGenerator VIEW_BOX_GENERATOR = new ViewBoxGenerator();
 
@@ -77,6 +75,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("cx", LENGTH_GENERATOR);
         map.put("cy", LENGTH_GENERATOR);
         map.put("clip", CLIP_GENERATOR);
+        map.put("clip-path", BASIC_SHAPE_GENERATOR);
         map.put("color", COLOR_GENERATOR);
         map.put("cursor", CURSOR_GENERATOR);
         map.put("d", PATH_GENERATOR);
@@ -84,6 +83,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("end", CLOCK_GENERATOR);
         map.put("fill", COLOR_GENERATOR);
         map.put("fill-opacity", OPACITY_GENERATOR);
+        map.put("filter", IRI_GENERATOR);
         map.put("filterRes", NUMBER_GENERATOR);
         map.put("flood-color", COLOR_GENERATOR);
         map.put("flood-opacity", OPACITY_GENERATOR);
@@ -93,6 +93,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("from", NUMBER_GENERATOR);
         map.put("fx", NUMBER_GENERATOR);
         map.put("fy", NUMBER_GENERATOR);
+        map.put("gradientTransform", TRANSFORM_FUNCTION_GENERATOR);
         map.put("glyph-orientation-horizontal", ANGLE_GENERATOR);
         map.put("glyph-orientation-vertical", ANGLE_GENERATOR);
         map.put("height", LENGTH_GENERATOR);
@@ -102,6 +103,10 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("markerHeight", LENGTH_GENERATOR);
         map.put("markerWidth", LENGTH_GENERATOR);
         map.put("lighting-color", COLOR_GENERATOR);
+        map.put("marker-end", IRI_GENERATOR);
+        map.put("marker-mind", IRI_GENERATOR);
+        map.put("marker-start", IRI_GENERATOR);
+        map.put("mask", IRI_GENERATOR);
         map.put("max", CLOCK_GENERATOR);
         map.put("media", EMPTY_STRING_GENERATOR);
         map.put("min", CLOCK_GENERATOR);
@@ -126,6 +131,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("onzoom", EMPTY_STRING_GENERATOR);
         map.put("opacity", OPACITY_GENERATOR);
         map.put("orient", ORIENT_GENERATOR);
+        map.put("patternTransform", TRANSFORM_FUNCTION_GENERATOR);
         map.put("points", POINT_GENERATOR);
         map.put("r", LENGTH_GENERATOR);
         map.put("refX", REF_X_GENERATOR);
@@ -133,6 +139,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("repeatDur", CLOCK_GENERATOR);
         map.put("rx", LENGTH_GENERATOR);
         map.put("ry", LENGTH_GENERATOR);
+        map.put("style", STYLE_GENERATOR);
         map.put("stop-opacity", OPACITY_GENERATOR);
         map.put("stop-color", COLOR_GENERATOR);
         map.put("stroke", COLOR_GENERATOR);
@@ -144,6 +151,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("text-decoration", TEXT_DECORATION_GENERATOR);
         map.put("textLength", LENGTH_GENERATOR);
         map.put("to", NUMBER_GENERATOR);
+        map.put("transform", TRANSFORM_FUNCTION_GENERATOR);
         map.put("values", VALUE_LIST_GENERATOR);
         map.put("viewBox", VIEW_BOX_GENERATOR);
         map.put("width", LENGTH_GENERATOR);
@@ -156,6 +164,28 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("y2", NUMBER_GENERATOR);
     }
 
+
+    private static class StyleGenerator implements SvgAttributeGenerator {
+        AttributeGeneratorMap map = new AttributeGeneratorMap();
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+
+            Map.Entry[] MapArray = (Entry[]) map.entrySet().toArray();
+            StringBuilder builder = new StringBuilder();
+
+            for (int i = 0; i < source.nextInt(1, 10); i++) {
+                var entry = MapArray[source.nextInt(MapArray.length)];
+                var generator = (SvgAttributeGenerator) entry.getValue();
+
+                builder.append(entry.getKey()).append(":").append(generator.generateRandom(source)).append((";"));
+
+            }
+            return builder.toString();
+
+        }
+
+    }
 
     private static class AngleGenerator implements SvgAttributeGenerator {
         private static final String[] ANGLE_UNITS = {"deg", "grad", "rad"};
@@ -187,6 +217,34 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
             };
         }
     }
+
+
+    /**
+     * Note: circle and ellipse are generated in center
+     */
+    private static class BasicShapeGenerator implements SvgAttributeGenerator {
+        private static final String[] SHAPES = {"inset", "circle", "ellipse", "polygon", "path", "none"};
+        private static final String[] BOXES = {"view-box", "fill-box", "stroke-box", "content-box", "margin-box", "border-box", "padding-box", ""};
+
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+            var shape = source.choose(SHAPES);
+
+            return shape + "(" +
+                    switch (shape) {
+                        case "inset" -> NUMBER_LIST_GENERATOR.generateRandom(source).replace(" ", " " + LENGTH_GENERATOR.generateRandom(source));
+                        case "circle" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
+                        case "ellipse" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source) +
+                                " " + NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
+                        case "polygon" -> POLYGON_GENERATOR.generateRandom(source);
+                        case "path" -> PATH_GENERATOR.generateRandom(source);
+                        case "none" -> "";
+                        default -> "";
+                    } + ")" + source.choose(BOXES);
+        }
+    }
+
 
     private static class ClipGenerator implements SvgAttributeGenerator {
 
@@ -287,6 +345,15 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         }
     }
 
+    private static class IriGenerator implements SvgAttributeGenerator {
+        //todo
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+            return EMPTY_STRING_GENERATOR.generateRandom(source);
+        }
+    }
+
     private static class LengthGenerator implements SvgAttributeGenerator {
 
         private static final String[] SIZE_UNITS = {
@@ -373,6 +440,20 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         }
     }
 
+    private static class PolygonGenerator implements SvgAttributeGenerator {
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+            StringBuilder numbers = new StringBuilder();
+            for (int i = 0; i < source.nextInt(1, 10); i++) {
+                numbers.append(source.nextInt()).append(LENGTH_GENERATOR.generateRandom(source)).append(" ").
+                        append(source.nextInt()).append(LENGTH_GENERATOR.generateRandom(source)).append((","));
+            }
+            var positions = numbers.toString();
+            return positions.substring(0, positions.length() - 2);
+        }
+    }
+
     private static class PathGenerator implements SvgAttributeGenerator {
 
         private static final String[] PATH_COMMANDS = {
@@ -403,7 +484,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
                     numbers += String.format(" %s,%s %s,%s ",
                             source.nextInt(100), source.nextInt(100), source.nextInt(100), source.nextInt(100));
                 } else if ("A".contains(command.toUpperCase())) {
-                  numbers += " ";
+                    numbers += " ";
                     for (int j = 0; j < 6; j++) {
                         numbers += source.nextInt(100) + " ";
                     }
@@ -436,7 +517,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
                 "none", "inherit",
                 "underline", "overline", "line-through", "blink"
         };
-        
+
         @Override
         public String generateRandom(SourceOfRandomness source) {
             return source.choose(DECORATIONS);
@@ -450,6 +531,82 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         @Override
         public String generateRandom(SourceOfRandomness source) {
             return source.nextInt() + source.choose(TIME_UNITS);
+        }
+    }
+
+    private static class TransformFunctionGenerator implements SvgAttributeGenerator {
+
+        private String randomFunction(SourceOfRandomness source) {
+            return switch (source.nextInt(21)) {
+                case 0 -> "matrix("
+                        + source.nextInt(100)
+                        + (", " + source.nextInt(100)).repeat(5);
+                case 1 -> "matrix3d("
+                        + source.nextInt(100)
+                        + (", " + source.nextInt(100)).repeat(8);
+                case 2 -> "perspective("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 3 -> "scale("
+                        + source.nextFloat() * 100 + ")";
+                case 4 -> "scale3d("
+                        + String.join(", ", Collections.nCopies(3, (source.nextFloat() * 100) + ""));
+                case 5 -> "scaleX(" + source.nextFloat() * 100;
+                case 6 -> "scaleY(" + source.nextFloat() * 100;
+                case 7 -> "scaleZ(" + source.nextFloat() * 100;
+                case 8 -> "translate("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source) + ", "
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 9 -> "translate3d("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source) + ", "
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source) + ", "
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 10 -> "translateX("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 11 -> "translateY("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 12 -> "translateZ("
+                        + source.nextInt(1000)
+                        + LENGTH_GENERATOR.generateRandom(source);
+                case 13 -> "rotate("
+                        + source.nextInt(360) + "deg";
+                case 14 -> "rotate3d("
+                        + source.nextFloat() + ", "
+                        + source.nextFloat() + ", "
+                        + source.nextFloat() + ", "
+                        + source.nextInt(360) + "deg"
+                ;
+                case 15 -> "rotateX("
+                        + source.nextInt(360) + "deg";
+                case 16 -> "rotateY("
+                        + source.nextInt(360) + "deg";
+                case 17 -> "rotateZ("
+                        + source.nextInt(360) + "deg";
+                case 18 -> "skew("
+                        + source.nextInt(360) + "deg, "
+                        + source.nextInt(360) + "deg";
+                case 19 -> "skewX("
+                        + source.nextInt(360) + "deg";
+                case 20 -> "skewY("
+                        + source.nextInt(360) + "deg";
+                default -> "";
+            } + ")";
+        }
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < source.nextInt(0, 5); i++) {
+                builder.append(randomFunction(source)).append(" ");
+            }
+            return builder.toString();
         }
     }
 
