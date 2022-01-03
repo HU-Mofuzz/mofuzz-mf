@@ -4,10 +4,7 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import lombok.experimental.Delegate;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -57,7 +54,6 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static final SvgAttributeGenerator POLYGON_GENERATOR = new PolygonGenerator();
     private static final SvgAttributeGenerator PATH_GENERATOR = new PathGenerator();
     private static final SvgAttributeGenerator REF_X_GENERATOR = new RefXGenerator();
-    private static final SvgAttributeGenerator STYLE_GENERATOR = new StyleGenerator();
     private static final SvgAttributeGenerator TEXT_DECORATION_GENERATOR = new TextDecorationGenerator();
     private static final SvgAttributeGenerator TIME_GENERATOR = new TimeGenerator();
     private static final SvgAttributeGenerator TRANSFORM_FUNCTION_GENERATOR = new TransformFunctionGenerator();
@@ -139,7 +135,6 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("repeatDur", CLOCK_GENERATOR);
         map.put("rx", LENGTH_GENERATOR);
         map.put("ry", LENGTH_GENERATOR);
-        map.put("style", STYLE_GENERATOR);
         map.put("stop-opacity", OPACITY_GENERATOR);
         map.put("stop-color", COLOR_GENERATOR);
         map.put("stroke", COLOR_GENERATOR);
@@ -162,20 +157,22 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("y", NUMBER_GENERATOR);
         map.put("y1", NUMBER_GENERATOR);
         map.put("y2", NUMBER_GENERATOR);
+
+        SvgAttributeGenerator STYLE_GENERATOR = new StyleGenerator();
+        map.put("style", STYLE_GENERATOR);
     }
 
 
-    private static class StyleGenerator implements SvgAttributeGenerator {
-        AttributeGeneratorMap map = new AttributeGeneratorMap();
+    private class StyleGenerator implements SvgAttributeGenerator {
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
 
-            Map.Entry[] MapArray = (Entry[]) map.entrySet().toArray();
+            List<Entry> list = new ArrayList<>(map.entrySet());
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < source.nextInt(1, 10); i++) {
-                var entry = MapArray[source.nextInt(MapArray.length)];
+                var entry = list.get(source.nextInt(list.size()));
                 var generator = (SvgAttributeGenerator) entry.getValue();
 
                 builder.append(entry.getKey()).append(":").append(generator.generateRandom(source)).append((";"));
