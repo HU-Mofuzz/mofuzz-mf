@@ -125,18 +125,12 @@ public class SvgUtil {
     public void addLinkAndAttributesToSvgElement(Document svgDoc, String link) {
         var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
 
-        XmlUtil.clearChildren(svgNode);
-
-        svgNode.setAttribute("viewBox", "0 0 100 100");
-        svgNode.setAttribute("width", "100");
-        svgNode.setAttribute("height", "100");
         svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
         var useElement = svgDoc.createElement("use");
 
-        useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href",
-                link);
+        useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href", link);
         useElement.setAttribute("height", "100");
         useElement.setAttribute("width", "100");
         useElement.setAttribute("x", "100");

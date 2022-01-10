@@ -115,6 +115,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         EObject svgObject = generateEObject(SVG_CLASS, sourceOfRandomness);
 
+        //a valid svg needs a view box, width and height and version + grammar
+        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, sourceOfRandomness);
+        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.WIDTH_ATTRIBUTE, sourceOfRandomness);
+        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, sourceOfRandomness);
+
+
         var svgDoc = XmlUtil.eObjectToDocument(svgObject);
 
         SvgUtil.addLinkAndAttributesToSvgElement(svgDoc, linkPool.getRandomLink(sourceOfRandomness));
