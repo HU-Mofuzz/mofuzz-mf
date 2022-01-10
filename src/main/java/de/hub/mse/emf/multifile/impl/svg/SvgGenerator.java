@@ -25,6 +25,8 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
 
+    private int currentDepth;
+
     @SneakyThrows
     public SvgGenerator() {
         super(File.class, GeneratorConfig.getInstance());
@@ -95,6 +97,10 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
+        // increase depth
+        currentDepth++;
+
+        // outer object
         var object = SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for (var attribute : EmfCache.getAttributes(clazz)) {
             if (randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
@@ -102,6 +108,17 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             }
         }
 
+        // inner object
+        if (currentDepth < config.getModelDepth() && !clazz.getEAllContainments().isEmpty()) {
+            for (int i = 0; i < randomness.nextInt(config.getModelWidth()); i++) {
+                var innerClass = EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness);
+                var innerObject = generateEObject(innerClass, randomness);
+                if(!EmfUtil.makeContain(object, innerObject)) {
+                    i--;
+                }
+            }
+        }
+        currentDepth--;
         return object;
     }
 

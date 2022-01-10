@@ -29,10 +29,10 @@ public class EmfUtil {
     }
 
 
-    public EClass getRandomReferenceEClassFromEClass(EClass svgClass, SourceOfRandomness source) {
-        var classifier = svgClass.getEAllContainments().stream()
+    public EClass getRandomReferenceEClassFromEClass(EClass clazz, SourceOfRandomness source) {
+        var classifier = clazz.getEAllContainments().stream()
                 .map(EReference::getEType)
-                .map(clazz -> (EClass) clazz)
+                .map(c -> (EClass) c)
                 .toList();
         return classifier.get(source.nextInt(0, classifier.size() - 1));
     }
