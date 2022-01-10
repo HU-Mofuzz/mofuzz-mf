@@ -7,6 +7,7 @@ import de.hub.mse.emf.multifile.base.LinkPool;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.ecore.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -17,13 +18,15 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
+import java.util.Set;
 
-import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.SVG_CLASS;
-import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.SVG_PACKAGE;
+import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.*;
 
 public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfig> {
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
+    private static final float LINK_USE_CHANCE = 0.5f;
 
     @SneakyThrows
     public SvgGenerator() {
@@ -41,12 +44,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             // generate files
             for (int i = 0; i < config.getFilesToGenerate(); i++) {
                 String fileName = SvgUtil.getRandomFileName();
-                String objectId = SvgUtil.getRandomObjectId();
                 try {
-                    String content = generateRandomSvgObject(objectId, sourceOfRandomness);
-                    Files.writeString(Paths.get(config.getWorkingDirectory(), fileName), content,
+                    var content = generateRandomSvgObject(sourceOfRandomness);
+                    Files.writeString(Paths.get(config.getWorkingDirectory(), fileName), content.getLeft(),
                             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                    pool.add(SvgUtil.getObjectIdForFile(fileName, objectId));
+                    content.getRight().stream().map(id -> getObjectIdForFile(fileName, id)).forEach(pool::add);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -58,23 +61,37 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         return pool;
     }
 
-    private String generateRandomSvgObject(String objectId, SourceOfRandomness source) throws IOException, ParserConfigurationException, SAXException, TransformerException {
+
+    private boolean addRandomObjectToSvgObject(EObject svgObject, String objectId, SourceOfRandomness source) {
+        EClass objectClazz;
+        do {
+            //find object that can have an id to make it referencable later
+            objectClazz = SvgUtil.getRandomSVGReference(source);
+        } while (objectClazz.getEIDAttribute() == null);
+
+        EObject object = generateEObject(objectClazz, source);
+        object.eSet(objectClazz.getEIDAttribute(), objectId);
+
+        return EmfUtil.makeContain(svgObject, object);
+    }
+
+    private Pair<String, Set<String>> generateRandomSvgObject(SourceOfRandomness source) throws IOException, ParserConfigurationException, SAXException, TransformerException {
         //generate base node
         EObject svgObject = generateEObject(SVG_CLASS, source);
+        Set<String> aggregatedIds = new HashSet<>();
+
+        String svgObjectId = SvgUtil.getRandomObjectId();
+        svgObject.eSet(SVG_CLASS.getEIDAttribute(), svgObjectId);
+
+        aggregatedIds.add((svgObjectId));
 
         //generate children
         for (int i = 0; i < config.getModelWidth(); i++) {
-            EClass objectClazz;
-            do {
-                //find object that can have an id to make it referencable later
-                objectClazz = SvgUtil.getRandomSVGReference(source);
-            } while (objectClazz.getEIDAttribute() == null);
-
-            EObject object = generateEObject(objectClazz, source);
-            object.eSet(objectClazz.getEIDAttribute(), objectId);
-
-            if (!EmfUtil.makeContain(svgObject, object)) {
-                //try with next one
+            String objectId = SvgUtil.getRandomObjectId();
+            if (addRandomObjectToSvgObject(svgObject, objectId, source)) {
+                aggregatedIds.add(objectId);
+            } else {
+                //try again
                 i--;
             }
         }
@@ -91,7 +108,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-        return XmlUtil.documentToString(svgXmlDoc);
+        return Pair.of(XmlUtil.documentToString(svgXmlDoc), aggregatedIds);
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
@@ -121,12 +138,34 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, sourceOfRandomness);
 
 
+
+        for (int i = 0; i < config.getModelWidth(); i++) {
+
+            if (sourceOfRandomness.nextDouble() < LINK_USE_CHANCE) {
+
+                EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness),sourceOfRandomness));
+            } else {
+                String objectId = SvgUtil.getRandomObjectId();
+                if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness)) {
+
+                    linkPool.add(getObjectIdForFile(target.getName(), objectId));
+                } else {
+                    i--; //try again
+                }
+            }
+        }
+
         var svgDoc = XmlUtil.eObjectToDocument(svgObject);
 
-        SvgUtil.addLinkAndAttributesToSvgElement(svgDoc, linkPool.getRandomLink(sourceOfRandomness));
+
+        var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
+
+        svgNode.setAttribute("version", "1.1");
+        svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        svgNode.setAttribute("xmlns:xlink", "https://www.w3.org/1999/xlink");
 
         Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
-        return target;
+            return target;
+        }
     }
-}

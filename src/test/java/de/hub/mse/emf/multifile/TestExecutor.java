@@ -19,7 +19,7 @@ public class TestExecutor {
     public static void main(String[] args) throws IOException {
         final String workingDir = Files.createTempDirectory("svg_test").toFile().getAbsolutePath();
         final String testDirectory = Files.createTempDirectory("test").toFile().getAbsolutePath();
-        final int filesToGenerate = 20;
+        final int filesToGenerate = 5;
 
         System.out.println("Working directory: "+workingDir);
         var config = GeneratorConfig.getInstance();
