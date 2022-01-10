@@ -7,6 +7,10 @@ import java.util.Collection;
 @Data
 public class GeneratorConfig {
 
+    private int filesToGenerate = 1;
+    private int modelWidth = 10;
+    private int modelDepth = 10;
+
     private PreparationMode preparationMode;
 
     private String workingDirectory;
@@ -24,8 +28,6 @@ public class GeneratorConfig {
     }
 
     private GeneratorConfig() {}
-
-    private int objectsToGenerate = 1;
 
     public boolean shouldGenerateFiles() {
         return preparationMode == PreparationMode.GENERATE_FILES;
