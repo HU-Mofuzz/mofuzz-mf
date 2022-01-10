@@ -54,6 +54,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static final SvgAttributeGenerator POLYGON_GENERATOR = new PolygonGenerator();
     private static final SvgAttributeGenerator PATH_GENERATOR = new PathGenerator();
     private static final SvgAttributeGenerator REF_X_GENERATOR = new RefXGenerator();
+    private static final SvgAttributeGenerator SYSTEM_LANGUAGE_GENERATOR = new SystemLanguageGenerator();
     private static final SvgAttributeGenerator TEXT_DECORATION_GENERATOR = new TextDecorationGenerator();
     private static final SvgAttributeGenerator TIME_GENERATOR = new TimeGenerator();
     private static final SvgAttributeGenerator TRANSFORM_FUNCTION_GENERATOR = new TransformFunctionGenerator();
@@ -143,6 +144,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("stroke-miterlimit", NUMBER_GENERATOR);
         map.put("stroke-opacity", OPACITY_GENERATOR);
         map.put("stroke-width", LENGTH_GENERATOR);
+        map.put("systemLanguage", SYSTEM_LANGUAGE_GENERATOR);
         map.put("text-decoration", TEXT_DECORATION_GENERATOR);
         map.put("textLength", LENGTH_GENERATOR);
         map.put("to", NUMBER_GENERATOR);
@@ -168,20 +170,40 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         @Override
         public String generateRandom(SourceOfRandomness source) {
 
-            List<Entry> list = new ArrayList<>(map.entrySet());
+            List<Entry<String, SvgAttributeGenerator>> list = new ArrayList<>(map.entrySet());
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < source.nextInt(1, 10); i++) {
-                var entry = list.get(source.nextInt(list.size()));
-                var generator = (SvgAttributeGenerator) entry.getValue();
+                String key = null;
+                String value = null;
+                do {
+                    var entry = source.choose(list);
+                    key = entry.getKey();
+                    value = entry.getValue().generateRandom(source);
+                } while (StringUtils.isAllBlank(key) || StringUtils.isAllBlank(value));
 
-                builder.append(entry.getKey()).append(":").append(generator.generateRandom(source)).append((";"));
+                builder.append(key)
+                        .append(":")
+                        .append(value)
+                        .append((";"));
 
             }
             return builder.toString();
-
         }
+    }
 
+    private static class SystemLanguageGenerator implements SvgAttributeGenerator {
+
+        @Override
+        public String generateRandom(SourceOfRandomness source) {
+            int additionalLanguages = source.nextInt(3);
+            String[] langs = new String[additionalLanguages + 1];
+            for (int i = 0; i < additionalLanguages; i++) {
+                langs[i] = source.choose(Locale.getISOLanguages());
+            }
+            langs[langs.length - 1] = Locale.getDefault().getLanguage();
+            return StringUtils.join(langs, ", ");
+        }
     }
 
     private static class AngleGenerator implements SvgAttributeGenerator {
@@ -485,7 +507,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
                             source.nextInt(100), source.nextInt(100), source.nextInt(100), source.nextInt(100));
                 } else if ("A".contains(command.toUpperCase())) {
                     numbers += " ";
-                    for (int j = 0; j < 6; j++) {
+                    for (int j = 0; j < 7; j++) {
                         numbers += source.nextInt(100) + " ";
                     }
                 }
