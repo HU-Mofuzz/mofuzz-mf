@@ -47,8 +47,8 @@ public class SvgUtil {
     public static final Map<String, String> TYPE_NAME_MAPPING = new HashMap<>();
 
     static {
-        Resource svgPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/svg.ecore", false), true);
-        Resource xlinkPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/xlink.ecore", false), true);
+        Resource svgPackageResource = RESOURCE_SET.getResource(URI.createURI("svg.ecore", false), true);
+        Resource xlinkPackageResource = RESOURCE_SET.getResource(URI.createURI("xlink.ecore", false), true);
 
         SVG_PACKAGE = (EPackage) svgPackageResource.getContents().get(0);
         XLINK_PACKAGE = (EPackage) xlinkPackageResource.getContents().get(0);
