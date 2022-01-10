@@ -9,7 +9,7 @@ import java.util.List;
 public class LinkPool<L> {
 
     @Delegate
-    private List<L> pool = new ArrayList<>();
+    private final List<L> pool = new ArrayList<>();
 
     public L getRandomLink(SourceOfRandomness source) {
         int index = source.nextInt(pool.size());

@@ -43,15 +43,14 @@
     <eLiterals name="textTop" value="3" literal="text-top"/>
     <eLiterals name="textBeforeEdge" value="4" literal="text-before-edge"/>
     <eLiterals name="middle" value="5"/>
-    <eLiterals name="bottom" value="6"/>
-    <eLiterals name="afterEdge" value="7" literal="after-edge"/>
-    <eLiterals name="textBottom" value="8" literal="text-bottom"/>
-    <eLiterals name="textAfterEdge" value="9" literal="text-after-edge"/>
-    <eLiterals name="ideographic" value="10"/>
-    <eLiterals name="lower" value="11"/>
-    <eLiterals name="hanging" value="12"/>
-    <eLiterals name="mathematical" value="13"/>
-    <eLiterals name="inherit" value="14"/>
+    <eLiterals name="afterEdge" value="6" literal="after-edge"/>
+    <eLiterals name="textBottom" value="7" literal="text-bottom"/>
+    <eLiterals name="textAfterEdge" value="8" literal="text-after-edge"/>
+    <eLiterals name="ideographic" value="9"/>
+    <eLiterals name="lower" value="10"/>
+    <eLiterals name="hanging" value="11"/>
+    <eLiterals name="mathematical" value="12"/>
+    <eLiterals name="inherit" value="13"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="AlignmentBaselineTypeObject" instanceClassName="org.eclipse.emf.common.util.Enumerator">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">

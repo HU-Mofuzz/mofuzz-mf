@@ -68,6 +68,10 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         EObject object = generateEObject(clazz, source);
         object.eSet(clazz.getEIDAttribute(), objectId);
 
+       /**
+        * this does not work and throws nullpointer
+        * svgObject.eSet(svgObject.eContainmentFeature(),object); **/
+
         var svgDoc = XmlUtil.eObjectToDocument(svgObject);
 
         var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
