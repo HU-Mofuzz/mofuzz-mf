@@ -30,7 +30,7 @@ public class EmfUtil {
 
 
     public EClass getRandomReferenceEClassFromEClass(EClass svgClass, SourceOfRandomness source) {
-        var classifier = svgClass.getEAllReferences().stream()
+        var classifier = svgClass.getEAllContainments().stream()
                 .map(EReference::getEType)
                 .map(clazz -> (EClass) clazz)
                 .toList();
@@ -97,7 +97,6 @@ public class EmfUtil {
             }
         } else {
             // higher object
-            // TODO: CATCH "color-profile"
             if(clazz == String.class) {
                 if(source.nextFloat() < EMPTY_STRING_CHANCE) {
                     return StringUtils.EMPTY;
@@ -117,6 +116,20 @@ public class EmfUtil {
             return ConstructorUtils.invokeConstructor(clazz);
         } catch (NullPointerException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             return null;
+        }
+    }
+
+    public static boolean makeContain(EObject container, EObject containment) {
+        var reference = EmfCache.getContainmentReference(container.eClass(), containment.eClass().getName());
+        if(reference == null) {
+            return false;
+        } else {
+            if(reference.isMany()) {
+                ((List<Object>) container.eGet(reference)).add(containment);
+            } else {
+                container.eSet(reference, containment);
+            }
+            return true;
         }
     }
 }
