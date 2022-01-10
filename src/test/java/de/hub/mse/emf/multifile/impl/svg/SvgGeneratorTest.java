@@ -31,7 +31,7 @@ public class SvgGeneratorTest {
         var instance = GeneratorConfig.getInstance();
         instance.setWorkingDirectory("C:\\Users\\Laokoon\\Desktop\\Test");
         instance.setPreparationMode(PreparationMode.GENERATE_FILES);
-        instance.setObjectsToGenerate(1);
+        instance.setFilesToGenerate(1);
         var generator = new SvgGenerator();
 
         File file = generator.generate(new SourceOfRandomness(new Random()), null);

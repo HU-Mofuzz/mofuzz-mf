@@ -3,20 +3,12 @@ package de.hub.mse.emf.multifile;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.PreparationMode;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
-import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
-import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
-import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.Date;
-import java.util.Random;
-import java.util.function.Consumer;
 
 public class TestExecutor {
 
@@ -31,7 +23,7 @@ public class TestExecutor {
 
         System.out.println("Working directory: "+workingDir);
         var config = GeneratorConfig.getInstance();
-        config.setObjectsToGenerate(filesToGenerate);
+        config.setFilesToGenerate(filesToGenerate);
         config.setWorkingDirectory(workingDir);
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 

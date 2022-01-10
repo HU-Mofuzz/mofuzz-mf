@@ -2,6 +2,7 @@ package de.hub.mse.emf.multifile.impl.svg;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
+import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
@@ -34,14 +35,17 @@ public class SvgUtil {
 
     public static final EPackage SVG_PACKAGE;
     public static final EClass SVG_CLASS;
+    public static final EAttribute VIEW_BOX_ATTRIBUTE;
+    public static final EAttribute WIDTH_ATTRIBUTE;
+    public static final EAttribute HEIGHT_ATTRIBUTE;
     public static final Map<String, String> TYPE_NAME_MAPPING = new HashMap<>();
 
     static {
         Resource svgPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/svg.ecore", false), true);
         Resource xlinkPackageResource = RESOURCE_SET.getResource(URI.createURI("src/main/resources/model/xlink.ecore", false), true);
 
-        SVG_PACKAGE = (EPackage)svgPackageResource.getContents().get(0);
-        EPackage xlinkPackage = (EPackage)xlinkPackageResource.getContents().get(0);
+        SVG_PACKAGE = (EPackage) svgPackageResource.getContents().get(0);
+        EPackage xlinkPackage = (EPackage) xlinkPackageResource.getContents().get(0);
 
         RESOURCE_SET.getPackageRegistry().put(SVG_PACKAGE.getNsURI(), SVG_PACKAGE);
         RESOURCE_SET.getPackageRegistry().put(xlinkPackage.getNsURI(), xlinkPackage);
@@ -51,6 +55,11 @@ public class SvgUtil {
 
         SVG_CLASS = (EClass) SVG_PACKAGE.getEClassifier("SvgType");
 
+        VIEW_BOX_ATTRIBUTE = EmfCache.getAttributes(SVG_CLASS).stream().filter(a -> a.getName().equals("viewBox")).findFirst().orElseThrow(IllegalStateException::new);
+        WIDTH_ATTRIBUTE = EmfCache.getAttributes(SVG_CLASS).stream().filter(a -> a.getName().equals("width")).findFirst().orElseThrow(IllegalStateException::new);
+        HEIGHT_ATTRIBUTE = EmfCache.getAttributes(SVG_CLASS).stream().filter(a -> a.getName().equals("height")).findFirst().orElseThrow(IllegalStateException::new);
+
+
         var aType = (EClass) SVG_PACKAGE.getEClassifier("AType");
         TYPE_NAME_MAPPING.putAll(aType.getEAllReferences().stream()
                 .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
@@ -58,14 +67,14 @@ public class SvgUtil {
         aType.getEStructuralFeatures().forEach(feature -> {
             var attribName = feature.getName();
             String targetName = null;
-            for(var annotation : feature.getEAnnotations()) {
-                for(var detail : annotation.getDetails()) {
-                    if(detail.getKey().equals("name")) {
+            for (var annotation : feature.getEAnnotations()) {
+                for (var detail : annotation.getDetails()) {
+                    if (detail.getKey().equals("name")) {
                         targetName = detail.getValue();
                     }
                 }
             }
-            if(targetName != null) {
+            if (targetName != null) {
                 TYPE_NAME_MAPPING.put(attribName, targetName);
             }
         });
@@ -75,7 +84,7 @@ public class SvgUtil {
 
         Set<String> links = new HashSet<>();
 
-        for(String file : config.getExistingFiles()) {
+        for (String file : config.getExistingFiles()) {
             try {
                 var svgString = Files.readString(
                         Paths.get(config.getWorkingDirectory(), file)
@@ -101,7 +110,7 @@ public class SvgUtil {
     }
 
     public String getObjectIdForFile(String fileName, String objectId) {
-        return fileName+"#"+objectId;
+        return fileName + "#" + objectId;
     }
 
     public static String getRandomObjectId() {
@@ -110,11 +119,11 @@ public class SvgUtil {
     }
 
     public EClass getRandomSVGReference(SourceOfRandomness source) {
-        return  EmfUtil.getRandomReferenceEClassFromEClass(SVG_CLASS, source);
+        return EmfUtil.getRandomReferenceEClassFromEClass(SVG_CLASS, source);
     }
 
     public void addLinkAndAttributesToSvgElement(Document svgDoc, String link) {
-        var svgNode = (Element)svgDoc.getElementsByTagName("svg").item(0);
+        var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
 
         XmlUtil.clearChildren(svgNode);
 
