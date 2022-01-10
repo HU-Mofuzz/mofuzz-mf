@@ -71,7 +71,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         map.put("cx", LENGTH_GENERATOR);
         map.put("cy", LENGTH_GENERATOR);
         map.put("clip", CLIP_GENERATOR);
-        map.put("clip-path", BASIC_SHAPE_GENERATOR);
+      //  map.put("clip-path", BASIC_SHAPE_GENERATOR);
         map.put("color", COLOR_GENERATOR);
         map.put("cursor", CURSOR_GENERATOR);
         map.put("d", PATH_GENERATOR);
@@ -217,6 +217,9 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
 
     /**
+     *
+     * THIS DOES NOT WORK PROPERLY YET
+     *
      * Note: circle and ellipse are generated in center
      */
     private static class BasicShapeGenerator implements SvgAttributeGenerator {
@@ -230,7 +233,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
             return shape + "(" +
                     switch (shape) {
-                        case "inset" -> NUMBER_LIST_GENERATOR.generateRandom(source).replace(" ", " " + LENGTH_GENERATOR.generateRandom(source));
+                        case "inset" -> LENGTH_GENERATOR.generateRandom(source)+" "+LENGTH_GENERATOR.generateRandom(source) ;
                         case "circle" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
                         case "ellipse" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source) +
                                 " " + NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
@@ -238,7 +241,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
                         case "path" -> PATH_GENERATOR.generateRandom(source);
                         case "none" -> "";
                         default -> "";
-                    } + ")" + source.choose(BOXES);
+                    } + ")";
         }
     }
 
