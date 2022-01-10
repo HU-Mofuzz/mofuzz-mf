@@ -102,7 +102,8 @@ public class EmfUtil {
                 if(source.nextFloat() < EMPTY_STRING_CHANCE) {
                     return StringUtils.EMPTY;
                 } else {
-                    String value = AttributeUtil.generateRandomValueForAttribute(SvgUtil.TYPE_NAME_MAPPING.get(attribute.getName()), source);
+                    String value = AttributeUtil.generateRandomValueForAttribute(
+                            SvgUtil.TYPE_NAME_MAPPING.getOrDefault(attribute.getName(), attribute.getName()), source);
                     return  value == null? RandomStringUtils.random(source.nextInt(32), 0, 0, true, true, null,
                             source.toJDKRandom()) : value;
                 }
