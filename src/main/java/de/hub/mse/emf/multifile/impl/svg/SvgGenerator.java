@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -120,15 +121,31 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         // outer object
         var object = SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for (var attribute : EmfCache.getAttributes(clazz)) {
-            if (randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
+            var metaData = attribute.getEAnnotation("http:///org/eclipse/emf/ecore/util/ExtendedMetaData");
+            String prefix;
+            if(metaData != null && metaData.getDetails() != null && metaData.getDetails().get("namespace") != null &&
+                    metaData.getDetails().get("namespace").equals("http://www.w3.org/1999/xlink")) {
+                continue;
+            }
+            if (attribute.isRequired() || randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
                 EmfUtil.setRandomValueForAttribute(object, attribute, randomness);
             }
         }
 
         // inner object
-        if (currentDepth < config.getModelDepth() && !clazz.getEAllContainments().isEmpty()) {
-            for (int i = 0; i < randomness.nextInt(config.getModelWidth()); i++) {
-                var innerClass = EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness);
+        var requiredReferences = EmfCache.getRequiredContainmentReferences(clazz);
+        if (requiredReferences.size() > 0 ||
+                (currentDepth < config.getModelDepth() && !clazz.getEAllContainments().isEmpty())) {
+            var remainingReferences = currentDepth >  config.getModelDepth()? 0 :
+                    Math.max(0, config.getModelWidth() - requiredReferences.size());
+
+            var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::eClass).toList());
+            for (int i = 0; i < remainingReferences; i++) {
+                referencesToCreate.add(EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness));
+            }
+
+            for (int i = 0; i < referencesToCreate.size(); i++) {
+                var innerClass = referencesToCreate.get(i);
                 var innerObject = generateEObject(innerClass, randomness);
                 if(!EmfUtil.makeContain(object, innerObject)) {
                     i--;
@@ -177,7 +194,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
 
-        svgNode.setAttribute("version", "1.1");
+        svgNode.setAttribute("version", "1.2");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         svgNode.setAttribute("xmlns:xlink", "https://www.w3.org/1999/xlink");
 

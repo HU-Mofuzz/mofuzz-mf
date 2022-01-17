@@ -11,10 +11,7 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EReference;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @UtilityClass
@@ -30,6 +27,16 @@ public class EmfCache {
             });
 
     private final Map<EClass, LoadingCache<String, EReference>> CONTAINMENT_MAPPING = new HashMap<>();
+
+    private final LoadingCache<EClass, Set<EReference>> REQUIRED_CONTAINMENT_REFERENCES = CacheBuilder.newBuilder()
+            .softValues()
+            .build(new CacheLoader<>() {
+                @Override
+                public Set<EReference> load(EClass eClass) throws Exception {
+                    return ImmutableSet.copyOf(eClass.getEAllContainments().stream()
+                            .filter(EReference::isRequired).toList());
+                }
+            });
 
     private final Map<String, String> nameMap = new HashMap<>();
 
@@ -64,6 +71,20 @@ public class EmfCache {
             return cache.get(typeName);
         } catch (ExecutionException e) {
             return null;
+        }
+    }
+    
+    public Optional<EAttribute> getAttributeForClass(EClass eClass, String attribute) {
+        return getAttributes(eClass).stream()
+                .filter(attrib -> attrib.getName().equals(attribute))
+                .findFirst();
+    }
+
+    public Set<EReference> getRequiredContainmentReferences(EClass eClass) {
+        try {
+            return REQUIRED_CONTAINMENT_REFERENCES.get(eClass);
+        } catch (ExecutionException e) {
+            return Collections.emptySet();
         }
     }
 }

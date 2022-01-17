@@ -5,6 +5,7 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
@@ -123,8 +124,12 @@ public class SvgUtil {
     }
 
     public static String getRandomObjectId() {
-        return UUID.randomUUID().toString()
+        var id = UUID.randomUUID().toString()
                 .replace("-", "");
+        while (CharUtils.isAsciiNumeric(id.charAt(0))) {
+            id = id.substring(1);
+        }
+        return id;
     }
 
     public EClass getRandomSVGReference(SourceOfRandomness source) {
@@ -134,13 +139,11 @@ public class SvgUtil {
     public EObject generateUseElement(String link, SourceOfRandomness source) {
         var object = SVG_PACKAGE.getEFactoryInstance().create(USE_CLASS);
 
-        var href = EmfCache.getAttributes(USE_CLASS).stream().filter(a -> a.getName().equals("href")).findFirst().orElseThrow(IllegalStateException::new);
-        var height = EmfCache.getAttributes(USE_CLASS).stream().filter(a -> a.getName().equals("height")).findFirst().orElseThrow(IllegalStateException::new);
-        var width = EmfCache.getAttributes(USE_CLASS).stream().filter(a -> a.getName().equals("width")).findFirst().orElseThrow(IllegalStateException::new);
-        var x = EmfCache.getAttributes(USE_CLASS).stream().filter(a -> a.getName().equals("x")).findFirst().orElseThrow(IllegalStateException::new);
-        var y = EmfCache.getAttributes(USE_CLASS).stream().filter(a -> a.getName().equals("y")).findFirst().orElseThrow(IllegalStateException::new);
-
-        var hrefClass = (EDataTypeImpl) XLINK_PACKAGE.getEClassifier("HrefType");
+        var href = EmfCache.getAttributeForClass(USE_CLASS, "href").orElseThrow(IllegalStateException::new);
+        var height = EmfCache.getAttributeForClass(USE_CLASS, "height").orElseThrow(IllegalStateException::new);
+        var width = EmfCache.getAttributeForClass(USE_CLASS, "width").orElseThrow(IllegalStateException::new);
+        var x = EmfCache.getAttributeForClass(USE_CLASS, "x").orElseThrow(IllegalStateException::new);
+        var y = EmfCache.getAttributeForClass(USE_CLASS, "y").orElseThrow(IllegalStateException::new);
 
         object.eSet(href, link );
 
@@ -150,22 +153,5 @@ public class SvgUtil {
         EmfUtil.setRandomValueForAttribute(object, y, source);
 
         return object;
-    }
-
-    public void addLinkAndAttributesToSvgElement(EObject svgNode, String link, SourceOfRandomness source) {
-
-
-        EmfUtil.makeContain(svgNode, generateUseElement(link, source));
-
-
-        // var useElement = svgNode.getOwnerDocument().createElement("use");
-//
-        // useElement.setAttributeNS("https://www.w3.org/1999/xlink", "xlink:href", link);
-        // useElement.setAttribute("height", "100");
-        // useElement.setAttribute("width", "100");
-        // useElement.setAttribute("x", "100");
-        // useElement.setAttribute("y", "100");
-//
-        // svgNode.appendChild(useElement);
     }
 }

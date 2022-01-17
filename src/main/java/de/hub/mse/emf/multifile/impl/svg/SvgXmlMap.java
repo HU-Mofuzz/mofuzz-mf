@@ -21,7 +21,11 @@ class SvgXmlMap extends XMLMapImpl {
         } else {
             search = info.getName();
         }
-        info.setName(SvgUtil.TYPE_NAME_MAPPING.getOrDefault(search, search));
+        var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(search, search);
+        info.setName(name);
+        if(name.equals("content")) {
+            info.setXMLRepresentation(XMLResource.XMLInfo.CONTENT);
+        }
         return info;
     }
 }

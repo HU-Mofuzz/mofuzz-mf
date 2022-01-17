@@ -388,7 +388,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return source.nextInt() + source.choose(SIZE_UNITS);
+            return Math.abs(source.nextInt()) + source.choose(SIZE_UNITS);
         }
     }
 

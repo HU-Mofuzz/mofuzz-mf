@@ -98,11 +98,13 @@ public class EmfUtil {
         } else {
             // higher object
             if(clazz == String.class) {
-                if(source.nextFloat() < EMPTY_STRING_CHANCE) {
+                var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(attribute.getName(), attribute.getName());
+                if(name.equals("id")) {
+                    return SvgUtil.getRandomObjectId();
+                } else if(source.nextFloat() < EMPTY_STRING_CHANCE) {
                     return StringUtils.EMPTY;
                 } else {
-                    String value = AttributeUtil.generateRandomValueForAttribute(
-                            SvgUtil.TYPE_NAME_MAPPING.getOrDefault(attribute.getName(), attribute.getName()), source);
+                    String value = AttributeUtil.generateRandomValueForAttribute(name, source);
                     return  value == null? RandomStringUtils.random(source.nextInt(32), 0, 0, true, true, null,
                             source.toJDKRandom()) : value;
                 }
