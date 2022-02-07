@@ -68,11 +68,11 @@ public class SvgUtil {
         HEIGHT_ATTRIBUTE = EmfCache.getAttributes(SVG_CLASS).stream().filter(a -> a.getName().equals("height")).findFirst().orElseThrow(IllegalStateException::new);
 
 
-        var aType = (EClass) SVG_PACKAGE.getEClassifier("AType");
-        TYPE_NAME_MAPPING.putAll(aType.getEAllReferences().stream()
-                .collect(Collectors.toMap(ref -> ref.getEType().getName(), EReference::getName))
-        );
-        aType.getEStructuralFeatures().forEach(feature -> {
+        var eClasses = SVG_PACKAGE.getEClassifiers().stream().filter(f -> f instanceof EClass).map(EClass.class::cast).toList();
+
+        eClasses.forEach(clazz -> clazz.getEAllReferences().forEach(ref -> TYPE_NAME_MAPPING.putIfAbsent(ref.getEType().getName(), ref.getName())));
+
+        eClasses.forEach(clazz -> clazz.getEStructuralFeatures().forEach(feature -> {
             var attribName = feature.getName();
             String targetName = null;
             for (var annotation : feature.getEAnnotations()) {
@@ -83,9 +83,9 @@ public class SvgUtil {
                 }
             }
             if (targetName != null) {
-                TYPE_NAME_MAPPING.put(attribName, targetName);
+                TYPE_NAME_MAPPING.putIfAbsent(attribName, targetName);
             }
-        });
+        }));
     }
 
     public Set<String> extractLinkables(GeneratorConfig config) {
@@ -115,7 +115,7 @@ public class SvgUtil {
                 linkables.add(getObjectIdForFile(file.getName(), found));
             }
         } catch (IOException e) {
-            log.error("Error extracting linkables from file: "+file.getAbsolutePath(), e);
+            log.error("Error extracting linkables from file: " + file.getAbsolutePath(), e);
         }
         return linkables;
     }
@@ -130,7 +130,7 @@ public class SvgUtil {
         var links = new HashSet<String>();
         var useLinks = extractAllUseLinksFromElementTree(fileElement);
         for (var useLink : useLinks) {
-            if(!searchedFiles.contains(useLink)) {
+            if (!searchedFiles.contains(useLink)) {
                 links.addAll(extractUseLinksRecursiveInternal(Paths.get(file.getParent(), useLink).toFile(), searchedFiles));
             }
         }
@@ -142,12 +142,12 @@ public class SvgUtil {
         var links = new HashSet<String>();
         for (int i = 0; i < element.getChildNodes().getLength(); i++) {
             var childNode = element.getChildNodes().item(i);
-            if(childNode instanceof Element childElement &&
+            if (childNode instanceof Element childElement &&
                     "use".equals(childElement.getTagName()) && childElement.hasAttribute("href")) {
                 var objectId = childElement.getAttribute("href");
                 var fileName = getFilenameFromObjectId(objectId);
                 links.add(fileName);
-            } else if(childNode instanceof Element childElement && childNode.hasChildNodes()) {
+            } else if (childNode instanceof Element childElement && childNode.hasChildNodes()) {
                 links.addAll(extractAllUseLinksFromElementTree(childElement));
             }
         }
@@ -188,7 +188,7 @@ public class SvgUtil {
         var x = EmfCache.getAttributeForClass(USE_CLASS, "x").orElseThrow(IllegalStateException::new);
         var y = EmfCache.getAttributeForClass(USE_CLASS, "y").orElseThrow(IllegalStateException::new);
 
-        object.eSet(href, link );
+        object.eSet(href, link);
 
         EmfUtil.setRandomValueForAttribute(object, height, source);
         EmfUtil.setRandomValueForAttribute(object, width, source);
@@ -199,7 +199,7 @@ public class SvgUtil {
     }
 
     private String eObjectToXmlString(EObject eObject) {
-        XMLResource modelResource = (XMLResource)RESOURCE_SET.createResource(URI.createFileURI("a.svg"));
+        XMLResource modelResource = (XMLResource) RESOURCE_SET.createResource(URI.createFileURI("a.svg"));
         modelResource.setEncoding("UTF-8");
         modelResource.getContents().add(eObject);
         StringWriter writer = new StringWriter();
@@ -228,8 +228,8 @@ public class SvgUtil {
     public Set<String> extractLinkedFilesRecursive(File file) {
         Set<String> linkedFiles = new HashSet<>();
         linkedFiles.add(file.getName());
-        if(file.exists() && file.isFile()) {
-            for(String objectId : extractLinkables(file)) {
+        if (file.exists() && file.isFile()) {
+            for (String objectId : extractLinkables(file)) {
                 var fileName = getFilenameFromObjectId(objectId);
                 var linkedFile = Paths.get(file.getParent(), fileName).toFile();
                 linkedFiles.addAll(extractLinkedFilesRecursive(linkedFile));
