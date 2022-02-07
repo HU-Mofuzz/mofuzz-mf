@@ -78,7 +78,11 @@ public class SvgUtil {
             for (var annotation : feature.getEAnnotations()) {
                 for (var detail : annotation.getDetails()) {
                     if (detail.getKey().equals("name")) {
+                      if(detail.getValue().equals("href")){ //how not to do it. but href needs xlink namespace and ecore.xmlresource has no option to set it
+                          targetName = "xlink:href";
+                      }else{
                         targetName = detail.getValue();
+                      }
                     }
                 }
             }
@@ -205,7 +209,8 @@ public class SvgUtil {
         StringWriter writer = new StringWriter();
         try {
             modelResource.save(writer, Map.of(
-                    XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
+                    XMLResource.OPTION_SAVE_TYPE_INFORMATION, false,
+                    XMLResource.OPTION_DOM_USE_NAMESPACES_IN_SCOPE, true,
                     XMLResource.OPTION_XML_MAP, new SvgXmlMap()
             ));
         } catch (IOException e) {

@@ -128,12 +128,6 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             if(attribute.getName().startsWith("group") || attribute.getName().startsWith("mixed") || attribute.getName().startsWith("descTitleMetadata") || attribute.getName().startsWith("class")) {
                 continue;
             }
-            var metaData = attribute.getEAnnotation("http:///org/eclipse/emf/ecore/util/ExtendedMetaData");
-            String prefix;
-            if(metaData != null && metaData.getDetails() != null && metaData.getDetails().get("namespace") != null &&
-                    metaData.getDetails().get("namespace").equals("http://www.w3.org/1999/xlink")) {
-                continue;
-            }
             if (attribute.isRequired() || randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
                 EmfUtil.setRandomValueForAttribute(object, attribute, randomness);
             }
