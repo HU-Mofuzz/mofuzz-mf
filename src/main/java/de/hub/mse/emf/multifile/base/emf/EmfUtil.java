@@ -98,7 +98,7 @@ public class EmfUtil {
         } else {
             // higher object
             if(clazz == String.class) {
-                var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(attribute.getName(), attribute.getName());
+                var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(attribute, attribute.getName());
                 if(name.equals("id")) {
                     return SvgUtil.getRandomObjectId();
                 } else if(source.nextFloat() < EMPTY_STRING_CHANCE) {

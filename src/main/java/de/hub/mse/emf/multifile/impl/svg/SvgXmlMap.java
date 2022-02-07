@@ -16,14 +16,10 @@ class SvgXmlMap extends XMLMapImpl {
     @Override
     public XMLResource.XMLInfo getInfo(ENamedElement element) {
         var info = super.getInfo(element);
-        String search;
         if (info == null) {
             info = new XMLInfoImpl();
-            search = element.getName();
-        } else {
-            search = info.getName();
         }
-        var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(search, search);
+        var name = SvgUtil.TYPE_NAME_MAPPING.getOrDefault(element, element.getName());
 
         //find namespace and put before name
         var namespacePredicate = element.getEAnnotations().stream()

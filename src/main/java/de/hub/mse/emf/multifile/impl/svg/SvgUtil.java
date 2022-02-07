@@ -43,7 +43,7 @@ public class SvgUtil {
     public static final EAttribute WIDTH_ATTRIBUTE;
     public static final EAttribute HEIGHT_ATTRIBUTE;
     public static final EClass USE_CLASS;
-    public static final Map<String, String> TYPE_NAME_MAPPING = new HashMap<>();
+    public static final Map<ENamedElement, String> TYPE_NAME_MAPPING = new HashMap<>();
 
     static {
         Resource svgPackageResource = RESOURCE_SET.getResource(URI.createURI("svg.ecore", false), true);
@@ -70,7 +70,7 @@ public class SvgUtil {
 
         var eClasses = SVG_PACKAGE.getEClassifiers().stream().filter(f -> f instanceof EClass).map(EClass.class::cast).toList();
 
-        eClasses.forEach(clazz -> clazz.getEAllReferences().forEach(ref -> TYPE_NAME_MAPPING.putIfAbsent(ref.getEType().getName(), ref.getName())));
+        eClasses.forEach(clazz -> clazz.getEAllReferences().forEach(ref -> TYPE_NAME_MAPPING.putIfAbsent(ref.getEType(), ref.getName())));
 
         eClasses.forEach(clazz -> clazz.getEStructuralFeatures().forEach(feature -> {
             var attribName = feature.getName();
@@ -83,7 +83,7 @@ public class SvgUtil {
                 }
             }
             if (!StringUtils.isBlank(targetName)) {
-                TYPE_NAME_MAPPING.putIfAbsent(attribName, targetName);
+                TYPE_NAME_MAPPING.putIfAbsent(feature, targetName);
             }
         }));
     }
