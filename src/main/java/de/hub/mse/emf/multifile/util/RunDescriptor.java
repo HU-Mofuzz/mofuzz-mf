@@ -4,6 +4,8 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -21,10 +23,13 @@ public class RunDescriptor {
 
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final String PROPERTY_TIMESTAMP = "timestamp";
+    private static final String PROPERTY_THROWABLE = "throwable";
+    private static final String PROPERTY_STACKTRACE = "stacktrace";
 
     private Set<String> files = new HashSet<>();
     private String mainFile = StringUtils.EMPTY;
     private final Map<String,  String> properties = new HashMap<>();
+    private Throwable throwable = null;
 
     public void setMainFile(String mainFile) {
         this.mainFile = mainFile;
@@ -54,14 +59,29 @@ public class RunDescriptor {
 
         // properties
         var propertiesCopy = new HashMap<>(properties);
+
+        //additional properties
         propertiesCopy.put(PROPERTY_TIMESTAMP, new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date()));
+        if(throwable != null) {
+            propertiesCopy.put(PROPERTY_THROWABLE, throwable.getClass().getName());
+            StringWriter writer = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(writer));
+            propertiesCopy.put(PROPERTY_STACKTRACE, writer.toString().replace("\n\n", "\n"));
+        }
+
 
         var propertiesElement = doc.createElement(ELEMENT_PROPERTIES);
         propertiesCopy.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
                 .map(entry -> {
                     var propertyElement = doc.createElement(ELEMENT_PROPERTY);
                     propertyElement.setAttribute(ATTRIBUTE_NAME, entry.getKey());
-                    propertyElement.setTextContent(entry.getValue());
+                    if(entry.getValue().contains("\n")) {
+                        var cData = doc.createCDATASection(entry.getValue());
+                        propertyElement.appendChild(cData);
+                    } else {
+                        propertyElement.setTextContent(entry.getValue());
+                    }
                     return propertyElement;
                 })
                 .forEach(propertiesElement::appendChild);

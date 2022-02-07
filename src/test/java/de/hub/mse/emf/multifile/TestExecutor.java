@@ -20,13 +20,16 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class TestExecutor {
 
     private static final String failDirectory;
     private static Set<String> stackTraces = new HashSet<>();
+    private static Map<String, Integer> nameCountMap = new HashMap<>();
 
     static {
         System.setProperty("jqf.ei.MAX_INPUT_SIZE", Integer.toString(2 << 23));
@@ -51,13 +54,12 @@ public class TestExecutor {
         config.setModelWidth(5);
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        GuidedFuzzing.run(SvgTest.class, "svgSalamanderTest",
-                new DocumentAwareGraphAwareGuidance("svgSalamanderTest", Duration.ofSeconds(60), new File(testDirectory), TestExecutor::handleResult), System.out);
+        GuidedFuzzing.run(SvgTest.class, "testBatikTranscoder",
+                new DocumentAwareGraphAwareGuidance("testBatikTranscoder", Duration.ofSeconds(60), new File(testDirectory), TestExecutor::handleResult), System.out);
     }
 
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
-        if(result != Result.FAILURE && files.length == 1 && files[0] instanceof File) {
-            File mainFile = (File) files[0];
+        if(result == Result.FAILURE && files.length == 1 && files[0] instanceof File mainFile) {
             String name;
             String stackTrace;
             if(throwable == null) {
@@ -72,21 +74,21 @@ public class TestExecutor {
                    stackTraces.add(stackTrace);
                }
                File errorDirectory = Paths.get(failDirectory, name).toFile();
-               String subDir;
-               if(errorDirectory.exists()) {
-                   subDir = Integer.toString(FileUtils.listFiles(errorDirectory, FalseFileFilter.INSTANCE, DirectoryFileFilter.INSTANCE).size());
-               } else {
-                   errorDirectory.mkdir();
-                   subDir = "0";
-               }
-               Paths.get(failDirectory, name, subDir).toFile().mkdir();
+                if (!errorDirectory.exists()) {
+                    errorDirectory.mkdir();
+                }
+                // sub dir
+                var count = nameCountMap.getOrDefault(name, 0);
+                nameCountMap.put(name, count+1);
+                String subDir = Integer.toString(count);
+                Paths.get(failDirectory, name, subDir).toFile().mkdir();
 
                // create descriptor
                 var descriptor = new RunDescriptor();
                 var linkedFiles = SvgUtil.extractUseLinksRecursive(mainFile);
                 descriptor.setFiles(linkedFiles);
                 descriptor.setMainFile(mainFile.getName());
-                descriptor.addProperty("exception", name);
+                descriptor.setThrowable(throwable);
 
                 String descriptorText = XmlUtil.documentToString(descriptor.toXML());
                 try {
