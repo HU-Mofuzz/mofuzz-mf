@@ -7,12 +7,22 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
+import java.util.Random;
 
 @Slf4j
 public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     private final DocumentAwareResultListener listener;
     private Object[] lastArgs;
+
+    private final Random random = new Random();
+    private final InputStream randomStream = new InputStream() {
+        @Override
+        public int read() throws IOException {
+            return random.nextInt();
+        }
+    };
 
     public DocumentAwareGraphAwareGuidance(String testName, Duration duration, File outputDirectory, DocumentAwareResultListener listener) throws IOException {
         super(testName, duration, outputDirectory);
@@ -41,6 +51,17 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
         if(listener != null) {
             this.listener.handleResultForGeneratedArgs(lastArgs, result, error);
         }
+    }
+
+    @Override
+    public boolean hasInput() {
+        return super.hasInput();
+    }
+
+    @Override
+    public InputStream getInput() throws GuidanceException {
+        super.getInput();
+        return randomStream;
     }
 
     @FunctionalInterface
