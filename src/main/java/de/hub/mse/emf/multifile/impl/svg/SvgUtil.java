@@ -74,19 +74,15 @@ public class SvgUtil {
 
         eClasses.forEach(clazz -> clazz.getEStructuralFeatures().forEach(feature -> {
             var attribName = feature.getName();
-            String targetName = null;
+            String targetName = "";
             for (var annotation : feature.getEAnnotations()) {
                 for (var detail : annotation.getDetails()) {
-                    if (detail.getKey().equals("name")) {
-                      if(detail.getValue().equals("href")){ //how not to do it. but href needs xlink namespace and ecore.xmlresource has no option to set it
-                          targetName = "xlink:href";
-                      }else{
+                  if (detail.getKey().equals("name")) {
                         targetName = detail.getValue();
-                      }
                     }
                 }
             }
-            if (targetName != null) {
+            if (!StringUtils.isBlank(targetName)) {
                 TYPE_NAME_MAPPING.putIfAbsent(attribName, targetName);
             }
         }));
