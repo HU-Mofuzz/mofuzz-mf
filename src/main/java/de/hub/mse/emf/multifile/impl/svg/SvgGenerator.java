@@ -201,7 +201,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        svgNode.setAttribute("xmlns:xlink", "https://www.w3.org/1999/xlink");
+        svgNode.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
         Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
