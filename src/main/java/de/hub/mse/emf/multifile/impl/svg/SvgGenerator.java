@@ -6,6 +6,7 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.LinkPool;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
+import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.ecore.*;
@@ -42,7 +43,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         if (config.shouldUseExistingFiles()) {
             // extract links
-            pool.addAll(SvgUtil.extractLinks(config));
+            pool.addAll(SvgUtil.extractLinkables(config));
         } else if (config.shouldGenerateFiles()) {
             // generate files
             for (int i = 0; i < config.getFilesToGenerate(); i++) {
@@ -105,7 +106,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, source);
 
         //needed for export (write file)
-        var svgXmlDoc = XmlUtil.eObjectToDocument(svgObject);
+        var svgXmlDoc = SvgUtil.eObjectToDocument(svgObject);
 
         var svgNode = (Element) svgXmlDoc.getElementsByTagName("svg").item(0);
         svgNode.setAttribute("version", "1.1");
@@ -115,12 +116,18 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
+        if(clazz.getEPackage() != SVG_PACKAGE.getEFactoryInstance().getEPackage()) {
+            return null;
+        }
         // increase depth
         currentDepth++;
 
         // outer object
         var object = SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for (var attribute : EmfCache.getAttributes(clazz)) {
+            if(attribute.getName().startsWith("group") || attribute.getName().startsWith("mixed") || attribute.getName().startsWith("descTitleMetadata") || attribute.getName().startsWith("class")) {
+                continue;
+            }
             var metaData = attribute.getEAnnotation("http:///org/eclipse/emf/ecore/util/ExtendedMetaData");
             String prefix;
             if(metaData != null && metaData.getDetails() != null && metaData.getDetails().get("namespace") != null &&
@@ -139,16 +146,20 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             var remainingReferences = currentDepth >  config.getModelDepth()? 0 :
                     Math.max(0, config.getModelWidth() - requiredReferences.size());
 
-            var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::eClass).toList());
+            var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::getEType)
+                    .map(EClass.class::cast).toList());
             for (int i = 0; i < remainingReferences; i++) {
                 referencesToCreate.add(EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness));
             }
-
+            var retry = 0;
             for (int i = 0; i < referencesToCreate.size(); i++) {
                 var innerClass = referencesToCreate.get(i);
                 var innerObject = generateEObject(innerClass, randomness);
                 if(!EmfUtil.makeContain(object, innerObject)) {
                     i--;
+                    if(++retry > 10) {
+                        throw new Error("Endless loop detected!!");
+                    }
                 }
             }
         }
@@ -189,17 +200,17 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             }
         }
 
-        var svgDoc = XmlUtil.eObjectToDocument(svgObject);
+        var svgDoc = SvgUtil.eObjectToDocument(svgObject);
 
 
         var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
 
-        svgNode.setAttribute("version", "1.2");
+        svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         svgNode.setAttribute("xmlns:xlink", "https://www.w3.org/1999/xlink");
 
         Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
-            return target;
+        return target;
         }
     }

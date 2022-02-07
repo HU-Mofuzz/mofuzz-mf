@@ -1,6 +1,6 @@
 package de.hub.mse.emf.multifile;
 
-import de.hub.mse.emf.multifile.impl.svg.XmlUtil;
+import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
 import org.junit.Ignore;
 import org.junit.Test;

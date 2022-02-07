@@ -4,24 +4,21 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
+import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.impl.EDataTypeImpl;
-import org.eclipse.emf.ecore.impl.EFactoryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
-import org.eclipse.emf.ecore.xmi.impl.XMLInfoImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMLMapImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import javax.xml.transform.Source;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -34,6 +31,7 @@ import java.util.stream.Collectors;
 import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
 
 @UtilityClass
+@Slf4j
 public class SvgUtil {
 
     private Pattern SVG_ID_PATTERN = Pattern.compile("(id=\"[a-zA-Z0-9]+\")");
@@ -90,28 +88,69 @@ public class SvgUtil {
         });
     }
 
-    public Set<String> extractLinks(GeneratorConfig config) {
+    public Set<String> extractLinkables(GeneratorConfig config) {
 
-        Set<String> links = new HashSet<>();
+        Set<String> linkables = new HashSet<>();
 
         for (String file : config.getExistingFiles()) {
-            try {
-                var svgString = Files.readString(
-                        Paths.get(config.getWorkingDirectory(), file)
-                );
-
-                Matcher matcher = SVG_ID_PATTERN.matcher(svgString);
-                while (matcher.find()) {
-                    String found = matcher.group()
-                            .replace("id=", "")
-                            .replace("\"", "");
-                    links.add(getObjectIdForFile(file, found));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            linkables.addAll(
+                    extractLinkables(
+                            Paths.get(config.getWorkingDirectory(), file).toFile()
+                    )
+            );
         }
 
+        return linkables;
+    }
+
+    public Set<String> extractLinkables(File file) {
+        var linkables = new HashSet<String>();
+        try {
+            String svgString = Files.readString(file.toPath());
+            Matcher matcher = SVG_ID_PATTERN.matcher(svgString);
+            while (matcher.find()) {
+                String found = matcher.group()
+                        .replace("id=", "")
+                        .replace("\"", "");
+                linkables.add(getObjectIdForFile(file.getName(), found));
+            }
+        } catch (IOException e) {
+            log.error("Error extracting linkables from file: "+file.getAbsolutePath(), e);
+        }
+        return linkables;
+    }
+
+    public Set<String> extractUseLinksRecursive(File file) {
+        return extractUseLinksRecursiveInternal(file, new HashSet<>());
+    }
+
+    private Set<String> extractUseLinksRecursiveInternal(File file, Set<String> searchedFiles) {
+        searchedFiles.add(file.getName());
+        var fileElement = XmlUtil.documentFromFile(file).getDocumentElement();
+        var links = new HashSet<String>();
+        var useLinks = extractAllUseLinksFromElementTree(fileElement);
+        for (var useLink : useLinks) {
+            if(!searchedFiles.contains(useLink)) {
+                links.addAll(extractUseLinksRecursiveInternal(Paths.get(file.getParent(), useLink).toFile(), searchedFiles));
+            }
+        }
+        links.add(file.getName());
+        return links;
+    }
+
+    private Set<String> extractAllUseLinksFromElementTree(Element element) {
+        var links = new HashSet<String>();
+        for (int i = 0; i < element.getChildNodes().getLength(); i++) {
+            var childNode = element.getChildNodes().item(i);
+            if(childNode instanceof Element childElement &&
+                    "use".equals(childElement.getTagName()) && childElement.hasAttribute("href")) {
+                var objectId = childElement.getAttribute("href");
+                var fileName = getFilenameFromObjectId(objectId);
+                links.add(fileName);
+            } else if(childNode instanceof Element childElement && childNode.hasChildNodes()) {
+                links.addAll(extractAllUseLinksFromElementTree(childElement));
+            }
+        }
         return links;
     }
 
@@ -121,6 +160,10 @@ public class SvgUtil {
 
     public String getObjectIdForFile(String fileName, String objectId) {
         return fileName + "#" + objectId;
+    }
+
+    public String getFilenameFromObjectId(String objectId) {
+        return objectId.split("#")[0];
     }
 
     public static String getRandomObjectId() {
@@ -153,5 +196,45 @@ public class SvgUtil {
         EmfUtil.setRandomValueForAttribute(object, y, source);
 
         return object;
+    }
+
+    private String eObjectToXmlString(EObject eObject) {
+        XMLResource modelResource = (XMLResource)RESOURCE_SET.createResource(URI.createFileURI("a.svg"));
+        modelResource.setEncoding("UTF-8");
+        modelResource.getContents().add(eObject);
+        StringWriter writer = new StringWriter();
+        try {
+            modelResource.save(writer, Map.of(
+                    XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
+                    XMLResource.OPTION_XML_MAP, new SvgXmlMap()
+            ));
+        } catch (IOException e) {
+            return StringUtils.EMPTY;
+        }
+
+        return writer.toString();
+    }
+
+    public Document eObjectToDocument(EObject eObject) {
+        return XmlUtil.stringToDocument(eObjectToXmlString(eObject));
+    }
+
+    public void clearChildren(Element element) {
+        while (element.getFirstChild() != null) {
+            element.removeChild(element.getFirstChild());
+        }
+    }
+
+    public Set<String> extractLinkedFilesRecursive(File file) {
+        Set<String> linkedFiles = new HashSet<>();
+        linkedFiles.add(file.getName());
+        if(file.exists() && file.isFile()) {
+            for(String objectId : extractLinkables(file)) {
+                var fileName = getFilenameFromObjectId(objectId);
+                var linkedFile = Paths.get(file.getParent(), fileName).toFile();
+                linkedFiles.addAll(extractLinkedFilesRecursive(linkedFile));
+            }
+        }
+        return linkedFiles;
     }
 }

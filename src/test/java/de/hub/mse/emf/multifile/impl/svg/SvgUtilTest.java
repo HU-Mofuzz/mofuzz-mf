@@ -4,9 +4,6 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.HashSet;
-
-import static org.junit.Assert.*;
 
 public class SvgUtilTest {
 
@@ -18,7 +15,7 @@ public class SvgUtilTest {
                 "a.svg",
                 "b.svg"
         ));
-        SvgUtil.extractLinks(config);
+        SvgUtil.extractLinkables(config);
 
     }
 }
