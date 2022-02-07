@@ -102,8 +102,8 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         //a valid svg needs a view box, width and height and version + grammar
         EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, source);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.WIDTH_ATTRIBUTE, source);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, source);
+        svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
+        svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
 
         //needed for export (write file)
         var svgXmlDoc = SvgUtil.eObjectToDocument(svgObject);
@@ -169,12 +169,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             throw new IllegalStateException("Target file could not be created!");
         }
 
-        EObject svgObject = generateEObject(SVG_CLASS, sourceOfRandomness);
+        EObject svgObject = SVG_PACKAGE.getEFactoryInstance().create(SVG_CLASS);
 
         //a valid svg needs a view box, width and height and version + grammar
         EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, sourceOfRandomness);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.WIDTH_ATTRIBUTE, sourceOfRandomness);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, sourceOfRandomness);
+        svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
+        svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
 
 
 
