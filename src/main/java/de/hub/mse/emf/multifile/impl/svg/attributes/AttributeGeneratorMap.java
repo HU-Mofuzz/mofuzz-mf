@@ -5,7 +5,6 @@ import lombok.experimental.Delegate;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * attributeName (??)
@@ -27,39 +26,42 @@ import java.util.stream.IntStream;
  */
 public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator> {
 
-    private static final float PREDEFINED_COLOR_CHANCE = 0.5f;
-    private static final float INDEFINITE_CLOCK_CHANCE = 0.5f;
+    public static final float PREDEFINED_COLOR_CHANCE = 0.5f;
+    public static final float INDEFINITE_CLOCK_CHANCE = 0.5f;
 
-    private static final SvgAttributeGenerator EMPTY_STRING_GENERATOR = source -> StringUtils.EMPTY;
+    public static final float NUMBER_MIN = -10_000f;
+    public static final float NUMBER_MAX = 10_000f;
 
-    private static final SvgAttributeGenerator ANGLE_GENERATOR = new AngleGenerator();
-    private static final SvgAttributeGenerator ATTRIBUTE_TYPE_GENERATOR = new AttributeTypeGenerator();
-    private static final SvgAttributeGenerator BASELINE_SHIFT_GENERATOR = new BaselineShiftGenerator();
-    private static final SvgAttributeGenerator BASIC_SHAPE_GENERATOR = new BasicShapeGenerator();
-    private static final SvgAttributeGenerator CLIP_GENERATOR = new ClipGenerator();
-    private static final SvgAttributeGenerator CLOCK_GENERATOR = new ClockGenerator();
-    private static final SvgAttributeGenerator COLOR_GENERATOR = new ColorGenerator();
-    private static final SvgAttributeGenerator CURSOR_GENERATOR = new CursorGenerator();
-    private static final SvgAttributeGenerator FREQUENCY_GENERATOR = new FrequencyGenerator();
-    private static final SvgAttributeGenerator FONT_FAMILY_GENERATOR = new FontFamilyGenerator();
-    private static final SvgAttributeGenerator IRI_GENERATOR = new IriGenerator();
-    private static final SvgAttributeGenerator LENGTH_GENERATOR = new LengthGenerator();
-    private static final SvgAttributeGenerator NAME_GENERATOR = new NameGenerator();
-    private static final SvgAttributeGenerator NUMBER_GENERATOR = new NumberGenerator();
-    private static final SvgAttributeGenerator NUMBER_LIST_GENERATOR = new NumberListGenerator();
-    private static final SvgAttributeGenerator OPACITY_GENERATOR = new OpacityGenerator();
-    private static final SvgAttributeGenerator ORIENT_GENERATOR = new OrientGenerator();
-    private static final SvgAttributeGenerator PERCENT_GENERATOR = new PercentGenerator();
-    private static final SvgAttributeGenerator POINT_GENERATOR = new PointGenerator();
-    private static final SvgAttributeGenerator POLYGON_GENERATOR = new PolygonGenerator();
-    private static final SvgAttributeGenerator PATH_GENERATOR = new PathGenerator();
-    private static final SvgAttributeGenerator REF_X_GENERATOR = new RefXGenerator();
-    private static final SvgAttributeGenerator SYSTEM_LANGUAGE_GENERATOR = new SystemLanguageGenerator();
-    private static final SvgAttributeGenerator TEXT_DECORATION_GENERATOR = new TextDecorationGenerator();
-    private static final SvgAttributeGenerator TIME_GENERATOR = new TimeGenerator();
-    private static final SvgAttributeGenerator TRANSFORM_FUNCTION_GENERATOR = new TransformFunctionGenerator();
-    private static final SvgAttributeGenerator VALUE_LIST_GENERATOR = new ValueListGenerator();
-    private static final SvgAttributeGenerator VIEW_BOX_GENERATOR = new ViewBoxGenerator();
+    public static final SvgAttributeGenerator EMPTY_STRING_GENERATOR = source -> StringUtils.EMPTY;
+
+    public static final SvgAttributeGenerator ANGLE_GENERATOR = new AngleGenerator();
+    public static final SvgAttributeGenerator ATTRIBUTE_TYPE_GENERATOR = new AttributeTypeGenerator();
+    public static final SvgAttributeGenerator BASELINE_SHIFT_GENERATOR = new BaselineShiftGenerator();
+    public static final SvgAttributeGenerator BASIC_SHAPE_GENERATOR = new BasicShapeGenerator();
+    public static final SvgAttributeGenerator CLIP_GENERATOR = new ClipGenerator();
+    public static final SvgAttributeGenerator CLOCK_GENERATOR = new ClockGenerator();
+    public static final SvgAttributeGenerator COLOR_GENERATOR = new ColorGenerator();
+    public static final SvgAttributeGenerator CURSOR_GENERATOR = new CursorGenerator();
+    public static final SvgAttributeGenerator FREQUENCY_GENERATOR = new FrequencyGenerator();
+    public static final SvgAttributeGenerator FONT_FAMILY_GENERATOR = new FontFamilyGenerator();
+    public static final SvgAttributeGenerator IRI_GENERATOR = new IriGenerator();
+    public static final SvgAttributeGenerator LENGTH_GENERATOR = new LengthGenerator();
+    public static final SvgAttributeGenerator NAME_GENERATOR = new NameGenerator();
+    public static final SvgAttributeGenerator NUMBER_GENERATOR = new NumberGenerator();
+    public static final SvgAttributeGenerator NUMBER_LIST_GENERATOR = new NumberListGenerator();
+    public static final SvgAttributeGenerator OPACITY_GENERATOR = new OpacityGenerator();
+    public static final SvgAttributeGenerator ORIENT_GENERATOR = new OrientGenerator();
+    public static final SvgAttributeGenerator PERCENT_GENERATOR = new PercentGenerator();
+    public static final SvgAttributeGenerator POINT_GENERATOR = new PointGenerator();
+    public static final SvgAttributeGenerator POLYGON_GENERATOR = new PolygonGenerator();
+    public static final SvgAttributeGenerator PATH_GENERATOR = new PathGenerator();
+    public static final SvgAttributeGenerator REF_X_GENERATOR = new RefXGenerator();
+    public static final SvgAttributeGenerator SYSTEM_LANGUAGE_GENERATOR = new SystemLanguageGenerator();
+    public static final SvgAttributeGenerator TEXT_DECORATION_GENERATOR = new TextDecorationGenerator();
+    public static final SvgAttributeGenerator TIME_GENERATOR = new TimeGenerator();
+    public static final SvgAttributeGenerator TRANSFORM_FUNCTION_GENERATOR = new TransformFunctionGenerator();
+    public static final SvgAttributeGenerator VALUE_LIST_GENERATOR = new ValueListGenerator();
+    public static final SvgAttributeGenerator VIEW_BOX_GENERATOR = new ViewBoxGenerator();
 
     @Delegate
     private final Map<String, SvgAttributeGenerator> map = new HashMap<>();
@@ -403,7 +405,7 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static class NumberGenerator implements SvgAttributeGenerator {
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return Float.toString(source.nextFloat(Float.MIN_VALUE, Float.MAX_VALUE));
+            return Float.toString(source.nextFloat(NUMBER_MIN, NUMBER_MAX));
         }
     }
 
