@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'de.hub.mse.emf'
@@ -10,6 +11,22 @@ targetCompatibility  = '16'
 repositories {
     mavenLocal()
     mavenCentral()
+}
+
+
+application {
+    mainClass = 'de.hub.mse.emf.multifile.TestExecutor'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'de.hub.mse.emf.multifile.TestExecutor'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 dependencies {
@@ -31,10 +48,10 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation 'edu.berkeley.cs.jqf:jqf-fuzz:1.9'
-    testImplementation 'com.kitfox.svg:svg-salamander:1.0'
+    implementation 'com.kitfox.svg:svg-salamander:1.0'
     implementation 'org.apache.xmlgraphics:batik-codec:1.14'
-    testImplementation 'org.apache.xmlgraphics:batik-util:1.14'
-    testImplementation 'org.apache.xmlgraphics:batik-anim:1.14'
-    testImplementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
+    implementation 'org.apache.xmlgraphics:batik-util:1.14'
+    implementation 'org.apache.xmlgraphics:batik-anim:1.14'
+    implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
 
 }

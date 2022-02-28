@@ -49,8 +49,8 @@ public class TestExecutor {
         config.setModelWidth(5);
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        GuidedFuzzing.run(SvgTest.class, "testBatikTranscoder",
-                new DocumentAwareGraphAwareGuidance("testBatikTranscoder", Duration.ofMinutes(1), null, new File(testDirectory), TestExecutor::handleResult), System.out);
+        GuidedFuzzing.run(CalendarTest.class, "testLeapYear",
+                new DocumentAwareGraphAwareGuidance("testLeapYear", Duration.ofMinutes(1), null, new File(testDirectory), TestExecutor::handleResult), System.out);
     }
 
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
