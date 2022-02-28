@@ -16,17 +16,21 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.svg.SVGDocument;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(JQF.class)
 public class SvgTest {
+    @Rule
+    public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
 
     private static int iteration = 0;
 
@@ -56,7 +60,6 @@ public class SvgTest {
         Assert.assertNotNull(diagram);
 
         long duration = System.currentTimeMillis() - start;
-        Thread.sleep(Math.max(0, 1000 - duration));
     }
 
     @Fuzz

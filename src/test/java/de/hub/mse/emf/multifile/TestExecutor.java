@@ -8,9 +8,6 @@ import de.hub.mse.emf.multifile.util.RunDescriptor;
 import de.hub.mse.emf.multifile.util.XmlUtil;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -32,8 +29,6 @@ public class TestExecutor {
     private static Map<String, Integer> nameCountMap = new HashMap<>();
 
     static {
-        System.setProperty("jqf.ei.MAX_INPUT_SIZE", Integer.toString(2 << 23));
-
         try {
             failDirectory = Files.createTempDirectory("failes").toFile().getAbsolutePath();
         } catch (IOException e) {
@@ -55,7 +50,7 @@ public class TestExecutor {
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
         GuidedFuzzing.run(SvgTest.class, "testBatikTranscoder",
-                new DocumentAwareGraphAwareGuidance("testBatikTranscoder", Duration.ofSeconds(60), new File(testDirectory), TestExecutor::handleResult), System.out);
+                new DocumentAwareGraphAwareGuidance("testBatikTranscoder", Duration.ofMinutes(1), null, new File(testDirectory), TestExecutor::handleResult), System.out);
     }
 
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
@@ -96,7 +91,10 @@ public class TestExecutor {
                     // copy file tree
                     Paths.get(failDirectory, name, subDir, "files").toFile().mkdir();
                     for(String link : descriptor.getFiles()) {
-                        Files.copy(Paths.get(mainFile.getParent(), link), Paths.get(failDirectory, name, subDir, "files", link));
+                        var src = Paths.get(mainFile.getParent(), link);
+                        if(src.toFile().exists()) {
+                            Files.copy(src, Paths.get(failDirectory, name, subDir, "files", link));
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
