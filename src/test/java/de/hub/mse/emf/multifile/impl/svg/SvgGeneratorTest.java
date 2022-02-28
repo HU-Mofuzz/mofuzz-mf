@@ -14,11 +14,13 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Random;
 
+@Ignore
 public class SvgGeneratorTest {
 
     @Test
