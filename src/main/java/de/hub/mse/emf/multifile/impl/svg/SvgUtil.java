@@ -26,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
 
@@ -126,15 +125,17 @@ public class SvgUtil {
 
     private Set<String> extractUseLinksRecursiveInternal(File file, Set<String> searchedFiles) {
         searchedFiles.add(file.getName());
-        var fileElement = XmlUtil.documentFromFile(file).getDocumentElement();
         var links = new HashSet<String>();
-        var useLinks = extractAllUseLinksFromElementTree(fileElement);
-        for (var useLink : useLinks) {
-            if (!searchedFiles.contains(useLink)) {
-                links.addAll(extractUseLinksRecursiveInternal(Paths.get(file.getParent(), useLink).toFile(), searchedFiles));
+        links.add(file.getName());
+        if(file.exists()) {
+            var fileElement = XmlUtil.documentFromFile(file).getDocumentElement();
+            var useLinks = extractAllUseLinksFromElementTree(fileElement);
+            for (var useLink : useLinks) {
+                if (!searchedFiles.contains(useLink)) {
+                    links.addAll(extractUseLinksRecursiveInternal(Paths.get(file.getParent(), useLink).toFile(), searchedFiles));
+                }
             }
         }
-        links.add(file.getName());
         return links;
     }
 
@@ -143,8 +144,8 @@ public class SvgUtil {
         for (int i = 0; i < element.getChildNodes().getLength(); i++) {
             var childNode = element.getChildNodes().item(i);
             if (childNode instanceof Element childElement &&
-                    "use".equals(childElement.getTagName()) && childElement.hasAttribute("href")) {
-                var objectId = childElement.getAttribute("href");
+                    "use".equals(childElement.getTagName()) && childElement.hasAttribute("xlink:href")) {
+                var objectId = childElement.getAttribute("xlink:href");
                 var fileName = getFilenameFromObjectId(objectId);
                 links.add(fileName);
             } else if (childNode instanceof Element childElement && childNode.hasChildNodes()) {
