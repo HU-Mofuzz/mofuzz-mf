@@ -6,6 +6,7 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.LinkPool;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
+import de.hub.mse.emf.multifile.impl.svg.attributes.AttributeGeneratorMap;
 import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
@@ -101,7 +102,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         }
 
         //a valid svg needs a view box, width and height and version + grammar
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, source);
+        svgObject.eSet(SvgUtil.VIEW_BOX_ATTRIBUTE, AttributeGeneratorMap.VIEW_BOX_GENERATOR.generateRandom(source));
         svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
         svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
 
@@ -172,7 +173,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         EObject svgObject = SVG_PACKAGE.getEFactoryInstance().create(SVG_CLASS);
 
         //a valid svg needs a view box, width and height and version + grammar
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, sourceOfRandomness);
+        svgObject.eSet(SvgUtil.VIEW_BOX_ATTRIBUTE, AttributeGeneratorMap.VIEW_BOX_GENERATOR.generateRandom(sourceOfRandomness));
         svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
         svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
 
