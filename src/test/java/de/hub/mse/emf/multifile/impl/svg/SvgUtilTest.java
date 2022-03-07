@@ -2,7 +2,6 @@ package de.hub.mse.emf.multifile.impl.svg;
 
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EReference;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -30,7 +29,9 @@ public class SvgUtilTest {
     public void extractTypeNameMapping() {
         Map<String,String> TYPE_NAME_MAPPING = new HashMap<>();
 
-        var lst = SVG_PACKAGE.getEClassifiers().stream().filter(f -> f instanceof EClass).map(EClass.class::cast ).toList();
+        var lst = SVG_PACKAGE.getEClassifiers().stream()
+                .filter(f -> f instanceof EClass).map(EClass.class::cast)
+                .collect(Collectors.toList());
 
         lst.forEach(clazz -> clazz.getEAllReferences().forEach(ref -> TYPE_NAME_MAPPING.putIfAbsent(  ref.getEType().getName(), ref.getName())));
 

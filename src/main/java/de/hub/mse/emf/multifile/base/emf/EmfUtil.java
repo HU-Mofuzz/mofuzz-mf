@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class EmfUtil {
@@ -33,7 +34,7 @@ public class EmfUtil {
         var classifier = clazz.getEAllContainments().stream()
                 .map(EReference::getEType)
                 .map(c -> (EClass) c)
-                .toList();
+                .collect(Collectors.toList());
         return classifier.get(source.nextInt(0, classifier.size() - 1));
     }
 
@@ -65,7 +66,8 @@ public class EmfUtil {
 
     private Object getRandomSingularAttribute(EAttribute attribute, SourceOfRandomness source) {
         Class<?> clazz = attribute.getEAttributeType().getInstanceClass();
-        if(attribute.getEAttributeType() instanceof EEnum eEnum) {
+        if(attribute.getEAttributeType() instanceof EEnum) {
+            var eEnum = (EEnum)attribute.getEAttributeType();
             var size = eEnum.getELiterals().size();
             if (size > 0) {
             return eEnum.getELiterals().get(source.nextInt(size)).getInstance();

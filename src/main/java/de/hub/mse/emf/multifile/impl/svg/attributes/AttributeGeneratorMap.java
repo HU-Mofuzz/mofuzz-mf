@@ -230,12 +230,12 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return switch (source.nextInt(3)) {
-                case 0 -> "sub";
-                case 1 -> "super";
-                case 2 -> LENGTH_GENERATOR.generateRandom(source);
-                default -> null;
-            };
+            switch (source.nextInt(3)) {
+                case 0: return "sub";
+                case 1: return "super";
+                case 2: return LENGTH_GENERATOR.generateRandom(source);
+                default: return null;
+            }
         }
     }
 
@@ -254,18 +254,24 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
         @Override
         public String generateRandom(SourceOfRandomness source) {
             var shape = source.choose(SHAPES);
-
-            return shape + "(" +
-                    switch (shape) {
-                        case "inset" -> LENGTH_GENERATOR.generateRandom(source)+" "+LENGTH_GENERATOR.generateRandom(source) ;
-                        case "circle" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
-                        case "ellipse" -> NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source) +
-                                " " + NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
-                        case "polygon" -> POLYGON_GENERATOR.generateRandom(source);
-                        case "path" -> PATH_GENERATOR.generateRandom(source);
-                        case "none" -> "";
-                        default -> "";
-                    } + ")";
+            
+            String inner;
+            switch (shape) {
+                case "inset": inner = LENGTH_GENERATOR.generateRandom(source)+" "+LENGTH_GENERATOR.generateRandom(source);
+                    break;
+                case "circle": inner = NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
+                    break;
+                case "ellipse": inner = NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source) +
+                        " " + NUMBER_GENERATOR.generateRandom((source)) + LENGTH_GENERATOR.generateRandom(source);
+                    break;
+                case "polygon": inner = POLYGON_GENERATOR.generateRandom(source);
+                    break;
+                case "path": inner = PATH_GENERATOR.generateRandom(source);
+                    break;
+                case "none":
+                default: inner = "";
+            }
+            return shape + "(" + inner + ")";
         }
     }
 
@@ -274,16 +280,16 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return switch (source.nextInt(3)) {
-                case 0 -> "inherit";
-                case 1 -> "auto";
-                case 2 -> String.format("rect(%s %s %s %s)",
+            switch (source.nextInt(3)) {
+                case 0: return "inherit";
+                case 1: return "auto";
+                case 2: return String.format("rect(%s %s %s %s)",
                         LENGTH_GENERATOR.generateRandom(source),
                         LENGTH_GENERATOR.generateRandom(source),
                         LENGTH_GENERATOR.generateRandom(source),
                         LENGTH_GENERATOR.generateRandom(source));
-                default -> null;
-            };
+                default: return null;
+            }
         }
     }
 
@@ -296,24 +302,25 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
                 return "indefinite";
             } else {
                 var format = source.nextInt(3);
-                return switch (format) {
-                    case 0 -> {
+                int hour;
+                int minutes;
+                float seconds;
+                switch (format) {
+                    case 0:
                         // full clock
-                        var hour = source.nextInt(60);
-                        var minutes = source.nextInt(60);
-                        var seconds = source.nextFloat(0f, 60f);
-                        yield String.format("%d:%d:%f", hour, minutes, seconds);
-                    }
-                    case 1 -> {
+                        hour = source.nextInt(60);
+                        minutes = source.nextInt(60);
+                        seconds = source.nextFloat(0f, 60f);
+                        return String.format("%d:%d:%f", hour, minutes, seconds);
+                    case 1:
                         // partial clock
-                        var minutes = source.nextInt(60);
-                        var seconds = source.nextFloat(0f, 60f);
-                        yield String.format("%d:%f", minutes, seconds);
-                    }
-                    case 2 -> // time count
-                            source.nextFloat(0f, 100f) + source.choose(METRICS);
-                    default -> null;
-                };
+                        minutes = source.nextInt(60);
+                        seconds = source.nextFloat(0f, 60f);
+                        return String.format("%d:%f", minutes, seconds);
+                    case 2: // time count
+                            return source.nextFloat(0f, 100f) + source.choose(METRICS);
+                    default: return null;
+                }
             }
         }
     }
@@ -434,13 +441,13 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return switch (source.nextInt(4)) {
-                case 0 -> "auto";
-                case 1 -> "auto-start-reverse";
-                case 2 -> ANGLE_GENERATOR.generateRandom(source);
-                case 3 -> NUMBER_GENERATOR.generateRandom(source);
-                default -> null;
-            };
+            switch (source.nextInt(4)) {
+                case 0: return "auto";
+                case 1: return "auto-start-reverse";
+                case 2: return ANGLE_GENERATOR.generateRandom(source);
+                case 3: return NUMBER_GENERATOR.generateRandom(source);
+                default: return null;
+            }
         }
     }
 
@@ -525,14 +532,14 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
 
         @Override
         public String generateRandom(SourceOfRandomness source) {
-            return switch (source.nextInt(5)) {
-                case 0 -> LENGTH_GENERATOR.generateRandom(source);
-                case 1 -> NUMBER_LIST_GENERATOR.generateRandom(source);
-                case 2 -> "left";
-                case 3 -> "center";
-                case 4 -> "right";
-                default -> null;
-            };
+            switch (source.nextInt(5)) {
+                case 0: return LENGTH_GENERATOR.generateRandom(source);
+                case 1: return NUMBER_LIST_GENERATOR.generateRandom(source);
+                case 2: return "left";
+                case 3: return "center";
+                case 4: return "right";
+                default: return null;
+            }
         }
     }
 
@@ -561,67 +568,87 @@ public class AttributeGeneratorMap implements Map<String, SvgAttributeGenerator>
     private static class TransformFunctionGenerator implements SvgAttributeGenerator {
 
         private String randomFunction(SourceOfRandomness source) {
-            return switch (source.nextInt(21)) {
-                case 0 -> "matrix("
+            switch (source.nextInt(21)) {
+                case 0: return "matrix("
                         + source.nextInt(100)
-                        + (", " + source.nextInt(100)).repeat(5);
-                case 1 -> "matrix3d("
+                        + (", " + source.nextInt(100)).repeat(5)
+                        + ")";
+                case 1: return "matrix3d("
                         + source.nextInt(100)
-                        + (", " + source.nextInt(100)).repeat(8);
-                case 2 -> "perspective("
+                        + (", " + source.nextInt(100)).repeat(8)
+                        + ")";
+                case 2: return "perspective("
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 3 -> "scale("
-                        + source.nextFloat() * 100 + ")";
-                case 4 -> "scale3d("
-                        + String.join(", ", Collections.nCopies(3, (source.nextFloat() * 100) + ""));
-                case 5 -> "scaleX(" + source.nextFloat() * 100;
-                case 6 -> "scaleY(" + source.nextFloat() * 100;
-                case 7 -> "scaleZ(" + source.nextFloat() * 100;
-                case 8 -> "translate("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 3: return "scale("
+                        + source.nextFloat() * 100 + ")"
+                        + ")";
+                case 4: return "scale3d("
+                        + String.join(", ", Collections.nCopies(3, (source.nextFloat() * 100) + ""))
+                        + ")";
+                case 5: return "scaleX(" + source.nextFloat() * 100
+                        + ")";
+                case 6: return "scaleY(" + source.nextFloat() * 100
+                        + ")";
+                case 7: return "scaleZ(" + source.nextFloat() * 100
+                        + ")";
+                case 8: return "translate("
                         + source.nextInt(1000)
                         + LENGTH_GENERATOR.generateRandom(source) + ", "
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 9 -> "translate3d("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 9: return "translate3d("
                         + source.nextInt(1000)
                         + LENGTH_GENERATOR.generateRandom(source) + ", "
                         + source.nextInt(1000)
                         + LENGTH_GENERATOR.generateRandom(source) + ", "
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 10 -> "translateX("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 10: return "translateX("
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 11 -> "translateY("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 11: return "translateY("
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 12 -> "translateZ("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 12: return "translateZ("
                         + source.nextInt(1000)
-                        + LENGTH_GENERATOR.generateRandom(source);
-                case 13 -> "rotate("
-                        + source.nextInt(360) + "deg";
-                case 14 -> "rotate3d("
+                        + LENGTH_GENERATOR.generateRandom(source)
+                        + ")";
+                case 13: return "rotate("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 14: return "rotate3d("
                         + source.nextFloat() + ", "
                         + source.nextFloat() + ", "
                         + source.nextFloat() + ", "
                         + source.nextInt(360) + "deg"
-                ;
-                case 15 -> "rotateX("
-                        + source.nextInt(360) + "deg";
-                case 16 -> "rotateY("
-                        + source.nextInt(360) + "deg";
-                case 17 -> "rotateZ("
-                        + source.nextInt(360) + "deg";
-                case 18 -> "skew("
+                        + ")";
+                case 15: return "rotateX("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 16: return "rotateY("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 17: return "rotateZ("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 18: return "skew("
                         + source.nextInt(360) + "deg, "
-                        + source.nextInt(360) + "deg";
-                case 19 -> "skewX("
-                        + source.nextInt(360) + "deg";
-                case 20 -> "skewY("
-                        + source.nextInt(360) + "deg";
-                default -> "";
-            } + ")";
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 19: return "skewX("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                case 20: return "skewY("
+                        + source.nextInt(360) + "deg"
+                        + ")";
+                default: return "";
+            }
         }
 
         @Override

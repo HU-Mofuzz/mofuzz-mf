@@ -1,6 +1,6 @@
 package de.hub.mse.emf.multifile.base;
 
-import edu.berkeley.cs.jqf.fuzz.ei.ExecutionIndexingGuidance;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import java.time.Duration;
 import java.util.Random;
 
 @Slf4j
-public class DocumentAwareGraphAwareGuidance extends ExecutionIndexingGuidance {
+public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     private final DocumentAwareResultListener listener;
     private Object[] lastArgs;
 
@@ -51,17 +51,6 @@ public class DocumentAwareGraphAwareGuidance extends ExecutionIndexingGuidance {
         if(listener != null) {
             this.listener.handleResultForGeneratedArgs(lastArgs, result, error);
         }
-    }
-
-    @Override
-    public boolean hasInput() {
-        return super.hasInput();
-    }
-
-    @Override
-    public InputStream getInput() throws GuidanceException {
-        super.getInput();
-        return randomStream;
     }
 
     @FunctionalInterface

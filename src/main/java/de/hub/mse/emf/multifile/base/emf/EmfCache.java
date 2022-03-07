@@ -1,18 +1,17 @@
 package de.hub.mse.emf.multifile.base.emf;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import lombok.experimental.UtilityClass;
-import org.checkerframework.checker.units.qual.C;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EReference;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class EmfCache {
@@ -34,7 +33,7 @@ public class EmfCache {
                 @Override
                 public Set<EReference> load(EClass eClass) throws Exception {
                     return ImmutableSet.copyOf(eClass.getEAllContainments().stream()
-                            .filter(EReference::isRequired).toList());
+                            .filter(EReference::isRequired).collect(Collectors.toList()));
                 }
             });
 

@@ -1,8 +1,10 @@
 package de.hub.mse.emf.multifile;
 
+import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.DocumentAwareGraphAwareGuidance;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.PreparationMode;
+import de.hub.mse.emf.multifile.impl.svg.SvgGenerator;
 import de.hub.mse.emf.multifile.impl.svg.SvgUtil;
 import de.hub.mse.emf.multifile.util.RunDescriptor;
 import de.hub.mse.emf.multifile.util.XmlUtil;
@@ -17,10 +19,8 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TestExecutor {
 
@@ -31,6 +31,7 @@ public class TestExecutor {
     static {
         try {
             failDirectory = Files.createTempDirectory("failes").toFile().getAbsolutePath();
+            System.setProperty("jqf.ei.MAX_INPUT_SIZE", Integer.toString(2 << 23));
         } catch (IOException e) {
             throw new Error("Executor init failed to create fail directory");
         }
@@ -49,12 +50,28 @@ public class TestExecutor {
         config.setModelWidth(5);
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        GuidedFuzzing.run(CalendarTest.class, "testLeapYear",
-                new DocumentAwareGraphAwareGuidance("testLeapYear", Duration.ofMinutes(1), null, new File(testDirectory), TestExecutor::handleResult), System.out);
+        System.out.println("Preparing files...");
+        var generator = new SvgGenerator();
+        generator.generate(new SourceOfRandomness(new Random()), null);
+        var pool = generator.getLinkPool();
+        config.setExistingFiles(pool.stream()
+                .map(SvgUtil::getFilenameFromObjectId)
+                .map(filename -> Paths.get(config.getWorkingDirectory(), filename).toString())
+                .collect(Collectors.toList()));
+        System.out.println("Preparation done!");
+        config.setPreparationMode(PreparationMode.FILES_EXIST);
+
+        try {
+            GuidedFuzzing.run(SvgTest.class, "svgSalamanderTest",
+                    new DocumentAwareGraphAwareGuidance("svgSalamanderTest", Duration.ofMinutes(2), null, new File(testDirectory), TestExecutor::handleResult), System.out);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
-        if(result == Result.FAILURE && files.length == 1 && files[0] instanceof File mainFile) {
+        if(result == Result.FAILURE && files.length == 1 && files[0] instanceof File) {
+            var mainFile = (File) files[0];
             String name;
             String stackTrace;
             if(throwable == null) {

@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
 
@@ -67,7 +68,10 @@ public class SvgUtil {
         HEIGHT_ATTRIBUTE = EmfCache.getAttributes(SVG_CLASS).stream().filter(a -> a.getName().equals("height")).findFirst().orElseThrow(IllegalStateException::new);
 
 
-        var eClasses = SVG_PACKAGE.getEClassifiers().stream().filter(f -> f instanceof EClass).map(EClass.class::cast).toList();
+        var eClasses = SVG_PACKAGE.getEClassifiers().stream()
+                .filter(f -> f instanceof EClass)
+                .map(EClass.class::cast)
+                .collect(Collectors.toList());
 
         eClasses.forEach(clazz -> clazz.getEAllReferences().forEach(ref -> TYPE_NAME_MAPPING.putIfAbsent(ref.getEType(), ref.getName())));
 
@@ -143,12 +147,13 @@ public class SvgUtil {
         var links = new HashSet<String>();
         for (int i = 0; i < element.getChildNodes().getLength(); i++) {
             var childNode = element.getChildNodes().item(i);
-            if (childNode instanceof Element childElement &&
-                    "use".equals(childElement.getTagName()) && childElement.hasAttribute("xlink:href")) {
+            if(!(childNode instanceof Element)) continue;
+            var childElement = (Element) childNode;
+            if ("use".equals(childElement.getTagName()) && childElement.hasAttribute("xlink:href")) {
                 var objectId = childElement.getAttribute("xlink:href");
                 var fileName = getFilenameFromObjectId(objectId);
                 links.add(fileName);
-            } else if (childNode instanceof Element childElement && childNode.hasChildNodes()) {
+            } else if (childNode.hasChildNodes()) {
                 links.addAll(extractAllUseLinksFromElementTree(childElement));
             }
         }

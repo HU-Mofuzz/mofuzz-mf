@@ -6,7 +6,7 @@ import lombok.experimental.Delegate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinkPool<L> {
+public class LinkPool<L> implements List<L>{
 
     @Delegate
     private final List<L> pool = new ArrayList<>();

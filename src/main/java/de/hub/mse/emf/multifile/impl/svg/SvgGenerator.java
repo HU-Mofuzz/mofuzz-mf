@@ -23,6 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.*;
 
@@ -48,6 +49,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         } else if (config.shouldGenerateFiles()) {
             // generate files
             for (int i = 0; i < config.getFilesToGenerate(); i++) {
+                System.out.println("Generating "+(i+1)+"/"+config.getFilesToGenerate());
                 String fileName = SvgUtil.getRandomFileName();
                 try {
                     var content = generateRandomSvgObject(sourceOfRandomness);
@@ -142,7 +144,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
                     Math.max(0, config.getModelWidth() - requiredReferences.size());
 
             var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::getEType)
-                    .map(EClass.class::cast).toList());
+                    .map(EClass.class::cast).collect(Collectors.toList()));
             for (int i = 0; i < remainingReferences; i++) {
                 referencesToCreate.add(EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness));
             }

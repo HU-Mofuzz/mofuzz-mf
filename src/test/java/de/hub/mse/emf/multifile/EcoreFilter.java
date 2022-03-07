@@ -56,7 +56,8 @@ public class EcoreFilter {
         var childrenToRemove = new HashSet<Element>();
         for(int i = 0; i < children.getLength(); i++) {
             var child = children.item(i);
-            if(child instanceof Element childElement) {
+            if(child instanceof Element) {
+                var childElement = (Element) child;
                 if(filterChild(childElement)) {
                     found++;
                     childrenToRemove.add(childElement);

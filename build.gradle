@@ -5,8 +5,8 @@ plugins {
 
 group 'de.hub.mse.emf'
 version '1.0-SNAPSHOT'
-sourceCompatibility = '16'
-targetCompatibility  = '16'
+sourceCompatibility = '11'
+targetCompatibility  = '11'
 
 repositories {
     mavenLocal()
@@ -23,9 +23,13 @@ jar {
         attributes 'Main-Class': 'de.hub.mse.emf.multifile.TestExecutor'
     }
 
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it).matching {
+                exclude 'META-INF/*.*'
+            }
+        }
     }
 }
 
@@ -53,5 +57,8 @@ dependencies {
     implementation 'org.apache.xmlgraphics:batik-util:1.14'
     implementation 'org.apache.xmlgraphics:batik-anim:1.14'
     implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
+
+    implementation 'org.slf4j:slf4j-api:1.6.1'
+    implementation 'org.slf4j:slf4j-simple:1.6.1'
 
 }
