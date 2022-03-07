@@ -6,6 +6,8 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.base.LinkPool;
 import de.hub.mse.emf.multifile.base.emf.EmfCache;
 import de.hub.mse.emf.multifile.base.emf.EmfUtil;
+import de.hub.mse.emf.multifile.impl.svg.attributes.AttributeGeneratorMap;
+import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.ecore.*;
@@ -21,6 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.*;
 
@@ -42,10 +45,11 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
 
         if (config.shouldUseExistingFiles()) {
             // extract links
-            pool.addAll(SvgUtil.extractLinks(config));
+            pool.addAll(SvgUtil.extractLinkables(config));
         } else if (config.shouldGenerateFiles()) {
             // generate files
             for (int i = 0; i < config.getFilesToGenerate(); i++) {
+                System.out.println("Generating "+(i+1)+"/"+config.getFilesToGenerate());
                 String fileName = SvgUtil.getRandomFileName();
                 try {
                     var content = generateRandomSvgObject(sourceOfRandomness);
@@ -100,12 +104,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         }
 
         //a valid svg needs a view box, width and height and version + grammar
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, source);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.WIDTH_ATTRIBUTE, source);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, source);
+        svgObject.eSet(SvgUtil.VIEW_BOX_ATTRIBUTE, AttributeGeneratorMap.VIEW_BOX_GENERATOR.generateRandom(source));
+        svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
+        svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(source.nextInt())));
 
         //needed for export (write file)
-        var svgXmlDoc = XmlUtil.eObjectToDocument(svgObject);
+        var svgXmlDoc = SvgUtil.eObjectToDocument(svgObject);
 
         var svgNode = (Element) svgXmlDoc.getElementsByTagName("svg").item(0);
         svgNode.setAttribute("version", "1.1");
@@ -115,16 +119,16 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
+        if(clazz.getEPackage() != SVG_PACKAGE.getEFactoryInstance().getEPackage()) {
+            return null;
+        }
         // increase depth
         currentDepth++;
 
         // outer object
         var object = SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for (var attribute : EmfCache.getAttributes(clazz)) {
-            var metaData = attribute.getEAnnotation("http:///org/eclipse/emf/ecore/util/ExtendedMetaData");
-            String prefix;
-            if(metaData != null && metaData.getDetails() != null && metaData.getDetails().get("namespace") != null &&
-                    metaData.getDetails().get("namespace").equals("http://www.w3.org/1999/xlink")) {
+            if(attribute.getName().startsWith("group") || attribute.getName().startsWith("mixed") || attribute.getName().startsWith("descTitleMetadata") || attribute.getName().startsWith("class")) {
                 continue;
             }
             if (attribute.isRequired() || randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
@@ -139,16 +143,20 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             var remainingReferences = currentDepth >  config.getModelDepth()? 0 :
                     Math.max(0, config.getModelWidth() - requiredReferences.size());
 
-            var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::eClass).toList());
+            var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::getEType)
+                    .map(EClass.class::cast).collect(Collectors.toList()));
             for (int i = 0; i < remainingReferences; i++) {
                 referencesToCreate.add(EmfUtil.getRandomReferenceEClassFromEClass(clazz, randomness));
             }
-
+            var retry = 0;
             for (int i = 0; i < referencesToCreate.size(); i++) {
                 var innerClass = referencesToCreate.get(i);
                 var innerObject = generateEObject(innerClass, randomness);
                 if(!EmfUtil.makeContain(object, innerObject)) {
                     i--;
+                    if(++retry > 10) {
+                        throw new Error("Endless loop detected!!");
+                    }
                 }
             }
         }
@@ -164,12 +172,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             throw new IllegalStateException("Target file could not be created!");
         }
 
-        EObject svgObject = generateEObject(SVG_CLASS, sourceOfRandomness);
+        EObject svgObject = SVG_PACKAGE.getEFactoryInstance().create(SVG_CLASS);
 
         //a valid svg needs a view box, width and height and version + grammar
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.VIEW_BOX_ATTRIBUTE, sourceOfRandomness);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.WIDTH_ATTRIBUTE, sourceOfRandomness);
-        EmfUtil.setRandomValueForAttribute(svgObject, SvgUtil.HEIGHT_ATTRIBUTE, sourceOfRandomness);
+        svgObject.eSet(SvgUtil.VIEW_BOX_ATTRIBUTE, AttributeGeneratorMap.VIEW_BOX_GENERATOR.generateRandom(sourceOfRandomness));
+        svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
+        svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
 
 
 
@@ -189,17 +197,17 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             }
         }
 
-        var svgDoc = XmlUtil.eObjectToDocument(svgObject);
+        var svgDoc = SvgUtil.eObjectToDocument(svgObject);
 
 
         var svgNode = (Element) svgDoc.getElementsByTagName("svg").item(0);
 
-        svgNode.setAttribute("version", "1.2");
+        svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        svgNode.setAttribute("xmlns:xlink", "https://www.w3.org/1999/xlink");
+        svgNode.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
         Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
-            return target;
+        return target;
         }
     }

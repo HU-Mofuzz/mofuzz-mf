@@ -1,6 +1,6 @@
 package de.hub.mse.emf.multifile;
 
-import de.hub.mse.emf.multifile.impl.svg.XmlUtil;
+import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,7 +56,8 @@ public class EcoreFilter {
         var childrenToRemove = new HashSet<Element>();
         for(int i = 0; i < children.getLength(); i++) {
             var child = children.item(i);
-            if(child instanceof Element childElement) {
+            if(child instanceof Element) {
+                var childElement = (Element) child;
                 if(filterChild(childElement)) {
                     found++;
                     childrenToRemove.add(childElement);

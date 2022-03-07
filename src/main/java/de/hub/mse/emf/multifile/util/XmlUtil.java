@@ -1,27 +1,23 @@
-package de.hub.mse.emf.multifile.impl.svg;
+package de.hub.mse.emf.multifile.util;
 
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.util.Map;
-
-import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 @UtilityClass
 public class XmlUtil {
@@ -49,6 +45,11 @@ public class XmlUtil {
         StreamResult result = new StreamResult(new StringWriter());
         try {
             var transformer = TRANSFORMER_FACTORY.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             transformer.transform(domSource, result);
             return result.getWriter().toString();
         } catch (TransformerException e) {
@@ -57,30 +58,13 @@ public class XmlUtil {
         return StringUtils.EMPTY;
     }
 
-    private String eObjectToXmlString(EObject eObject) {
-        XMLResource modelResource = (XMLResource)RESOURCE_SET.createResource(URI.createFileURI("a.svg"));
-        modelResource.setEncoding("UTF-8");
-        modelResource.getContents().add(eObject);
-        StringWriter writer = new StringWriter();
-        try {
-            modelResource.save(writer, Map.of(
-                    XMLResource.OPTION_SAVE_TYPE_INFORMATION, true,
-                    XMLResource.OPTION_XML_MAP, new SvgXmlMap()
-            ));
-        } catch (IOException e) {
-            return StringUtils.EMPTY;
-        }
-
-        return writer.toString();
+    @SneakyThrows
+    public Document newDocument() {
+        return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().newDocument();
     }
 
-    public Document eObjectToDocument(EObject eObject) {
-        return stringToDocument(eObjectToXmlString(eObject));
-    }
-
-    public void clearChildren(Element element) {
-        while (element.getFirstChild() != null) {
-            element.removeChild(element.getFirstChild());
-        }
+    @SneakyThrows
+    public Document documentFromFile(File file) {
+        return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().parse(file);
     }
 }

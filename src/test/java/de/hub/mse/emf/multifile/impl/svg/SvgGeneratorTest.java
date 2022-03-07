@@ -14,11 +14,14 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLResourceFactoryImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+@Ignore
 public class SvgGeneratorTest {
 
     @Test
@@ -62,8 +65,8 @@ public class SvgGeneratorTest {
         xlinkPackage.getEClassifiers().forEach(clazz -> System.out.println("XLink: "+ clazz.getName()));
         svgPackage.getEClassifiers().forEach(clazz -> System.out.println("SVG: "+ clazz.getName()));
 
-        var xlinkClasses = xlinkPackage.getEClassifiers().stream().map(EClassifier::getName).toList();
-        var svgClasses = svgPackage.getEClassifiers().stream().map(EClassifier::getName).toList();
+        var xlinkClasses = xlinkPackage.getEClassifiers().stream().map(EClassifier::getName).collect(Collectors.toList());
+        var svgClasses = svgPackage.getEClassifiers().stream().map(EClassifier::getName).collect(Collectors.toList());
 
         for(String clazz : xlinkClasses) {
             if(svgClasses.contains(clazz)) {

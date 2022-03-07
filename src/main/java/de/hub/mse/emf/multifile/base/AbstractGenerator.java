@@ -3,12 +3,14 @@ package de.hub.mse.emf.multifile.base;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.stream.Collectors;
 
 /**
  * Abstract Generator for multi document generation
@@ -21,6 +23,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
     protected final C config;
     private boolean prepared = false;
 
+    @Getter
     private LinkPool<L> linkPool;
 
     protected AbstractGenerator(Class<D> type, C config) {
@@ -48,8 +51,11 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                         config.getExistingFiles().stream()
                                 .filter(path -> {
                                     try {
-                                        Files.copy(Paths.get(path), Paths.get(config.getWorkingDirectory()),
-                                                StandardCopyOption.REPLACE_EXISTING);
+                                        var src = Paths.get(path);
+                                        var dst = Paths.get(config.getWorkingDirectory());
+                                        if(!src.getParent().equals(dst)) {
+                                            Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
+                                        }
                                         return true;
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -58,7 +64,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                                 })
                                 .map(path -> Paths.get(path).toFile().getName())
                                 .peek(System.out::println)
-                                .toList());
+                                .collect(Collectors.toList()));
             }
             linkPool = collectLinksFromConfig(sourceOfRandomness);
             if(linkPool.isEmpty()) {
