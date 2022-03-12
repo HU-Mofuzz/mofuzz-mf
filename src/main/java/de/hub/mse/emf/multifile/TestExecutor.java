@@ -1,5 +1,6 @@
 package de.hub.mse.emf.multifile;
 
+import com.beust.jcommander.JCommander;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.DocumentAwareGraphAwareGuidance;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
@@ -24,30 +25,39 @@ import java.util.stream.Collectors;
 
 public class TestExecutor {
 
-    private static final String failDirectory;
+    public static Args ARGS = new Args();
     private static Set<String> stackTraces = new HashSet<>();
     private static Map<String, Integer> nameCountMap = new HashMap<>();
 
-    static {
-        try {
-            failDirectory = Files.createTempDirectory("failes").toFile().getAbsolutePath();
-            System.setProperty("jqf.ei.MAX_INPUT_SIZE", Integer.toString(2 << 23));
-        } catch (IOException e) {
-            throw new Error("Executor init failed to create fail directory");
-        }
-    }
-
     public static void main(String[] args) throws IOException {
-        final String workingDir = Files.createTempDirectory("svg_test").toFile().getAbsolutePath();
-        final String testDirectory = Files.createTempDirectory("test").toFile().getAbsolutePath();
-        final int filesToGenerate = 5;
+        var commander = JCommander.newBuilder()
+                .addObject(ARGS)
+                .build();
+        commander.parse(args);
 
-        System.out.println("Working directory: "+workingDir);
+        if(ARGS.isHelp()) {
+            commander.usage();
+            return;
+        }
+
+        if(!ARGS.isFailDirectorySet()) {
+            ARGS.setFailDirectory(Files.createTempDirectory("failes").toFile().getAbsolutePath());
+        }
+        if(!ARGS.isWorkingDirectorySet()) {
+            ARGS.setWorkingDirectory(Files.createTempDirectory("svg_test").toFile().getAbsolutePath());
+        }
+        if(!ARGS.isTestDirectorySet()) {
+            ARGS.setTestDirectory(Files.createTempDirectory("test").toFile().getAbsolutePath());
+        }
+        System.out.println("Fail directory: " + ARGS.getFailDirectory());
+        System.out.println("Working directory: " + ARGS.getWorkingDirectory());
+        System.out.println("Test directory: " + ARGS.getTestDirectory());
+
         var config = GeneratorConfig.getInstance();
-        config.setFilesToGenerate(filesToGenerate);
-        config.setWorkingDirectory(workingDir);
-        config.setModelDepth(2);
-        config.setModelWidth(5);
+        config.setFilesToGenerate(ARGS.getFilesToGenerate());
+        config.setWorkingDirectory(ARGS.getWorkingDirectory());
+        config.setModelDepth(ARGS.getModelDepth());
+        config.setModelWidth(ARGS.getModelWidth());
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
         System.out.println("Preparing files...");
@@ -62,8 +72,8 @@ public class TestExecutor {
         config.setPreparationMode(PreparationMode.FILES_EXIST);
 
         try {
-            GuidedFuzzing.run(SvgTest.class, "svgSalamanderTest",
-                    new DocumentAwareGraphAwareGuidance("svgSalamanderTest", Duration.ofMinutes(2), null, new File(testDirectory), TestExecutor::handleResult), System.out);
+            GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
+                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), null, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -85,7 +95,7 @@ public class TestExecutor {
                if(stackTrace.length() > 0) {
                    stackTraces.add(stackTrace);
                }
-               File errorDirectory = Paths.get(failDirectory, name).toFile();
+               File errorDirectory = Paths.get(ARGS.getFailDirectory(), name).toFile();
                 if (!errorDirectory.exists()) {
                     errorDirectory.mkdir();
                 }
@@ -93,7 +103,7 @@ public class TestExecutor {
                 var count = nameCountMap.getOrDefault(name, 0);
                 nameCountMap.put(name, count+1);
                 String subDir = Integer.toString(count);
-                Paths.get(failDirectory, name, subDir).toFile().mkdir();
+                Paths.get(ARGS.getFailDirectory(), name, subDir).toFile().mkdir();
 
                // create descriptor
                 var descriptor = new RunDescriptor();
@@ -104,13 +114,13 @@ public class TestExecutor {
 
                 String descriptorText = XmlUtil.documentToString(descriptor.toXML());
                 try {
-                    Files.writeString(Paths.get(failDirectory, name, subDir, "descriptor.xml"), descriptorText);
+                    Files.writeString(Paths.get(ARGS.getFailDirectory(), name, subDir, "descriptor.xml"), descriptorText);
                     // copy file tree
-                    Paths.get(failDirectory, name, subDir, "files").toFile().mkdir();
+                    Paths.get(ARGS.getFailDirectory(), name, subDir, "files").toFile().mkdir();
                     for(String link : descriptor.getFiles()) {
                         var src = Paths.get(mainFile.getParent(), link);
                         if(src.toFile().exists()) {
-                            Files.copy(src, Paths.get(failDirectory, name, subDir, "files", link));
+                            Files.copy(src, Paths.get(ARGS.getFailDirectory(), name, subDir, "files", link));
                         }
                     }
                 } catch (IOException e) {
