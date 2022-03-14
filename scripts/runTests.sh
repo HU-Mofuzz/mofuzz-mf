@@ -43,6 +43,15 @@ CURRENT_DEPTH=""
 CURRENT_INIT=""
 
 # method declaration
+function savePlotData() {
+  # if plot data directory does not exist
+  if [ ! -d "$PLOT_DATA_SAVE_DIR" ]; then
+    mkdir -p "$PLOT_DATA_SAVE_DIR"
+  fi
+  # copy passed executions plot data and rename it meaningful
+  cp "$1" "$PLOT_DATA_SAVE_DIR/${CURRENT_METHOD}_w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}.csv"
+}
+
 function executeTest() {
     # generate dir names
     BASEDIR="./${CURRENT_METHOD}/w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}"
@@ -56,16 +65,14 @@ function executeTest() {
     #core execution
     echo "" | tee -a "$LOGFILE"
     echo "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT =====" | tee -a "$LOGFILE"
-    /usr/bin/env bash -c "$DRIVER_PATH $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE"
-}
+    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE"
 
-function savePlotData() {
-  # if plot data directory does not exist
-  if [ ! -d "$PLOT_DATA_SAVE_DIR" ]; then
-    mkdir -p "$PLOT_DATA_SAVE_DIR"
-  fi
-  # copy passed executions plot data and rename it meaningful
-  cp "$1" "$PLOT_DATA_SAVE_DIR/${CURRENT_METHOD}_w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}.csv"
+    # copy plot data
+    echo "Saving Plot data..."
+    savePlotData "$TEST_DIR/plot_data"
+
+    echo "Archiving working directory..."
+    zip "$BASEDIR/work.zip" "$WORKING_DIR/*" && rm -r "$WORKING_DIR"
 }
 
 function iterateInitFiles() {
@@ -73,8 +80,6 @@ function iterateInitFiles() {
     CURRENT_INIT="$initSize"
     # execute test
     executeTest
-    # copy plot data
-    savePlotData "$TEST_DIR/plot_data"
   done
 }
 
@@ -94,6 +99,7 @@ function iterateModelWidths() {
 
 # execution preparation
 mkdir -p "$EXEC_DIR" || return 1
+cp ./*.ecore "$EXEC_DIR"
 cd "$EXEC_DIR" || return 1
 
 # execution itself
@@ -101,3 +107,6 @@ for method in "${TEST_METHOD[@]}"; do
   CURRENT_METHOD="$method"
   iterateModelWidths
 done
+
+echo ""
+echo "===== DONE ====="
