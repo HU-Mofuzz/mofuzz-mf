@@ -63,8 +63,11 @@ public class XmlUtil {
         return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().newDocument();
     }
 
-    @SneakyThrows
     public Document documentFromFile(File file) {
-        return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().parse(file);
+        try {
+            return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().parse(file);
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            return null;
+        }
     }
 }

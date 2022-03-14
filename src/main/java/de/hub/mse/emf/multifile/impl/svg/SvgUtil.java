@@ -133,6 +133,9 @@ public class SvgUtil {
         links.add(file.getName());
         if(file.exists()) {
             var fileElement = XmlUtil.documentFromFile(file).getDocumentElement();
+            if(fileElement == null) {
+                return links;
+            }
             var useLinks = extractAllUseLinksFromElementTree(fileElement);
             for (var useLink : useLinks) {
                 if (!searchedFiles.contains(useLink)) {
