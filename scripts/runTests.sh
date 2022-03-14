@@ -65,7 +65,7 @@ function executeTest() {
     #core execution
     echo "" | tee -a "$LOGFILE"
     echo "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT =====" | tee -a "$LOGFILE"
-    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE"
+    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE"
 
     # copy plot data
     echo "Saving Plot data..."
