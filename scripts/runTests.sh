@@ -58,7 +58,7 @@ function savePlotData() {
 
 function executeTest() {
     # generate dir names
-    BASEDIR="$(pwd)/${CURRENT_METHOD}/w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}"
+    BASEDIR="./${CURRENT_METHOD}/w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}"
     FAIL_DIR="$BASEDIR/fail"
     WORKING_DIR="$BASEDIR/work"
     TEST_DIR="$BASEDIR/test"
@@ -76,7 +76,7 @@ function executeTest() {
     savePlotData "$TEST_DIR/plot_data"
 
     log "Archiving working directory..."
-    zip "$BASEDIR/work.zip" "$WORKING_DIR/*" && rm -r "$WORKING_DIR"
+    zip -r "$BASEDIR/work.zip" "$WORKING_DIR" && rm -r "$WORKING_DIR"
 }
 
 function iterateInitFiles() {
