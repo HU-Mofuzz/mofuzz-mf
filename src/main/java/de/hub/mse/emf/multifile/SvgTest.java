@@ -37,7 +37,7 @@ public class SvgTest {
 
     @Fuzz
     public void svgSalamanderTest(@From(SvgGenerator.class) File inputFile) throws MalformedURLException {
-        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
+        System.out.println("STARTING ITERATION "+(++iteration)+"\n"+inputFile.getAbsolutePath());
 
         SVGUniverse universe = SVGCache.getSVGUniverse();
 
@@ -61,7 +61,7 @@ public class SvgTest {
 
     @Fuzz
     public void testBatik(@From(SvgGenerator.class) File inputFile) throws IOException {
-        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
+        System.out.println("STARTING ITERATION "+(++iteration)+"\n"+inputFile.getAbsolutePath());
 
         String parser = XMLResourceDescriptor.getXMLParserClassName();
         SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
@@ -73,7 +73,7 @@ public class SvgTest {
 
     @Fuzz
     public void testBatikTranscoder(@From(SvgGenerator.class) File inputFile) throws TranscoderException {
-        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
+        System.out.println("STARTING ITERATION "+(++iteration)+"\n"+inputFile.getAbsolutePath());
 
         PNGTranscoder transcoder = new PNGTranscoder();
         transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, 1000f);
