@@ -42,6 +42,10 @@ CURRENT_WIDTH=""
 CURRENT_DEPTH=""
 CURRENT_INIT=""
 
+function log() {
+  echo "$1" | tee -a "$LOGFILE"
+}
+
 # method declaration
 function savePlotData() {
   # if plot data directory does not exist
@@ -63,15 +67,15 @@ function executeTest() {
     mkdir -p "$BASEDIR" "$FAIL_DIR" "$WORKING_DIR" "$TEST_DIR"
 
     #core execution
-    echo "" | tee -a "$LOGFILE"
-    echo "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT =====" | tee -a "$LOGFILE"
+    log ""
+    log "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT ====="
     /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE"
 
     # copy plot data
-    echo "Saving Plot data..."
+    log "Saving Plot data..."
     savePlotData "$TEST_DIR/plot_data"
 
-    echo "Archiving working directory..."
+    log "Archiving working directory..."
     zip "$BASEDIR/work.zip" "$WORKING_DIR/*" && rm -r "$WORKING_DIR"
 }
 
