@@ -61,6 +61,8 @@ public class SvgTest {
     @Fuzz
     public void testBatik(@From(SvgGenerator.class) File inputFile) throws IOException {
         System.out.println("STARTING ITERATION "+ ++iteration);
+        System.out.println(inputFile.getAbsolutePath());
+
         String parser = XMLResourceDescriptor.getXMLParserClassName();
         SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
 
@@ -72,6 +74,7 @@ public class SvgTest {
     @Fuzz
     public void testBatikTranscoder(@From(SvgGenerator.class) File inputFile) throws TranscoderException {
         System.out.println("STARTING ITERATION "+ ++iteration);
+        System.out.println(inputFile.getAbsolutePath());
 
         PNGTranscoder transcoder = new PNGTranscoder();
         transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, 1000f);
