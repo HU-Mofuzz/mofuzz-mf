@@ -7,6 +7,7 @@ import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import de.hub.mse.emf.multifile.impl.svg.SvgGenerator;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.transcoder.SVGAbstractTranscoder;
 import org.apache.batik.transcoder.TranscoderException;
@@ -27,6 +28,7 @@ import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(JQF.class)
+@Slf4j
 public class SvgTest {
     @Rule
     public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
@@ -35,8 +37,7 @@ public class SvgTest {
 
     @Fuzz
     public void svgSalamanderTest(@From(SvgGenerator.class) File inputFile) throws MalformedURLException {
-        System.out.println("STARTING ITERATION "+ ++iteration);
-        System.out.println(inputFile.getAbsolutePath());
+        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
 
         SVGUniverse universe = SVGCache.getSVGUniverse();
 
@@ -60,8 +61,7 @@ public class SvgTest {
 
     @Fuzz
     public void testBatik(@From(SvgGenerator.class) File inputFile) throws IOException {
-        System.out.println("STARTING ITERATION "+ ++iteration);
-        System.out.println(inputFile.getAbsolutePath());
+        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
 
         String parser = XMLResourceDescriptor.getXMLParserClassName();
         SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
@@ -73,8 +73,7 @@ public class SvgTest {
 
     @Fuzz
     public void testBatikTranscoder(@From(SvgGenerator.class) File inputFile) throws TranscoderException {
-        System.out.println("STARTING ITERATION "+ ++iteration);
-        System.out.println(inputFile.getAbsolutePath());
+        log.info("STARTING ITERATION {}\n{}", ++iteration, inputFile.getAbsolutePath());
 
         PNGTranscoder transcoder = new PNGTranscoder();
         transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, 1000f);
