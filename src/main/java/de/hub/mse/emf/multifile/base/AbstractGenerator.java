@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract Generator for multi document generation
+ *
  * @param <D> The target document type, e.g. {@link org.eclipse.emf.ecore.resource.Resource} or {@link String} for a file path
  * @param <L> The Link type between multiple documents, e.g. {@link String} in SVG/XML xlink hrefs
  * @param <C> The configuration type for the generation and preparation
@@ -32,19 +33,20 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
     }
 
     protected abstract LinkPool<L> collectLinksFromConfig(SourceOfRandomness sourceOfRandomness);
+
     public abstract D internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<L> linkPool) throws Exception;
 
     @Override
     public D generate(SourceOfRandomness sourceOfRandomness, GenerationStatus generationStatus) {
-        if(!prepared) {
+        if (!prepared && config.getLinkProbability() > 0.0f) {
             // ensure working directory
             File workDir = Paths.get(config.getWorkingDirectory()).toFile();
-            if(!workDir.exists() && !workDir.mkdirs()) {
+            if (!workDir.exists() && !workDir.mkdirs()) {
                 throw new IllegalStateException("Could not create working directory: " +
                         config.getWorkingDirectory());
             }
 
-            if(config.shouldUseExistingFiles()) {
+            if (config.shouldUseExistingFiles()) {
                 // copy predefined files from config
 
                 config.setExistingFiles(
@@ -53,7 +55,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                                     try {
                                         var src = Paths.get(path);
                                         var dst = Paths.get(config.getWorkingDirectory());
-                                        if(!src.getParent().equals(dst)) {
+                                        if (!src.getParent().equals(dst)) {
                                             Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
                                         }
                                         return true;
@@ -67,7 +69,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                                 .collect(Collectors.toList()));
             }
             linkPool = collectLinksFromConfig(sourceOfRandomness);
-            if(linkPool.isEmpty()) {
+            if (linkPool.isEmpty()) {
                 throw new IllegalStateException("No links to reference!");
             }
             prepared = true;

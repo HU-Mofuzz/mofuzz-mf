@@ -30,8 +30,6 @@ import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.*;
 public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfig> {
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
-    private static final float LINK_USE_CHANCE = 0.5f;
-
     private int currentDepth;
 
     @SneakyThrows
@@ -49,7 +47,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         } else if (config.shouldGenerateFiles()) {
             // generate files
             for (int i = 0; i < config.getFilesToGenerate(); i++) {
-                System.out.println("Generating "+(i+1)+"/"+config.getFilesToGenerate());
+                System.out.println("Generating " + (i + 1) + "/" + config.getFilesToGenerate());
                 String fileName = SvgUtil.getRandomFileName();
                 try {
                     var content = generateRandomSvgObject(sourceOfRandomness);
@@ -119,7 +117,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {
-        if(clazz.getEPackage() != SVG_PACKAGE.getEFactoryInstance().getEPackage()) {
+        if (clazz.getEPackage() != SVG_PACKAGE.getEFactoryInstance().getEPackage()) {
             return null;
         }
         // increase depth
@@ -128,7 +126,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         // outer object
         var object = SVG_PACKAGE.getEFactoryInstance().create(clazz);
         for (var attribute : EmfCache.getAttributes(clazz)) {
-            if(attribute.getName().startsWith("group") || attribute.getName().startsWith("mixed") || attribute.getName().startsWith("descTitleMetadata") || attribute.getName().startsWith("class")) {
+            if (attribute.getName().startsWith("group") || attribute.getName().startsWith("mixed") || attribute.getName().startsWith("descTitleMetadata") || attribute.getName().startsWith("class")) {
                 continue;
             }
             if (attribute.isRequired() || randomness.nextFloat() < ATTRIB_GENERATE_CHANCE) {
@@ -140,7 +138,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         var requiredReferences = EmfCache.getRequiredContainmentReferences(clazz);
         if (requiredReferences.size() > 0 ||
                 (currentDepth < config.getModelDepth() && !clazz.getEAllContainments().isEmpty())) {
-            var remainingReferences = currentDepth >  config.getModelDepth()? 0 :
+            var remainingReferences = currentDepth > config.getModelDepth() ? 0 :
                     Math.max(0, config.getModelWidth() - requiredReferences.size());
 
             var referencesToCreate = new ArrayList<>(requiredReferences.stream().map(EReference::getEType)
@@ -152,9 +150,9 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
             for (int i = 0; i < referencesToCreate.size(); i++) {
                 var innerClass = referencesToCreate.get(i);
                 var innerObject = generateEObject(innerClass, randomness);
-                if(!EmfUtil.makeContain(object, innerObject)) {
+                if (!EmfUtil.makeContain(object, innerObject)) {
                     i--;
-                    if(++retry > 10) {
+                    if (++retry > 10) {
                         throw new Error("Endless loop detected!!");
                     }
                 }
@@ -180,15 +178,14 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
 
 
-
         for (int i = 0; i < config.getModelWidth(); i++) {
 
-            if (sourceOfRandomness.nextDouble() < LINK_USE_CHANCE) {
+            if (sourceOfRandomness.nextDouble() < config.getLinkProbability()) {
 
-                EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness),sourceOfRandomness));
+                EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness), sourceOfRandomness));
             } else {
                 String objectId = SvgUtil.getRandomObjectId();
-                if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness)) {
+                if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness) && config.getLinkProbability() > 0) {
 
                     linkPool.add(getObjectIdForFile(target.getName(), objectId));
                 } else {
@@ -209,5 +206,5 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         Files.writeString(target.toPath(), XmlUtil.documentToString(svgDoc));
 
         return target;
-        }
     }
+}

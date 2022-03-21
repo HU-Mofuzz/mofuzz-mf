@@ -22,16 +22,19 @@ public class Args {
     private String testDirectory;
 
     @Parameter(names = "--initialFiles", description = "The amount of initial files to be generated to start of")
-    private int filesToGenerate = 100;
+    private int filesToGenerate = 2;
 
     @Parameter(names = "--modelDepth", description = "Maximum depth of the models generated")
-    private int modelDepth = 5;
+    private int modelDepth = 2;
 
     @Parameter(names = "--modelWidth", description = "Maximum width of a model")
-    private int modelWidth = 5;
+    private int modelWidth = 2;
+
+    @Parameter(names = {"--linkProb", "--links"}, description = "Probability of links used in one model")
+    private double linkProbability = 0.0f;
 
     @Parameter(names = {"--duration", "--minutes"}, description = "The duration of the test run in minutes")
-    private int durationMinutes = 5;
+    private int durationMinutes = 1;
 
     @Parameter(names = {"--help", "/h", "-h"}, description = "Print this argument description", help = true)
     private boolean help;

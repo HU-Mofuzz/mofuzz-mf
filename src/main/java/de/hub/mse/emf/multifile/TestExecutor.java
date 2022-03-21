@@ -30,23 +30,24 @@ public class TestExecutor {
     private static Map<String, Integer> nameCountMap = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
+       System.setProperty("jqf.ei.MAX_INPUT_SIZE","10000000");
         var commander = JCommander.newBuilder()
                 .addObject(ARGS)
                 .build();
         commander.parse(args);
 
-        if(ARGS.isHelp()) {
+        if (ARGS.isHelp()) {
             commander.usage();
             return;
         }
 
-        if(!ARGS.isFailDirectorySet()) {
+        if (!ARGS.isFailDirectorySet()) {
             ARGS.setFailDirectory(Files.createTempDirectory("failes").toFile().getAbsolutePath());
         }
-        if(!ARGS.isWorkingDirectorySet()) {
+        if (!ARGS.isWorkingDirectorySet()) {
             ARGS.setWorkingDirectory(Files.createTempDirectory("svg_test").toFile().getAbsolutePath());
         }
-        if(!ARGS.isTestDirectorySet()) {
+        if (!ARGS.isTestDirectorySet()) {
             ARGS.setTestDirectory(Files.createTempDirectory("test").toFile().getAbsolutePath());
         }
         System.out.println("Fail directory: " + ARGS.getFailDirectory());
@@ -58,54 +59,59 @@ public class TestExecutor {
         config.setWorkingDirectory(ARGS.getWorkingDirectory());
         config.setModelDepth(ARGS.getModelDepth());
         config.setModelWidth(ARGS.getModelWidth());
+        config.setLinkProbability(ARGS.getLinkProbability());
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        System.out.println("Preparing files...");
-        var generator = new SvgGenerator();
-        generator.generate(new SourceOfRandomness(new Random()), null);
-        var pool = generator.getLinkPool();
-        config.setExistingFiles(pool.stream()
-                .map(SvgUtil::getFilenameFromObjectId)
-                .map(filename -> Paths.get(config.getWorkingDirectory(), filename).toString())
-                .collect(Collectors.toList()));
-        System.out.println("Preparation done!");
+        if (config.getLinkProbability() > 0.0) {
+            System.out.println("Preparing files...");
+            var generator = new SvgGenerator();
+            generator.generate(new SourceOfRandomness(new Random()), null);
+            var pool = generator.getLinkPool();
+            config.setExistingFiles(pool.stream()
+                    .map(SvgUtil::getFilenameFromObjectId)
+                    .map(filename -> Paths.get(config.getWorkingDirectory(), filename).toString())
+                    .collect(Collectors.toList()));
+            System.out.println("Preparation done!");
+        } else {
+            System.out.println("Run without linked files!");
+        }
         config.setPreparationMode(PreparationMode.FILES_EXIST);
 
         try {
             GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
-                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), null, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
+                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), 10L, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
 
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
-        if(result == Result.FAILURE && files.length == 1 && files[0] instanceof File) {
+        if (result == Result.FAILURE && files.length == 1 && files[0] instanceof File) {
             var mainFile = (File) files[0];
             String name;
             String stackTrace;
-            if(throwable == null) {
+            if (throwable == null) {
                 name = "NONE";
                 stackTrace = StringUtils.EMPTY;
             } else {
                 name = throwable.getClass().getName();
                 stackTrace = throwableToStacktraceText(throwable);
             }
-            if(!stackTraces.contains(stackTrace)) {
-               if(stackTrace.length() > 0) {
-                   stackTraces.add(stackTrace);
-               }
-               File errorDirectory = Paths.get(ARGS.getFailDirectory(), name).toFile();
+            if (!stackTraces.contains(stackTrace)) {
+                if (stackTrace.length() > 0) {
+                    stackTraces.add(stackTrace);
+                }
+                File errorDirectory = Paths.get(ARGS.getFailDirectory(), name).toFile();
                 if (!errorDirectory.exists()) {
                     errorDirectory.mkdir();
                 }
                 // sub dir
                 var count = nameCountMap.getOrDefault(name, 0);
-                nameCountMap.put(name, count+1);
+                nameCountMap.put(name, count + 1);
                 String subDir = Integer.toString(count);
                 Paths.get(ARGS.getFailDirectory(), name, subDir).toFile().mkdir();
 
-               // create descriptor
+                // create descriptor
                 var descriptor = new RunDescriptor();
                 var linkedFiles = SvgUtil.extractUseLinksRecursive(mainFile);
                 descriptor.setFiles(linkedFiles);
@@ -117,9 +123,9 @@ public class TestExecutor {
                     Files.writeString(Paths.get(ARGS.getFailDirectory(), name, subDir, "descriptor.xml"), descriptorText);
                     // copy file tree
                     Paths.get(ARGS.getFailDirectory(), name, subDir, "files").toFile().mkdir();
-                    for(String link : descriptor.getFiles()) {
+                    for (String link : descriptor.getFiles()) {
                         var src = Paths.get(mainFile.getParent(), link);
-                        if(src.toFile().exists()) {
+                        if (src.toFile().exists()) {
                             Files.copy(src, Paths.get(ARGS.getFailDirectory(), name, subDir, "files", link));
                         }
                     }

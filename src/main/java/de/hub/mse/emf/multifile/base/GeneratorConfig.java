@@ -10,7 +10,7 @@ public class GeneratorConfig {
     private int filesToGenerate = 1;
     private int modelWidth = 10;
     private int modelDepth = 10;
-
+    private double linkProbability = 0.5f;
     private PreparationMode preparationMode;
 
     private String workingDirectory;
@@ -21,13 +21,14 @@ public class GeneratorConfig {
     private static GeneratorConfig instance;
 
     public static GeneratorConfig getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new GeneratorConfig();
         }
         return instance;
     }
 
-    private GeneratorConfig() {}
+    private GeneratorConfig() {
+    }
 
     public boolean shouldGenerateFiles() {
         return preparationMode == PreparationMode.GENERATE_FILES;
