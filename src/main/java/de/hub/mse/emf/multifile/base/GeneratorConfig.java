@@ -37,4 +37,8 @@ public class GeneratorConfig {
     public boolean shouldUseExistingFiles() {
         return preparationMode == PreparationMode.FILES_EXIST;
     }
+
+    public boolean shouldGenerateLinks() {
+        return linkProbability > 0.0f;
+    }
 }

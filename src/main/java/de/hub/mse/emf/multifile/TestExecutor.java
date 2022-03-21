@@ -62,7 +62,7 @@ public class TestExecutor {
         config.setLinkProbability(ARGS.getLinkProbability());
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
-        if (config.getLinkProbability() > 0.0) {
+        if (config.shouldGenerateLinks()) {
             System.out.println("Preparing files...");
             var generator = new SvgGenerator();
             generator.generate(new SourceOfRandomness(new Random()), null);

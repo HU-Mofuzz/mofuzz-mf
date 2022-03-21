@@ -38,7 +38,7 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
 
     @Override
     public D generate(SourceOfRandomness sourceOfRandomness, GenerationStatus generationStatus) {
-        if (!prepared && config.getLinkProbability() > 0.0f) {
+        if (!prepared && config.shouldGenerateLinks()) {
             // ensure working directory
             File workDir = Paths.get(config.getWorkingDirectory()).toFile();
             if (!workDir.exists() && !workDir.mkdirs()) {

@@ -185,9 +185,10 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
                 EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness), sourceOfRandomness));
             } else {
                 String objectId = SvgUtil.getRandomObjectId();
-                if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness) && config.getLinkProbability() > 0) {
-
-                    linkPool.add(getObjectIdForFile(target.getName(), objectId));
+                if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness)) {
+                    if (config.shouldGenerateLinks()) {
+                        linkPool.add(getObjectIdForFile(target.getName(), objectId));
+                    }
                 } else {
                     i--; //try again
                 }
