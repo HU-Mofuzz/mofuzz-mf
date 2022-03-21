@@ -33,7 +33,7 @@ EXEC_DIR="$(date +"%Y-%m-%d_%H-%M-%S")"
 TEST_METHOD=( 'svgSalamanderTest' 'testBatik' 'testBatikTranscoder' )
 MODEL_WIDTHS=( 1 5 10 )
 MODEL_DEPTHS=( 1 5 10 )
-INITIAL_FILES=( 10 100 1000 )
+INITIAL_FILES=( 0 )
 DURATION=30 # minutes
 
 # execution variables
@@ -69,7 +69,7 @@ function executeTest() {
     #core execution
     log ""
     log "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT ====="
-    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE 2>/dev/null"
+    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD --linkProb 0 | tee -a $LOGFILE 2>/dev/null"
 
     # copy plot data
     log "Saving Plot data..."
