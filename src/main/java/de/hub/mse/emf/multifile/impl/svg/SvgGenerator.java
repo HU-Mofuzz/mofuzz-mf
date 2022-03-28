@@ -177,12 +177,13 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         svgObject.eSet(SvgUtil.WIDTH_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
         svgObject.eSet(SvgUtil.HEIGHT_ATTRIBUTE, Integer.toString(Math.abs(sourceOfRandomness.nextInt())));
 
-
+        int numberOfGeneratedLinks = 0;
         for (int i = 0; i < config.getModelWidth(); i++) {
 
-            if (sourceOfRandomness.nextDouble() < config.getLinkProbability()) {
-
+            if (sourceOfRandomness.nextDouble() < config.getLinkProbability()
+                    && numberOfGeneratedLinks < config.getLinkNumber()) {
                 EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness), sourceOfRandomness));
+                numberOfGeneratedLinks++;
             } else {
                 String objectId = SvgUtil.getRandomObjectId();
                 if (addRandomObjectToSvgObject(svgObject, objectId, sourceOfRandomness)) {
@@ -194,6 +195,12 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
                 }
             }
         }
+
+        //if not all links were generated during normal execute
+        for (int i = numberOfGeneratedLinks; i < config.getLinkNumber(); i++) {
+            EmfUtil.makeContain(svgObject, generateUseElement(linkPool.getRandomLink(sourceOfRandomness), sourceOfRandomness));
+        }
+
 
         var svgDoc = SvgUtil.eObjectToDocument(svgObject);
 

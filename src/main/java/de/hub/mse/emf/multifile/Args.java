@@ -25,13 +25,16 @@ public class Args {
     private int filesToGenerate = 2;
 
     @Parameter(names = "--modelDepth", description = "Maximum depth of the models generated")
-    private int modelDepth = 2;
+    private int modelDepth = 4;
 
     @Parameter(names = "--modelWidth", description = "Maximum width of a model")
-    private int modelWidth = 2;
+    private int modelWidth = 15;
 
-    @Parameter(names = {"--linkProb", "--links"}, description = "Probability of links used in one model")
-    private double linkProbability = 0.5f;
+    @Parameter(names = {"--linkProb"}, description = "Probability of links used in one model")
+    private double linkProbability = 0.0f;
+
+    @Parameter(names = {"--linkNumber", "--links"}, description = "Number of links used in one model")
+    private int linkNumber = 7;
 
     @Parameter(names = {"--duration", "--minutes"}, description = "The duration of the test run in minutes")
     private int durationMinutes = 1;

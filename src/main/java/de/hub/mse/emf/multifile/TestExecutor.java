@@ -60,6 +60,7 @@ public class TestExecutor {
         config.setModelDepth(ARGS.getModelDepth());
         config.setModelWidth(ARGS.getModelWidth());
         config.setLinkProbability(ARGS.getLinkProbability());
+        config.setLinkNumber(ARGS.getLinkNumber());
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
 
         if (config.shouldGenerateLinks()) {

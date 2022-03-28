@@ -11,6 +11,7 @@ public class GeneratorConfig {
     private int modelWidth = 10;
     private int modelDepth = 10;
     private double linkProbability = 0.5f;
+    private double linkNumber = 0.5f;
     private PreparationMode preparationMode;
 
     private String workingDirectory;
@@ -39,6 +40,9 @@ public class GeneratorConfig {
     }
 
     public boolean shouldGenerateLinks() {
-        return linkProbability > 0.0f;
+        return linkProbability > 0.0f || linkNumber > 0;
+    }
+    public double getLinkProbability() {
+        return linkProbability > 0 ? linkProbability : Math.min(0.9f, linkNumber / 10.0f);
     }
 }
