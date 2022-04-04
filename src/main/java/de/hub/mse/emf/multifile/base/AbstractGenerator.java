@@ -65,7 +65,6 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                                     }
                                 })
                                 .map(path -> Paths.get(path).toFile().getName())
-                                .peek(System.out::println)
                                 .collect(Collectors.toList()));
             }
             linkPool = collectLinksFromConfig(sourceOfRandomness);

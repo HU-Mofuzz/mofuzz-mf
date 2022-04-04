@@ -40,7 +40,7 @@ public class GeneratorConfig {
     }
 
     public boolean shouldGenerateLinks() {
-        return linkProbability > 0.0f || linkNumber > 0;
+        return linkNumber > 0;
     }
     public double getLinkProbability() {
         return linkProbability > 0 ? linkProbability : Math.min(0.9f, linkNumber / 10.0f);

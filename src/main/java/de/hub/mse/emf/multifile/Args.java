@@ -31,10 +31,10 @@ public class Args {
     private int modelWidth = 15;
 
     @Parameter(names = {"--linkProb"}, description = "Probability of links used in one model")
-    private double linkProbability = 0.0f;
+    private double linkProbability = 0.5f;
 
     @Parameter(names = {"--linkNumber", "--links"}, description = "Number of links used in one model")
-    private int linkNumber = 7;
+    private int linkNumber = 0;
 
     @Parameter(names = {"--duration", "--minutes"}, description = "The duration of the test run in minutes")
     private int durationMinutes = 1;

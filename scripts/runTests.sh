@@ -31,9 +31,10 @@ EXEC_DIR="$(date +"%Y-%m-%d_%H-%M-%S")"
 
 # execution related constants
 TEST_METHOD=( 'svgSalamanderTest' 'testBatik' 'testBatikTranscoder' )
-MODEL_WIDTHS=( 1 5 10 )
-MODEL_DEPTHS=( 1 5 10 )
-INITIAL_FILES=( 0 )
+MODEL_WIDTHS=( 1 2 4 8 )
+MODEL_DEPTHS=( 1 2 4 8 )
+INITIAL_FILES=( 1 10 20 40)
+NUMBER_OF_LINKS=( 0 1 2 4 )
 DURATION=30 # minutes
 
 # execution variables
@@ -41,6 +42,7 @@ CURRENT_METHOD=""
 CURRENT_WIDTH=""
 CURRENT_DEPTH=""
 CURRENT_INIT=""
+CURRENT_LINKS=""
 
 function log() {
   echo "$1" | tee -a "$LOGFILE"
@@ -53,7 +55,7 @@ function savePlotData() {
     mkdir -p "$PLOT_DATA_SAVE_DIR"
   fi
   # copy passed executions plot data and rename it meaningful
-  cp "$1" "$PLOT_DATA_SAVE_DIR/${CURRENT_METHOD}_w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}.csv"
+  cp "$1" "$PLOT_DATA_SAVE_DIR/${CURRENT_METHOD}_w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}_l${CURRENT_LINKS}.csv"
 }
 
 function executeTest() {
@@ -68,8 +70,8 @@ function executeTest() {
 
     #core execution
     log ""
-    log "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT ====="
-    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD --linkProb 0 | tee -a $LOGFILE 2>/dev/null"
+    log "===== Executing $CURRENT_METHOD with width=$CURRENT_WIDTH depth=$CURRENT_DEPTH initFiles=$CURRENT_INIT links=${CURRENT_LINKS} ====="
+    /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --initialFiles $CURRENT_INIT --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --links $CURRENT_LINKS --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE 2>/dev/null"
 
     # copy plot data
     log "Saving Plot data..."
@@ -79,24 +81,33 @@ function executeTest() {
     zip -r "$BASEDIR/work.zip" "$WORKING_DIR" && rm -r "$WORKING_DIR"
 }
 
+function iterateLinks() {
+  for links in "${ NUMBER_OF_LINKS [@]}"; do
+    CURRENT_LINKS="$links"
+    # execute test
+    executeTest
+  done
+}
 function iterateInitFiles() {
   for initSize in "${INITIAL_FILES[@]}"; do
     CURRENT_INIT="$initSize"
-    # execute test
-    executeTest
+    # iterate link sizes
+    iterateLinks
   done
 }
 
 function iterateModelDepth() {
     for depth in "${MODEL_DEPTHS[@]}"; do
       CURRENT_DEPTH="$depth"
-      iterateInitFiles
+        # iterate init files
+        iterateInitFiles
     done
 }
 
 function iterateModelWidths() {
     for width in "${MODEL_WIDTHS[@]}"; do
       CURRENT_WIDTH="$width"
+      # iterate model depths
       iterateModelDepth
     done
 }
@@ -109,6 +120,7 @@ cd "$EXEC_DIR" || return 1
 # execution itself
 for method in "${TEST_METHOD[@]}"; do
   CURRENT_METHOD="$method"
+  # iterate model widths
   iterateModelWidths
 done
 
