@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 
 import static de.hub.mse.emf.multifile.base.emf.EmfUtil.RESOURCE_SET;
 
-@UtilityClass
+//@UtilityClass
 @Slf4j
-public class SvgUtil {
+public final class SvgUtil {
 
-    private Pattern SVG_ID_PATTERN = Pattern.compile("(id=\"[a-zA-Z0-9]+\")");
+    private static Pattern SVG_ID_PATTERN = Pattern.compile("(id=\"[a-zA-Z0-9]+\")");
 
     public static final EPackage SVG_PACKAGE;
     public static final EPackage XLINK_PACKAGE;
@@ -91,7 +91,7 @@ public class SvgUtil {
         }));
     }
 
-    public Set<String> extractLinkables(GeneratorConfig config) {
+    public static Set<String> extractLinkables(GeneratorConfig config) {
 
         Set<String> linkables = new HashSet<>();
 
@@ -106,7 +106,7 @@ public class SvgUtil {
         return linkables;
     }
 
-    public Set<String> extractLinkables(File file) {
+    public static Set<String> extractLinkables(File file) {
         var linkables = new HashSet<String>();
         try {
             String svgString = Files.readString(file.toPath());
@@ -123,11 +123,11 @@ public class SvgUtil {
         return linkables;
     }
 
-    public Set<String> extractUseLinksRecursive(File file) {
+    public static Set<String> extractUseLinksRecursive(File file) {
         return extractUseLinksRecursiveInternal(file, new HashSet<>());
     }
 
-    private Set<String> extractUseLinksRecursiveInternal(File file, Set<String> searchedFiles) {
+    private static Set<String> extractUseLinksRecursiveInternal(File file, Set<String> searchedFiles) {
         searchedFiles.add(file.getName());
         var links = new HashSet<String>();
         links.add(file.getName());
@@ -147,7 +147,7 @@ public class SvgUtil {
         return links;
     }
 
-    private Set<String> extractAllUseLinksFromElementTree(Element element) {
+    private static Set<String> extractAllUseLinksFromElementTree(Element element) {
         var links = new HashSet<String>();
         for (int i = 0; i < element.getChildNodes().getLength(); i++) {
             var childNode = element.getChildNodes().item(i);
@@ -164,15 +164,15 @@ public class SvgUtil {
         return links;
     }
 
-    public String getRandomFileName() {
+    public static String getRandomFileName() {
         return UUID.randomUUID().toString() + ".svg";
     }
 
-    public String getObjectIdForFile(String fileName, String objectId) {
+    public static String getObjectIdForFile(String fileName, String objectId) {
         return fileName + "#" + objectId;
     }
 
-    public String getFilenameFromObjectId(String objectId) {
+    public static String getFilenameFromObjectId(String objectId) {
         return objectId.split("#")[0];
     }
 
@@ -185,11 +185,11 @@ public class SvgUtil {
         return id;
     }
 
-    public EClass getRandomSVGReference(SourceOfRandomness source) {
+    public static EClass getRandomSVGReference(SourceOfRandomness source) {
         return EmfUtil.getRandomReferenceEClassFromEClass(SVG_CLASS, source);
     }
 
-    public EObject generateUseElement(String link, SourceOfRandomness source) {
+    public static EObject generateUseElement(String link, SourceOfRandomness source) {
         var object = SVG_PACKAGE.getEFactoryInstance().create(USE_CLASS);
 
         var href = EmfCache.getAttributeForClass(USE_CLASS, "href").orElseThrow(IllegalStateException::new);
@@ -208,7 +208,7 @@ public class SvgUtil {
         return object;
     }
 
-    private String eObjectToXmlString(EObject eObject) {
+    private static String eObjectToXmlString(EObject eObject) {
         XMLResource modelResource = (XMLResource) RESOURCE_SET.createResource(URI.createFileURI("a.svg"));
         modelResource.setEncoding("UTF-8");
         modelResource.getContents().add(eObject);
@@ -226,17 +226,17 @@ public class SvgUtil {
         return writer.toString();
     }
 
-    public Document eObjectToDocument(EObject eObject) {
+    public static Document eObjectToDocument(EObject eObject) {
         return XmlUtil.stringToDocument(eObjectToXmlString(eObject));
     }
 
-    public void clearChildren(Element element) {
+    public static void clearChildren(Element element) {
         while (element.getFirstChild() != null) {
             element.removeChild(element.getFirstChild());
         }
     }
 
-    public Set<String> extractLinkedFilesRecursive(File file) {
+    public static Set<String> extractLinkedFilesRecursive(File file) {
         Set<String> linkedFiles = new HashSet<>();
         linkedFiles.add(file.getName());
         if (file.exists() && file.isFile()) {

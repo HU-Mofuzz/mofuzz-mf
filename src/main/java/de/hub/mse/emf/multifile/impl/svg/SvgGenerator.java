@@ -1,5 +1,6 @@
 package de.hub.mse.emf.multifile.impl.svg;
 
+import com.pholser.junit.quickcheck.Pair;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.base.AbstractGenerator;
 import de.hub.mse.emf.multifile.base.GeneratorConfig;
@@ -9,11 +10,11 @@ import de.hub.mse.emf.multifile.base.emf.EmfUtil;
 import de.hub.mse.emf.multifile.impl.svg.attributes.AttributeGeneratorMap;
 import de.hub.mse.emf.multifile.util.XmlUtil;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.ecore.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import javax.print.DocFlavor;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.*;
@@ -36,6 +37,10 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
     public SvgGenerator() {
         super(File.class, GeneratorConfig.getInstance());
     }
+    @SneakyThrows
+    public SvgGenerator(Class<File> type, GeneratorConfig config) {
+        super(type,config);
+    }
 
     @Override
     protected LinkPool<String> collectLinksFromConfig(SourceOfRandomness sourceOfRandomness) {
@@ -51,9 +56,9 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
                 String fileName = SvgUtil.getRandomFileName();
                 try {
                     var content = generateRandomSvgObject(sourceOfRandomness);
-                    Files.writeString(Paths.get(config.getWorkingDirectory(), fileName), content.getLeft(),
+                    Files.writeString(Paths.get(config.getWorkingDirectory(), fileName), content.first,
                             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                    content.getRight().stream().map(id -> getObjectIdForFile(fileName, id)).forEach(pool::add);
+                    content.second.stream().map(id -> getObjectIdForFile(fileName, id)).forEach(pool::add);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -113,7 +118,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-        return Pair.of(XmlUtil.documentToString(svgXmlDoc), aggregatedIds);
+        return new Pair<> (XmlUtil.documentToString(svgXmlDoc), aggregatedIds);
     }
 
     private EObject generateEObject(EClass clazz, SourceOfRandomness randomness) {

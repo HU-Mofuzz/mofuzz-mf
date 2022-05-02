@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.nio.file.Files;
+
 @Getter
 @ToString
 public class Args {
@@ -15,7 +17,7 @@ public class Args {
 
     @Setter
     @Parameter(names = {"--workingDirectory", "--workingDir"}, description = "Working directory where the test files will be generated")
-    private String workingDirectory;
+    private String workingDirectory = "test_svg";
 
     @Setter
     @Parameter(names = {"--testDirectory", "--testDir"}, description = "Directory for the Zest test files")
@@ -28,7 +30,7 @@ public class Args {
     private int modelDepth = 4;
 
     @Parameter(names = "--modelWidth", description = "Maximum width of a model")
-    private int modelWidth = 15;
+    private int modelWidth = 4;
 
     @Parameter(names = {"--linkProb"}, description = "Probability of links used in one model")
     private double linkProbability = 0.5f;
