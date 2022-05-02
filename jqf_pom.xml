@@ -99,8 +99,6 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>main</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>edu.berkeley.cs.jqf</groupId>
