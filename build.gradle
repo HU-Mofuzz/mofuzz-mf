@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'maven-publish'
 }
 
 group 'de.hub.mse.emf'
@@ -62,4 +63,14 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:1.6.1'
     implementation 'com.beust:jcommander:1.82'
 
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'mofuzz-mf'
+            version = '1.0'
+            from components.java
+        }
+    }
 }
