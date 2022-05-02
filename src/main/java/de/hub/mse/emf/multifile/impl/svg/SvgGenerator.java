@@ -117,6 +117,7 @@ public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfi
         var svgNode = (Element) svgXmlDoc.getElementsByTagName("svg").item(0);
         svgNode.setAttribute("version", "1.1");
         svgNode.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        svgNode.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
         return new Pair<> (XmlUtil.documentToString(svgXmlDoc), aggregatedIds);
     }
