@@ -52,12 +52,16 @@ public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends
                                 .filter(path -> {
                                     try {
                                         var src = Paths.get(path);
+                                        if(src.getParent() == null) {
+                                            src = Paths.get(config.getWorkingDirectory(), path);
+                                        }
                                         var dst = Paths.get(config.getWorkingDirectory());
+                                        System.out.println(src + " -> " + dst);
                                         if(!src.getParent().equals(dst)) {
                                             Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
                                         }
                                         return true;
-                                    } catch (IOException e) {
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                         return false;
                                     }

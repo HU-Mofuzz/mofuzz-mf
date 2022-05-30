@@ -3,6 +3,7 @@ package de.hub.mse.emf.multifile.base;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -17,12 +18,9 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     private Object[] lastArgs;
 
     private final Random random = new Random();
-    private final InputStream randomStream = new InputStream() {
-        @Override
-        public int read() throws IOException {
-            return random.nextInt();
-        }
-    };
+
+    @Setter
+    private InputStream input = null;
 
     public DocumentAwareGraphAwareGuidance(String testName, Duration duration, Long trials, File outputDirectory, DocumentAwareResultListener listener) throws IOException {
         super(testName, duration, trials, outputDirectory, new Random());
@@ -43,6 +41,15 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     public void observeGeneratedArgs(Object[] args) {
         this.lastArgs = args;
 
+    }
+
+    @Override
+    public InputStream getInput() throws GuidanceException {
+        if(input == null) {
+            return super.getInput();
+        } else {
+            return input;
+        }
     }
 
     @Override
