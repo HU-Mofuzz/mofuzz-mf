@@ -80,7 +80,7 @@ public class TestExecutor {
 
         try {
             GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
-                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), 10L, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
+                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), null, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
         } catch (Throwable t) {
             t.printStackTrace();
         }

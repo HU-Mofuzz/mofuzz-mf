@@ -15,7 +15,9 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
@@ -83,5 +85,14 @@ public class SvgTest {
         var outStream = new ByteArrayOutputStream(0);
         TranscoderOutput output = new TranscoderOutput(outStream);
         transcoder.transcode(input, output);
+    }
+
+    @After
+    public void cleanUp(){
+        int k=0;
+    }
+    @BeforeClass
+    public static void setUp(){
+       int k=0;
     }
 }

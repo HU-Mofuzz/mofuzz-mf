@@ -39,7 +39,7 @@ public class Args {
     private int linkNumber = 0;
 
     @Parameter(names = {"--duration", "--minutes"}, description = "The duration of the test run in minutes")
-    private int durationMinutes = 1;
+    private int durationMinutes = 2;
 
     @Parameter(names = {"--help", "/h", "-h"}, description = "Print this argument description", help = true)
     private boolean help;

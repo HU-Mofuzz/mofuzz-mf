@@ -14,7 +14,7 @@
               <option value="-f=jqf_pom.xml" />
               <option value="-Dclass=de.hub.mse.emf.multifile.SvgTest" />
               <option value="-Dmethod=testBatik" />
-              <option value="-Dtime=1m" />
+              <option value="-Dtime=5s" />
               <option value="-Djqf.ei.MAX_INPUT_SIZE=10000000" />
             </list>
           </option>

@@ -1,19 +1,27 @@
 package de.hub.mse.emf.multifile.base;
 
+import de.hub.mse.emf.multifile.base.fuzz.ModelGenerationStatus;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
+import edu.berkeley.cs.jqf.fuzz.util.Coverage;
+import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
+import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Date;
 import java.util.Random;
+import java.util.function.Consumer;
 
 @Slf4j
 public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     private final DocumentAwareResultListener listener;
+    private ModelGenerationStatus generationStatus;
     private Object[] lastArgs;
 
     private final Random random = new Random();
@@ -27,6 +35,9 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     public DocumentAwareGraphAwareGuidance(String testName, Duration duration, Long trials, File outputDirectory, DocumentAwareResultListener listener) throws IOException {
         super(testName, duration, trials, outputDirectory, new Random());
         this.listener = listener;
+        //this.runCoverage =
+        //this.totalCoverage =
+        //this.validCoverage =
     }
 
     public DocumentAwareGraphAwareGuidance(String testName, Duration duration, Long trials, File outputDirectory, File seedInputDir, DocumentAwareResultListener listener) throws IOException {
@@ -42,13 +53,13 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     @Override
     public void observeGeneratedArgs(Object[] args) {
         this.lastArgs = args;
-
     }
+
 
     @Override
     public void handleResult(Result result, Throwable error) throws GuidanceException {
         super.handleResult(result, error);
-        if(listener != null) {
+        if (listener != null) {
             this.listener.handleResultForGeneratedArgs(lastArgs, result, error);
         }
     }
@@ -57,4 +68,9 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     public interface DocumentAwareResultListener {
         void handleResultForGeneratedArgs(Object[] generated, Result result, Throwable error);
     }
+
+    public void setGenStatus(ModelGenerationStatus genstatus) {
+        generationStatus = genstatus;
+    }
+
 }
