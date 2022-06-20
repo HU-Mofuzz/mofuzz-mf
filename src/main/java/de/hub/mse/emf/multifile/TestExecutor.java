@@ -9,6 +9,7 @@ import de.hub.mse.emf.multifile.impl.svg.SvgGenerator;
 import de.hub.mse.emf.multifile.impl.svg.SvgUtil;
 import de.hub.mse.emf.multifile.util.RunDescriptor;
 import de.hub.mse.emf.multifile.util.XmlUtil;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import org.apache.commons.lang3.StringUtils;
@@ -79,8 +80,8 @@ public class TestExecutor {
         config.setPreparationMode(PreparationMode.FILES_EXIST);
 
         try {
-            GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
-                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()), null, new File(ARGS.getTestDirectory()), TestExecutor::handleResult), System.out);
+            GuidedFuzzing.run(XmlTest.class, ARGS.getTestMethod(),
+                    new ZestGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()),  new File(ARGS.getTestDirectory())), System.out);
         } catch (Throwable t) {
             t.printStackTrace();
         }
