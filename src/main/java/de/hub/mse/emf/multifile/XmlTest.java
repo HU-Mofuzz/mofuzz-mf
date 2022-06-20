@@ -41,7 +41,7 @@ public class XmlTest {
     public void svgSalamanderTest(@From(XmlDocumentGenerator.class) @Dictionary("dictionaries/svgAttributes.dict") Document doc) throws IOException {
 
         String content = XmlUtil.documentToString(doc);
-        File inputFile = File.createTempFile(doc.getLocalName(), "svg");
+        File inputFile = File.createTempFile(doc.getLocalName(), ".svg");
         Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
         System.out.println("STARTING ITERATION " + (++iteration) + "\n" + inputFile.getAbsolutePath());
@@ -69,7 +69,7 @@ public class XmlTest {
     @Fuzz
     public void testBatik(@From(XmlDocumentGenerator.class) @Dictionary("dictionaries/svgAttributes.dict") Document doc) throws IOException {
         String content = XmlUtil.documentToString(doc);
-        File inputFile = File.createTempFile(String.valueOf(UUID.randomUUID()), "svg");
+        File inputFile = File.createTempFile(String.valueOf(UUID.randomUUID()), ".svg");
         Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
         System.out.println("STARTING ITERATION " + (++iteration) + "\n" + inputFile.getAbsolutePath());
@@ -85,7 +85,7 @@ public class XmlTest {
     @Fuzz
     public void testBatikTranscoder(@From(XmlDocumentGenerator.class) @Dictionary("dictionaries/svgAttributes.dict") Document doc) throws TranscoderException, IOException {
         String content = XmlUtil.documentToString(doc);
-        File inputFile = File.createTempFile(doc.getLocalName(), "svg");
+        File inputFile = File.createTempFile(doc.getLocalName(), ".svg");
         Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
         System.out.println("STARTING ITERATION " + (++iteration) + "\n" + inputFile.getAbsolutePath());
