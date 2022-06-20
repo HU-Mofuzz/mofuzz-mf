@@ -28,24 +28,22 @@
  */
 package de.hub.mse.emf.multifile.impl.xml;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.generator.Size;
 import com.pholser.junit.quickcheck.internal.GeometricDistribution;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
-import de.hub.mse.emf.multifile.impl.xml.AlphaStringGenerator;
-import de.hub.mse.emf.multifile.impl.xml.Dictionary;
-import de.hub.mse.emf.multifile.impl.xml.DictionaryBackedStringGenerator;
+import de.hub.mse.emf.multifile.base.GeneratorConfig;
 import org.junit.Assume;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 /**
  * A generator for XML documents.
@@ -60,20 +58,26 @@ public class XmlDocumentGenerator extends Generator<Document> {
     private static GeometricDistribution geometricDistribution =
             new GeometricDistribution();
 
-    /** Mean number of child nodes for each XML element. */
-    private static final double MEAN_NUM_CHILDREN = 4;
+    /**
+     * Mean number of child nodes for each XML element.
+     */
+    private double MEAN_NUM_CHILDREN = 4;
 
-    /** Mean number of attributes for each XML element. */
+    /**
+     * Mean number of attributes for each XML element.
+     */
     private static final double MEAN_NUM_ATTRIBUTES = 2;
 
     /**
      * Minimum size of XML tree.
+     *
      * @see {@link #configure(Size)}
      */
     private int minDepth = 0;
 
     /**
      * Maximum size of XML tree.
+     *
      * @see {@link #configure(Size)}
      */
     private int maxDepth = 4;
@@ -82,11 +86,14 @@ public class XmlDocumentGenerator extends Generator<Document> {
 
     public XmlDocumentGenerator() {
         super(Document.class);
+
+        maxDepth = GeneratorConfig.getInstance().getModelDepth();
+        MEAN_NUM_CHILDREN = GeneratorConfig.getInstance().getModelWidth();
     }
 
     /**
      * Configures the minimum/maximum size of the XML document.
-     *
+     * <p>
      * This method is not usually invoked directly. Instead, use
      * the `@Size` annotation on fuzzed parameters to configure
      * automatically.
@@ -114,6 +121,7 @@ public class XmlDocumentGenerator extends Generator<Document> {
 
     /**
      * Generators a random XML document.
+     *
      * @param random a source of pseudo-random values
      * @param status generation state
      * @return a randomly-generated XML document
@@ -154,16 +162,16 @@ public class XmlDocumentGenerator extends Generator<Document> {
 
     private void populateElement(Document document, Element elem, SourceOfRandomness random, GenerationStatus status, int depth) {
         // Add attributes
-        int numAttributes = Math.max(0, geometricDistribution.sampleWithMean(MEAN_NUM_ATTRIBUTES, random)-1);
+        int numAttributes = Math.max(0, geometricDistribution.sampleWithMean(MEAN_NUM_ATTRIBUTES, random) - 1);
         for (int i = 0; i < numAttributes; i++) {
             elem.setAttribute(makeString(random, status), makeString(random, status));
         }
         // Make children
         if (depth < minDepth || (depth < maxDepth && random.nextBoolean())) {
-            int numChildren = Math.max(0, geometricDistribution.sampleWithMean(MEAN_NUM_CHILDREN, random)-1);
+            int numChildren = Math.max(0, geometricDistribution.sampleWithMean(MEAN_NUM_CHILDREN, random) - 1);
             for (int i = 0; i < numChildren; i++) {
                 Element child = document.createElement(makeString(random, status));
-                populateElement(document, child, random, status, depth+1);
+                populateElement(document, child, random, status, depth + 1);
                 elem.appendChild(child);
             }
         } else if (random.nextBoolean()) {

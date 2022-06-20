@@ -31,7 +31,7 @@ public class TestExecutor {
     private static Map<String, Integer> nameCountMap = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
-       System.setProperty("jqf.ei.MAX_INPUT_SIZE","10000000");
+        System.setProperty("jqf.ei.MAX_INPUT_SIZE", "10000000");
         var commander = JCommander.newBuilder()
                 .addObject(ARGS)
                 .build();
@@ -80,8 +80,16 @@ public class TestExecutor {
         config.setPreparationMode(PreparationMode.FILES_EXIST);
 
         try {
-            GuidedFuzzing.run(XmlTest.class, ARGS.getTestMethod(),
-                    new ZestGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()),  new File(ARGS.getTestDirectory())), System.out);
+             GuidedFuzzing.run(XmlTest.class, ARGS.getTestMethod(),
+             new ZestGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()),  new File(ARGS.getTestDirectory())), System.out);
+             /**
+            GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
+                    new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(),
+                            Duration.ofMinutes(ARGS.getDurationMinutes()),
+                            null,
+                            new File(ARGS.getTestDirectory()),
+                            TestExecutor::handleResult),
+                    System.out);    **/
         } catch (Throwable t) {
             t.printStackTrace();
         }
