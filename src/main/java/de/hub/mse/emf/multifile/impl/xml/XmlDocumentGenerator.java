@@ -154,7 +154,7 @@ public class XmlDocumentGenerator extends Generator<Document> {
     }
 
     private Document populateDocument(Document document, SourceOfRandomness random, GenerationStatus status) {
-        Element root = document.createElement(makeString(random, status));
+        Element root = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         populateElement(document, root, random, status, 0);
         document.appendChild(root);
         return document;

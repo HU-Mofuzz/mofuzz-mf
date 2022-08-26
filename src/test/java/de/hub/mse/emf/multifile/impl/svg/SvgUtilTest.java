@@ -13,10 +13,10 @@ import static de.hub.mse.emf.multifile.impl.svg.SvgUtil.SVG_PACKAGE;
 
 public class SvgUtilTest {
 
-    @Test
+
     public void extractLinks() {
         GeneratorConfig config = GeneratorConfig.getInstance();
-        config.setWorkingDirectory("C:\\Users\\Laokoon\\Desktop\\Test\\test");
+        config.setWorkingDirectory("C:\\Users\\Alena\\Desktop\\Test\\test");
         config.setExistingFiles(Arrays.asList(
                 "a.svg",
                 "b.svg"

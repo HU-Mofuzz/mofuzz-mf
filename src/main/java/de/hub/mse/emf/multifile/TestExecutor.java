@@ -13,12 +13,14 @@ import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
@@ -80,21 +82,72 @@ public class TestExecutor {
         config.setPreparationMode(PreparationMode.FILES_EXIST);
 
         try {
+             /**
              GuidedFuzzing.run(XmlTest.class, ARGS.getTestMethod(),
              new ZestGuidance(ARGS.getTestMethod(), Duration.ofMinutes(ARGS.getDurationMinutes()),  new File(ARGS.getTestDirectory())), System.out);
-             /**
-            GuidedFuzzing.run(SvgTest.class, ARGS.getTestMethod(),
+              **/
+            GuidedFuzzing.run(XmlTest.class, ARGS.getTestMethod(),
                     new DocumentAwareGraphAwareGuidance(ARGS.getTestMethod(),
                             Duration.ofMinutes(ARGS.getDurationMinutes()),
                             null,
                             new File(ARGS.getTestDirectory()),
-                            TestExecutor::handleResult),
-                    System.out);    **/
+                            TestExecutor::handleXMLResult),
+                    System.out);
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
 
+    private static void handleXMLResult(Object[] files, Result result, Throwable throwable) throws IOException {
+        if (result == Result.FAILURE && files.length == 1 && files[0] instanceof Document) {
+            var doc = (Document) files[0];
+            String name;
+            String stackTrace;
+            if (throwable == null) {
+                name = "NONE";
+                stackTrace = StringUtils.EMPTY;
+            } else {
+                name = throwable.getClass().getName();
+                stackTrace = throwableToStacktraceText(throwable);
+            }
+            if (!stackTraces.contains(stackTrace)) {
+                if (stackTrace.length() > 0) {
+                    stackTraces.add(stackTrace);
+                }
+                File errorDirectory = Paths.get(ARGS.getFailDirectory(), name).toFile();
+                if (!errorDirectory.exists()) {
+                    errorDirectory.mkdir();
+                }
+                // sub dir
+                var count = nameCountMap.getOrDefault(name, 0);
+                nameCountMap.put(name, count + 1);
+                String subDir = Integer.toString(count);
+                Paths.get(ARGS.getFailDirectory(), name, subDir).toFile().mkdir();
+
+                // create descriptor
+                var descriptor = new RunDescriptor();
+
+                String content = XmlUtil.documentToString(doc);
+
+                // create file
+                Paths.get(ARGS.getFailDirectory(), name, subDir, "files").toFile().mkdir();
+
+                Path p = Paths.get(ARGS.getFailDirectory(), name, subDir, "files", UUID.randomUUID() + ".svg");
+                Files.write(p, content.lines().collect(Collectors.toList()));
+
+                descriptor.setMainFile(p.toFile().getAbsolutePath());
+                descriptor.setThrowable(throwable);
+
+                String descriptorText = XmlUtil.documentToString(descriptor.toXML());
+                try {
+                    Files.writeString(Paths.get(ARGS.getFailDirectory(), name, subDir, "descriptor.xml"), descriptorText);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
     private static void handleResult(Object[] files, Result result, Throwable throwable) {
         if (result == Result.FAILURE && files.length == 1 && files[0] instanceof File) {
             var mainFile = (File) files[0];

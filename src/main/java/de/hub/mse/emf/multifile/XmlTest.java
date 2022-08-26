@@ -29,6 +29,7 @@ import org.w3c.dom.svg.SVGDocument;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -43,30 +44,29 @@ public class XmlTest {
 
     @Fuzz
     public void svgSalamanderTest(@From(XmlDocumentGenerator.class) @Dictionary("dictionaries/svgAttributes.dict") Document doc) throws IOException {
-        System.out.println("STARTING ITERATION " + (++iteration) );
         String content = XmlUtil.documentToString(doc);
 
         var config = GeneratorConfig.getInstance();
         File workingDir = new File(config.getWorkingDirectory());
 
-        File inputFile = new File( workingDir, UUID.randomUUID()+".svg");
-        Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
+        System.out.println("STARTING ITERATION " + (++iteration) + " - " + workingDir.getAbsolutePath());
 
-        System.out.println(inputFile.getAbsolutePath());
+        File inputFile = new File(workingDir, UUID.randomUUID() + ".svg");
+        // Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
         SVGUniverse universe = SVGCache.getSVGUniverse();
 
-        for (var file : Objects.requireNonNull(workingDir.listFiles())) {
-            if (file.isDirectory() ||
-                    file.getAbsolutePath().equals(inputFile.getAbsolutePath())) {
-                continue;
-            }
-            universe.loadSVG(file.toURI().toURL());
-        }
+        /**   for (var file : Objects.requireNonNull(workingDir.listFiles())) {
+         if (file.isDirectory() ||
+         file.getAbsolutePath().equals(inputFile.getAbsolutePath())) {
+         continue;
+         }
+         universe.loadSVG(file.toURI().toURL());
+         }*/
 
-        universe.loadSVG(inputFile.toURI().toURL());
+        var newuri = universe.loadSVG(new StringReader(content), inputFile.getName());
 
-        var diagram = universe.getDiagram(inputFile.toURI());
+        var diagram = universe.getDiagram(newuri);
 
         Assert.assertNotNull(diagram);
     }
@@ -78,15 +78,15 @@ public class XmlTest {
         var config = GeneratorConfig.getInstance();
         File workingDir = new File(config.getWorkingDirectory());
 
-        File inputFile = new File( workingDir, UUID.randomUUID()+".svg");
-        Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
+        File inputFile = new File(workingDir, UUID.randomUUID() + ".svg");
+        // Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
-        System.out.println("STARTING ITERATION " + (++iteration) + "\n" + inputFile.getAbsolutePath());
+        System.out.println("STARTING ITERATION " + (++iteration) + " - " + workingDir.getAbsolutePath());
 
         String parser = XMLResourceDescriptor.getXMLParserClassName();
         SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
 
-        SVGDocument svgdoc = f.createSVGDocument(inputFile.toURI().toString());
+        SVGDocument svgdoc = f.createSVGDocument(inputFile.toURI().toString(), new StringReader(content));
 
         Assert.assertNotNull(svgdoc);
     }
@@ -97,15 +97,15 @@ public class XmlTest {
         var config = GeneratorConfig.getInstance();
         File workingDir = new File(config.getWorkingDirectory());
 
-        File inputFile = new File( workingDir, UUID.randomUUID()+".svg");
-        Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
+        File inputFile = new File(workingDir, UUID.randomUUID() + ".svg");
+        //Files.write(inputFile.toPath(), content.lines().collect(Collectors.toList()));
 
-        System.out.println("STARTING ITERATION " + (++iteration) + "\n" + inputFile.getAbsolutePath());
+        System.out.println("STARTING ITERATION " + (++iteration)  + " - " + workingDir.getAbsolutePath());
 
         PNGTranscoder transcoder = new PNGTranscoder();
         transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, 1000f);
         transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, 1000f);
-        TranscoderInput input = new TranscoderInput(inputFile.toURI().toString());
+        TranscoderInput input = new TranscoderInput(new StringReader(content));
 
         var outStream = new ByteArrayOutputStream(0);
         TranscoderOutput output = new TranscoderOutput(outStream);

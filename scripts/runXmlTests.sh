@@ -27,10 +27,10 @@ JAR_PATH="$2"
 # file constants
 PLOT_DATA_SAVE_DIR="./plot_data"
 LOGFILE="./executor.log"
-EXEC_DIR="$(date +"%Y-%m-%d_%H-%M-%S")"
+EXEC_DIR="$(date +"%Y-%m-%d_%H-%M-%S")-xml"
 
 # execution related constants
-TEST_METHOD=( 'svgSalamanderTest' )
+TEST_METHOD=( 'testBatikTranscoder' 'svgSalamanderTest' )
 #TEST_METHOD=( 'svgSalamanderTest' 'testBatik' 'testBatikTranscoder' )
 #MODEL_WIDTHS=( 1 2 4 8 )
 #MODEL_DEPTHS=( 1 2 4 8 )
@@ -38,16 +38,14 @@ TEST_METHOD=( 'svgSalamanderTest' )
 #NUMBER_OF_LINKS=( 0 1 2 4 )
 #DURATION=30 # minutes
 
-MODEL_WIDTHS=( 1 4 8 )
-MODEL_DEPTHS=( 1 4 8 )
-DURATION=1 # minutes
+MODEL_WIDTHS=( 1 5 10 )
+MODEL_DEPTHS=( 1 5 10 )
+DURATION=10 # minutes
 
 # execution variables
 CURRENT_METHOD=""
 CURRENT_WIDTH=""
 CURRENT_DEPTH=""
-CURRENT_INIT=""
-CURRENT_LINKS=""
 
 function log() {
   echo "$1" | tee -a "$LOGFILE"
@@ -65,7 +63,7 @@ function savePlotData() {
 
 function executeTest() {
     # generate dir names
-    BASEDIR="./${CURRENT_METHOD}/w${CURRENT_WIDTH}_d${CURRENT_DEPTH}_i${CURRENT_INIT}"
+    BASEDIR="./${CURRENT_METHOD}/w${CURRENT_WIDTH}_d${CURRENT_DEPTH}"
     FAIL_DIR="$BASEDIR/fail"
     WORKING_DIR="$BASEDIR/work"
     TEST_DIR="$BASEDIR/test"
@@ -79,11 +77,11 @@ function executeTest() {
     /usr/bin/env bash -c "$DRIVER_PATH --illegal-access=permit -Xmx4G -jar $JAR_PATH --failDir $FAIL_DIR --workingDir $WORKING_DIR --testDir $TEST_DIR --modelDepth $CURRENT_DEPTH --modelWidth $CURRENT_WIDTH --duration $DURATION $CURRENT_METHOD | tee -a $LOGFILE 2>/dev/null"
 
     # copy plot data
-    #log "Saving Plot data..."
-    #savePlotData "$TEST_DIR/plot_data"
+    log "Saving Plot data... $PLOT_DATA_SAVE_DIR/${CURRENT_METHOD}_w${CURRENT_WIDTH}_d${CURRENT_DEPTH}.csv"
+    savePlotData "$TEST_DIR/plot_data"
 
-    #log "Archiving working directory..."
-    #zip -r "$BASEDIR/work.zip" "$WORKING_DIR" && rm -r "$WORKING_DIR"
+    log "Archiving working directory..."
+    zip -r "$BASEDIR/work.zip" "$WORKING_DIR" && rm -r "$WORKING_DIR"
 }
 
 

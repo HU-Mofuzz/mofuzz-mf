@@ -8,6 +8,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -56,6 +57,7 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
     }
 
 
+    @SneakyThrows
     @Override
     public void handleResult(Result result, Throwable error) throws GuidanceException {
         super.handleResult(result, error);
@@ -66,7 +68,7 @@ public class DocumentAwareGraphAwareGuidance extends ZestGuidance {
 
     @FunctionalInterface
     public interface DocumentAwareResultListener {
-        void handleResultForGeneratedArgs(Object[] generated, Result result, Throwable error);
+        void handleResultForGeneratedArgs(Object[] generated, Result result, Throwable error) throws IOException;
     }
 
     public void setGenStatus(ModelGenerationStatus genstatus) {
