@@ -5,7 +5,7 @@ import lombok.*;
 import java.util.Collection;
 
 @Data
-public class GeneratorConfig {
+public class GeneratorConfig implements IGeneratorConfig {
 
     private int filesToGenerate = 1;
     private int modelWidth = 10;
@@ -28,12 +28,4 @@ public class GeneratorConfig {
     }
 
     private GeneratorConfig() {}
-
-    public boolean shouldGenerateFiles() {
-        return preparationMode == PreparationMode.GENERATE_FILES;
-    }
-
-    public boolean shouldUseExistingFiles() {
-        return preparationMode == PreparationMode.FILES_EXIST;
-    }
 }

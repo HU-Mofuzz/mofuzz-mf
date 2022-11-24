@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @param <L> The Link type between multiple documents, e.g. {@link String} in SVG/XML xlink hrefs
  * @param <C> The configuration type for the generation and preparation
  */
-public abstract class AbstractGenerator<D, L, C extends GeneratorConfig> extends Generator<D> {
+public abstract class AbstractGenerator<D, L, C extends IGeneratorConfig> extends Generator<D> {
 
     protected final C config;
     private boolean prepared = false;
