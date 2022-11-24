@@ -12,7 +12,6 @@ public class LinkPool<L> implements List<L>{
     private final List<L> pool = new ArrayList<>();
 
     public L getRandomLink(SourceOfRandomness source) {
-        int index = source.nextInt(pool.size());
-        return pool.get(index);
+        return source.choose(this);
     }
 }
