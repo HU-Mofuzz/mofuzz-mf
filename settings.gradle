@@ -1,2 +1,3 @@
 rootProject.name = 'mofuzz-multifile'
+include  'mofuzz-mf-core',  'mofuzz-mf-impl'
 

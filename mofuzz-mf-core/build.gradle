@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group rootProject.group
+version rootProject.version
+sourceCompatibility = '11'
+targetCompatibility  = '11'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    implementation 'com.pholser:junit-quickcheck-generators:1.0'
+    implementation 'edu.berkeley.cs.jqf:jqf-fuzz:1.9'
+    implementation 'org.slf4j:slf4j-api:1.6.1'
+    implementation 'org.slf4j:slf4j-simple:1.6.1'
+}
+
+jar {
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it).matching {
+                exclude 'META-INF/*.*'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'mofuzz-mf-core'
+            version = '1.0'
+
+            from components.java
+        }
+    }
+}

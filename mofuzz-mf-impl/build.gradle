@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'maven-publish'
+}
+
+group rootProject.group
+version rootProject.version
+sourceCompatibility = '11'
+targetCompatibility  = '11'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':mofuzz-mf-core')
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    implementation 'org.slf4j:slf4j-api:1.6.1'
+    implementation 'org.slf4j:slf4j-simple:1.6.1'
+    implementation 'com.beust:jcommander:1.82'
+
+    implementation 'com.pholser:junit-quickcheck-generators:1.0'
+    implementation 'edu.berkeley.cs.jqf:jqf-fuzz:1.9'
+    implementation 'org.eclipse.emf:org.eclipse.emf.ecore:2.25.0'
+    implementation 'org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.16.0'
+    implementation 'com.google.guava:guava:31.0.1-jre'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'com.kitfox.svg:svg-salamander:1.0'
+    implementation 'org.apache.xmlgraphics:batik-codec:1.14'
+    implementation 'org.apache.xmlgraphics:batik-util:1.14'
+    implementation 'org.apache.xmlgraphics:batik-anim:1.14'
+    implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
+
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testImplementation project(':mofuzz-mf-core')
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'com.pholser:junit-quickcheck-generators:1.0'
+}
+
+application {
+    mainClass = 'de.hub.mse.emf.multifile.TestExecutor'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'de.hub.mse.emf.multifile.TestExecutor'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it).matching {
+                exclude 'META-INF/*.*'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'mofuzz-mf-impl'
+            version = '1.0'
+
+            from components.java
+        }
+    }
+}
