@@ -1,0 +1,25 @@
+plugins {
+  id 'java'
+  id "com.github.node-gradle.node" version "3.5.1"
+}
+
+group = rootProject.group
+version = rootProject.version
+
+node {
+  version = '18.16.0'
+  download = true
+  nodeProxySettings = ProxySettings.SMART
+}
+
+npm_run_build {
+  inputs.files('package.json', 'package-lock.json', 'angular.json', 'tsconfig.json')
+  inputs.dir('src')
+  inputs.dir(fileTree("node_modules").exclude(".cache"))
+  outputs.dir('dist')
+}
+
+jar.dependsOn 'npm_run_build'
+jar {
+  from 'dist/mofuzz-document-server-frontend' into 'static'
+}

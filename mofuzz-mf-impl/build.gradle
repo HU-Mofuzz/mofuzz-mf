@@ -50,6 +50,7 @@ application {
     mainClass = 'de.hub.mse.emf.multifile.TestExecutor'
 }
 
+jar.dependsOn ':mofuzz-mf-core:jar'
 jar {
     manifest {
         attributes 'Main-Class': 'de.hub.mse.emf.multifile.TestExecutor'
