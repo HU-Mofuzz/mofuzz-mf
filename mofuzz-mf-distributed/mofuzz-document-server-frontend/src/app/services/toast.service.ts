@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition} from "@angular/material/snack-bar";
 
 
 declare type MessageType = 'info' | 'error';
@@ -32,7 +32,9 @@ export class ToastService {
       this.currentlyShowing = true;
       const next = this.messageQueue.pop()!;
       this.snackBar.open(`${next.type.toUpperCase()}: ${next.message}`, 'OK', {
-        duration: 3000
+        duration: 3000,
+        horizontalPosition: 'right',
+        verticalPosition: 'bottom'
       }).afterDismissed().subscribe(_ => {
           this.currentlyShowing = false;
           this.pollMessage();
