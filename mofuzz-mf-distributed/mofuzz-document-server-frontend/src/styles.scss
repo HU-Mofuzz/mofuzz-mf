@@ -1,1 +1,36 @@
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #303030;
+  color: white;
+}
+
+.debug {
+  border: 1px red solid;
+}
+
+mat-card {
+  padding: 0.5rem;
+  margin: 0.5rem;
+}
+
+mat-card-title {
+  padding: 0.5rem;
+}
+
+mat-card-content {
+  padding: 0.5rem;
+}
+
+textarea {
+  background: #303030;
+  color: white;
+}
+
+.button-bar {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
