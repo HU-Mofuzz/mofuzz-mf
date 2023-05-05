@@ -33,4 +33,7 @@ textarea {
 .button-bar {
   margin-top: 1rem;
   margin-bottom: 1rem;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem 0.5rem;
 }
