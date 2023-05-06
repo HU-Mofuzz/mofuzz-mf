@@ -2,7 +2,6 @@ package de.hub.mse.server.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -28,6 +27,17 @@ public class ServiceConfig {
     private String[] mailReceiver;
     @Value("${service.mail.from:}")
     private String mailFrom;
+
+    @Value("${service.documents.dir:${user.home}}")
+    private String documentDirectory;
+
+    @Value("${service.health.cpuWarnQuota:0.9}")
+    private double healthCpuWarnQuota;
+
+    @Value("${service.health.memoryWarnQuota:0.9}")
+    private double healthMemoryWarnQuota;
+    @Value("${service.health.diskWarnQuota:0.8}")
+    private double healthDiskWarnQuota;
 
     @Bean
     public JavaMailSender getJavaMailSender() {
