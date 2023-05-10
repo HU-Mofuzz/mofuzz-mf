@@ -1,0 +1,39 @@
+<h1 mat-dialog-title>Add Experiment</h1>
+<mat-dialog-content>
+    <div class="field-list">
+        <mat-form-field appearance="fill">
+            <mat-label>Description</mat-label>
+            <input matInput [formControl]="description" [(ngModel)]="experiment.description">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Document Count</mat-label>
+            <input matInput [formControl]="documentCount" [(ngModel)]="experiment.documentCount">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Document Width</mat-label>
+            <input matInput [formControl]="documentWidth" [(ngModel)]="experiment.documentWidth">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Document Height</mat-label>
+            <input matInput [formControl]="documentHeight" [(ngModel)]="experiment.documentHeight">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Sheets per Document</mat-label>
+            <input matInput [formControl]="sheetsPerDocument" [(ngModel)]="experiment.sheetsPerDocument">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Tree-Depth</mat-label>
+            <input matInput [formControl]="treeDepth" [(ngModel)]="experiment.treeDepth">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Timeout(ms)</mat-label>
+            <input matInput [formControl]="timeout" [(ngModel)]="experiment.timeout">
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary"
+            [disabled]="!valid()"
+            (click)="save()">Save</button>
+</mat-dialog-actions>

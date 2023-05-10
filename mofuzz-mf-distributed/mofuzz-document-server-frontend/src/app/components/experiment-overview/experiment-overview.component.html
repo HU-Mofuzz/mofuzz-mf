@@ -1,0 +1,54 @@
+<mat-card>
+    <mat-card-title>Experiments</mat-card-title>
+    <mat-card-content>
+        <div class="button-bar">
+            <button mat-raised-button
+                    color="primary"
+                    (click)="showAddDialog()">
+                <mat-icon>add</mat-icon>
+                Create
+            </button>
+        </div>
+        <table mat-table [dataSource]="experiments" class="mat-elevation-z8">
+            <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef> Description </th>
+                <td mat-cell *matCellDef="let element"> {{element.description}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="documentCount">
+                <th mat-header-cell *matHeaderCellDef> Document Count </th>
+                <td mat-cell *matCellDef="let element"> {{element.documentCount}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="documentWidth">
+                <th mat-header-cell *matHeaderCellDef> Document Width </th>
+                <td mat-cell *matCellDef="let element"> {{element.documentWidth}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="documentHeight">
+                <th mat-header-cell *matHeaderCellDef> Document Height </th>
+                <td mat-cell *matCellDef="let element"> {{element.documentHeight}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="sheetsPerDocument">
+                <th mat-header-cell *matHeaderCellDef> Sheets per Document </th>
+                <td mat-cell *matCellDef="let element"> {{element.sheetsPerDocument}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="treeDepth">
+                <th mat-header-cell *matHeaderCellDef> Tree-Depth </th>
+                <td mat-cell *matCellDef="let element"> {{element.treeDepth}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="timeout">
+                <th mat-header-cell *matHeaderCellDef> Timeout(ms) </th>
+                <td mat-cell *matCellDef="let element"> {{element.timeout}} </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+
+    </mat-card-content>
+</mat-card>

@@ -1,5 +1,6 @@
 package de.hub.mse.server.management;
 
+import de.hub.mse.server.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +32,19 @@ public class Experiment {
     private int sheetsPerDocument;
 
     private int timeout;
+
+
+    private static void sanitizeGraterZero(int number) {
+        if(number <= 0) {
+            throw new ValidationException();
+        }
+    }
+    public void sanitize() {
+        sanitizeGraterZero(documentCount);
+        sanitizeGraterZero(documentWidth);
+        sanitizeGraterZero(documentHeight);
+        sanitizeGraterZero(treeDepth);
+        sanitizeGraterZero(sheetsPerDocument);
+        sanitizeGraterZero(timeout);
+    }
 }

@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {BackendService} from "../services/backend.service";
-import {ToastService} from "../services/toast.service";
-import {SocketService} from "../services/socket.service";
+import {BackendService} from "../../services/backend.service";
+import {ToastService} from "../../services/toast.service";
+import {SocketService} from "../../services/socket.service";
 import {Subscription} from "rxjs";
 
 @Component({
