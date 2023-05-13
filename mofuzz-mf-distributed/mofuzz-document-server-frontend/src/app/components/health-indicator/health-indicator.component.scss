@@ -1,0 +1,25 @@
+.dot {
+  height: 0.75rem;
+  width: 0.75rem;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.grey-health {
+  background-color: #bbb;
+}
+
+.green-health {
+  background-color: lightgreen;
+}
+
+.yellow-health {
+  background-color: yellow;
+}
+
+.mat-tooltip {
+  white-space: pre-line;
+}
+

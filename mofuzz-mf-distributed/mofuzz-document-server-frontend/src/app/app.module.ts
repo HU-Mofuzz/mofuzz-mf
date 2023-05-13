@@ -24,6 +24,7 @@ import { AddClientDialogComponent } from './components/client-overview/add-clien
 import { ExperimentAssignmentComponent } from './components/client-overview/experiment-assignment/experiment-assignment.component';
 import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import { HealthIndicatorComponent } from './components/health-indicator/health-indicator.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
     ClientOverviewComponent,
     ClientDetailComponent,
     AddClientDialogComponent,
-    ExperimentAssignmentComponent
+    ExperimentAssignmentComponent,
+    HealthIndicatorComponent
   ],
     imports: [
         BrowserModule,

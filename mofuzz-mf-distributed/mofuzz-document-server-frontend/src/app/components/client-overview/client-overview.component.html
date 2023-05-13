@@ -13,7 +13,10 @@
         <mat-accordion>
                 <mat-expansion-panel *ngFor="let client of clients" (afterCollapse)="details.cancelEditing()">
                     <mat-expansion-panel-header>
-                        <mat-panel-title>{{client.name}}</mat-panel-title>
+                        <mat-panel-title>
+                            <app-health-indicator [system]="client.id"></app-health-indicator>
+                            {{client.name}}
+                        </mat-panel-title>
                         <mat-panel-description>{{client.description}}</mat-panel-description>
                     </mat-expansion-panel-header>
                     <app-client-detail #details [client]="client"

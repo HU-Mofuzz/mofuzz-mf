@@ -19,8 +19,6 @@ public class MovingHealthMetric<T> {
 
     public void addMeasurement(T value) {
         measurements.add(new HealthMeasurement<>(value));
-
-        removeDeprecatedMeasurements();
     }
 
     private void removeDeprecatedMeasurements() {

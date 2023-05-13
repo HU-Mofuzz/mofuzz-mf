@@ -34,17 +34,17 @@ public class Experiment {
     private int timeout;
 
 
-    private static void sanitizeGraterZero(int number) {
+    private static void sanitizeGreaterZero(int number) {
         if(number <= 0) {
             throw new ValidationException();
         }
     }
     public void sanitize() {
-        sanitizeGraterZero(documentCount);
-        sanitizeGraterZero(documentWidth);
-        sanitizeGraterZero(documentHeight);
-        sanitizeGraterZero(treeDepth);
-        sanitizeGraterZero(sheetsPerDocument);
-        sanitizeGraterZero(timeout);
+        sanitizeGreaterZero(documentCount);
+        sanitizeGreaterZero(documentWidth);
+        sanitizeGreaterZero(documentHeight);
+        sanitizeGreaterZero(treeDepth);
+        sanitizeGreaterZero(sheetsPerDocument);
+        sanitizeGreaterZero(timeout);
     }
 }

@@ -3,9 +3,13 @@ package de.hub.mse.server.service;
 import com.google.common.collect.Maps;
 import com.sun.management.OperatingSystemMXBean;
 import de.hub.mse.server.config.ServiceConfig;
+import de.hub.mse.server.management.HealthSnapshot;
+import de.hub.mse.server.repository.HealthSnapshotRepository;
 import de.hub.mse.server.service.health.SystemHealth;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -22,23 +26,45 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class HealthService {
 
-    private static final String NAME_DOCUMENT_SERVER = "Document Server";
+    public static final String TOPIC_HEALTH = "/mofuzz/health";
+    private static final String NAME_DOCUMENT_SERVER = "server";
     private static final Long MOVING_HEALTH_MAX_AGE_SEC = 60L;
-    private static final int SERVER_HEALTH_CONFIDENCE = 30;
+    private static final int SYSTEM_HEALTH_CONFIDENCE = 30;
 
     private static final int HEALTH_WARNING_MIN_INTERVAL_MINUTES = 60;
+
+    private static final int NO_HEARTBEAT_WARNING_MINUTES = 5;
+
+
     private final ServiceConfig serviceConfig;
+    private final MailService mailService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final HealthSnapshotRepository healthRepository;
 
     private final HealthMonitor healthMonitor;
 
-    private final SystemHealth serverHealth = new SystemHealth(NAME_DOCUMENT_SERVER, MOVING_HEALTH_MAX_AGE_SEC,
-                                                                SERVER_HEALTH_CONFIDENCE);
+    private final Map<String, SystemHealth> systemHealthMap = Maps.newConcurrentMap();
+
+    private final Map<String, Long> lastHearthBeat = Maps.newConcurrentMap();
+
     private final OperatingSystemMXBean operatingSystemBean =
             (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
-    public HealthService(ServiceConfig serviceConfig, MailService mailService) {
+
+    @Autowired
+    public HealthService(ServiceConfig serviceConfig, MailService mailService,
+                         SimpMessagingTemplate messagingTemplate, HealthSnapshotRepository
+                         healthRepository) {
         this.serviceConfig = serviceConfig;
+        this.mailService = mailService;
+        this.messagingTemplate = messagingTemplate;
+        this.healthRepository = healthRepository;
         this.healthMonitor = new HealthMonitor(mailService, serviceConfig);
+    }
+
+    private static String timestampToDateString(Long timestamp) {
+        var date = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp/1000), ZoneId.systemDefault());
+        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(date);
     }
 
     @Scheduled(fixedRate = 15000)
@@ -49,9 +75,7 @@ public class HealthService {
 
         log.info("[System Loads - now]\tCPU: {}%\tMEM: {}%\tDISK: {}%", String.format("%.1f", cpuLoad),
                 String.format("%.1f", memoryLoad), String.format("%.1f", diskLoad));
-        log.info("[System Loads - avg]\t{}", serverHealth);
-
-        healthMonitor.monitorQuotas(serverHealth);
+        log.info("[System Loads - avg]\t{}", systemHealthMap.get(NAME_DOCUMENT_SERVER));
     }
 
     @Scheduled(fixedRate = 1000)
@@ -60,9 +84,26 @@ public class HealthService {
         var memoryLoad = getMemoryLoadFromBean(operatingSystemBean);
         var diskLoad = getDocumentDirectoryDiskLoad(serviceConfig);
 
-        serverHealth.addCpuMeasure(cpuLoad);
-        serverHealth.addMemoryMeasure(memoryLoad);
-        serverHealth.addDiskMeasure(diskLoad);
+        reportSystemHealth(NAME_DOCUMENT_SERVER, cpuLoad, memoryLoad, diskLoad);
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void checkHearthBeats() {
+        for(Map.Entry<String, Long> entry : lastHearthBeat.entrySet()) {
+            Long minimumAge = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(NO_HEARTBEAT_WARNING_MINUTES);
+           if (entry.getValue() < minimumAge) {
+               String mailTitle = "[Mofuzz] Warning for system \""+entry.getKey()+"\"";
+               String mailBody = String.format("""
+                            The health monitor detected a violation of the system "%s" since %s!
+                            
+                            The system violates the configured minimum heartbeat period for health measurement reporting of %d minutes.
+                            
+                            This may requires immediate action!
+                            """, entry.getKey(), timestampToDateString(entry.getValue()),
+                       NO_HEARTBEAT_WARNING_MINUTES);
+               mailService.sendSimpleMessageOrThrow(mailTitle, mailBody);
+           }
+        }
     }
 
     private static double getMemoryLoadFromBean(OperatingSystemMXBean bean) {
@@ -74,6 +115,29 @@ public class HealthService {
     private static double getDocumentDirectoryDiskLoad(ServiceConfig serviceConfig) {
         var documentDir = new File(serviceConfig.getDocumentDirectory());
         return  1d - ((double)documentDir.getFreeSpace() / (double)documentDir.getTotalSpace());
+    }
+
+    public void reportSystemHealth(String name, double cpu, double memory, double disk) {
+        var health = systemHealthMap.getOrDefault(name,
+                new SystemHealth(name, MOVING_HEALTH_MAX_AGE_SEC, SYSTEM_HEALTH_CONFIDENCE));
+        health.addCpuMeasure(cpu);
+        health.addMemoryMeasure(memory);
+        health.addDiskMeasure(disk);
+        systemHealthMap.put(name, health);
+
+        healthMonitor.monitorQuotas(health);
+        lastHearthBeat.put(name, System.currentTimeMillis());
+
+        HealthSnapshot snapshot = HealthSnapshot.builder()
+                .system(name)
+                .cpu(cpu)
+                .memory(memory)
+                .disk(disk)
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        healthRepository.save(snapshot);
+        messagingTemplate.convertAndSend(TOPIC_HEALTH+"/"+name, snapshot);
     }
 
     @AllArgsConstructor
@@ -89,11 +153,6 @@ public class HealthService {
         private boolean rateLimitAllowsWarning(SystemHealth systemHealth) {
             var lastWarning = lastWarningTimestamps.getOrDefault(systemHealth.getSystemName(), 0L);
             return lastWarning < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(HEALTH_WARNING_MIN_INTERVAL_MINUTES);
-        }
-
-        private static String timestampToDateString(Long timestamp) {
-            var date = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp/1000), ZoneId.systemDefault());
-            return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(date);
         }
 
         public void monitorQuotas(SystemHealth systemHealth) {
