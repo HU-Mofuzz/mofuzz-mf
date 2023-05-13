@@ -17,7 +17,7 @@ export class ExperimentOverviewComponent implements OnInit{
   displayedColumns = ["description", "documentCount", "documentWidth", "documentHeight", "sheetsPerDocument",
     "treeDepth", "timeout"]
 
-  constructor(public dialog: MatDialog,
+  constructor(private dialog: MatDialog,
               private backendService: BackendService,
               private toastService: ToastService) {
   }

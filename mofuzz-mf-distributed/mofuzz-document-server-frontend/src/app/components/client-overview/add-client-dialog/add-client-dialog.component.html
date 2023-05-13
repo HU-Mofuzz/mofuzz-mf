@@ -1,0 +1,20 @@
+<h1 mat-dialog-title>Add Client</h1>
+<mat-dialog-content>
+    <div class="field-list">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput
+                   [formControl]="name" [(ngModel)]="client.name">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Description</mat-label>
+            <input matInput [(ngModel)]="client.description">
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary"
+            [disabled]="!valid()"
+            (click)="save()">Save</button>
+</mat-dialog-actions>

@@ -1,0 +1,25 @@
+<mat-card>
+    <mat-card-title>Clients</mat-card-title>
+    <mat-card-content>
+        <div class="button-bar">
+            <button mat-raised-button
+                    color="primary"
+                    (click)="showAddDialog()">
+                <mat-icon>add</mat-icon>
+                Create
+            </button>
+        </div>
+
+        <mat-accordion>
+                <mat-expansion-panel *ngFor="let client of clients" (afterCollapse)="details.cancelEditing()">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>{{client.name}}</mat-panel-title>
+                        <mat-panel-description>{{client.description}}</mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <app-client-detail #details [client]="client"
+                    (editsSaved)="this.refresh()"></app-client-detail>
+                </mat-expansion-panel>
+        </mat-accordion>
+
+    </mat-card-content>
+</mat-card>

@@ -17,13 +17,24 @@ import { AddExperimentDialogComponent } from './components/experiment-overview/a
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
+import { ClientOverviewComponent } from './components/client-overview/client-overview.component';
+import {MatExpansionModule} from "@angular/material/expansion";
+import { ClientDetailComponent } from './components/client-overview/client-detail/client-detail.component';
+import { AddClientDialogComponent } from './components/client-overview/add-client-dialog/add-client-dialog.component';
+import { ExperimentAssignmentComponent } from './components/client-overview/experiment-assignment/experiment-assignment.component';
+import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
     AppComponent,
     DebugComponent,
     ExperimentOverviewComponent,
-    AddExperimentDialogComponent
+    AddExperimentDialogComponent,
+    ClientOverviewComponent,
+    ClientDetailComponent,
+    AddClientDialogComponent,
+    ExperimentAssignmentComponent
   ],
     imports: [
         BrowserModule,
@@ -39,7 +50,11 @@ import {MatInputModule} from "@angular/material/input";
         MatFormFieldModule,
         FormsModule,
         MatInputModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        MatExpansionModule,
+        CdkDropList,
+        CdkDrag,
+        MatTooltipModule
     ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,0 +1,41 @@
+<ng-container *ngIf="!!editingCopy">
+    <div class="button-bar">
+        <button mat-button *ngIf="!editing"
+                (click)="startEditing()">
+            <mat-icon>edit</mat-icon>
+            Edit
+        </button>
+    </div>
+    <div class="field-list">
+        <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput [formControl]="name"
+                   [readonly]="!editing"
+                   [(ngModel)]="editingCopy.name">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Description</mat-label>
+            <input matInput
+                   [readonly]="!editing"
+                   [(ngModel)]="editingCopy.description">
+        </mat-form-field>
+    </div>
+    <app-experiment-assignment [editingEnabled]="editing"
+                               [assignedExperiments]="editingCopy.assignedExperiments"
+                               (assignmentChanged)="editingCopy.assignedExperiments = $event">
+    </app-experiment-assignment>
+    <div *ngIf="editing" class="button-bar" style="justify-content: end">
+        <button mat-button
+        (click)="cancelEditing()">
+            <mat-icon>close</mat-icon>
+            Cancel
+        </button>
+        <button mat-raised-button
+                color="primary"
+                [disabled]="!name.valid"
+                (click)="save()">
+            <mat-icon>save</mat-icon>
+            Save
+        </button>
+    </div>
+</ng-container>
