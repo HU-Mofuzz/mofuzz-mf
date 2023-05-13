@@ -4,3 +4,15 @@
   gap: 0.5rem 0.5rem;
   min-width: 25rem;
 }
+
+.key-value {
+  display: flex;
+  flex-flow: row;
+
+  .key {
+    font-weight: bold;
+  }
+  .value {
+    padding-left: 0.5rem;
+  }
+}

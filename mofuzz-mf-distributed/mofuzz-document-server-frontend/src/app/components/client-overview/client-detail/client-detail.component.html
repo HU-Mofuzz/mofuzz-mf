@@ -1,4 +1,8 @@
 <ng-container *ngIf="!!editingCopy">
+    <div class="key-value">
+        <div class="key">ID:</div>
+        <div class="value">{{editingCopy.id}}</div>
+    </div>
     <div class="button-bar">
         <button mat-button *ngIf="!editing"
                 (click)="startEditing()">
