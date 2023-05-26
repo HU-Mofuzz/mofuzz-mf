@@ -39,6 +39,9 @@ public class ServiceConfig {
     @Value("${service.health.diskWarnQuota:0.8}")
     private double healthDiskWarnQuota;
 
+    @Value("${service.persistence.bucket:mofuzz-bucket1}")
+    private String awsBucketId;
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();

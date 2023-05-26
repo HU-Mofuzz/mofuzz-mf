@@ -49,7 +49,7 @@ public class ExecutionService {
     private final ServiceConfig serviceConfig;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_CORE_POOL_SIZE);
-    private final FilePersistence filePersistence = new AwsPersistence();
+    private final FilePersistence filePersistence;
 
     private final Set<String> generatingExperiments = Sets.newConcurrentHashSet();
     private final Set<String> indexingExperiments = Sets.newConcurrentHashSet();
@@ -70,6 +70,8 @@ public class ExecutionService {
         this.resultRepository = resultRepository;
         this.mailService = mailService;
         this.serviceConfig = serviceConfig;
+
+        this.filePersistence = new AwsPersistence(serviceConfig);
     }
 
 
@@ -179,7 +181,7 @@ public class ExecutionService {
         if(newExperimentId == null) {
             log.info("Client [{}] exhausted all assigned experiments!", client.getName());
             sendNotificationMailAsync("[Mofuzz] Experiment update", String.format("""
-                    Client %s exhausted all assigned experiments!
+                    Client [%s] exhausted all assigned experiments!
                     """, client.getName()));
         } else {
             experimentRepository.findById(newExperimentId).ifPresent(experiment -> {

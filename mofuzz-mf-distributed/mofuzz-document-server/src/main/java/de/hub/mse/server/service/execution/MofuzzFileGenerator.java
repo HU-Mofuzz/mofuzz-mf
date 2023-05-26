@@ -9,7 +9,6 @@ import de.hub.mse.server.repository.FileDescriptorRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -64,6 +63,7 @@ public class MofuzzFileGenerator<G extends PoolBasedGenerator<? extends LinkedFi
             var fileDescriptor = descriptorForLinkedFile(xlsxFile, experiment);
             fileRepository.save(fileDescriptor);
             persistence.persistFile(fileDescriptor.getId(), xlsxFile.getMainFile());
+            xlsxFile.getMainFile().delete();
         }
 
         List<String> serializedLinks = new ArrayList<>();
@@ -81,6 +81,7 @@ public class MofuzzFileGenerator<G extends PoolBasedGenerator<? extends LinkedFi
                             .build();
             fileDescriptor = fileRepository.save(fileDescriptor);
             persistence.persistFile(fileDescriptor.getId(), file.getMainFile());
+            file.getMainFile().delete();
             return fileDescriptor;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -95,9 +96,12 @@ public class MofuzzFileGenerator<G extends PoolBasedGenerator<? extends LinkedFi
             try {
                 persistence.persistFile(fileDescriptor.getId(), xlsxFile.getMainFile());
                 fileRepository.save(fileDescriptor);
-            } catch (IOException e) {
+                xlsxFile.getMainFile().delete();
+            } catch (Exception e) {
                 // on exception remove from db and move on
                 log.error("Error generating file in batch: ", e);
+                persistence.deleteFile(fileDescriptor.getId());
+                fileRepository.delete(fileDescriptor);
             }
         }
     }
