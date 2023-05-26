@@ -56,4 +56,12 @@ export class AddExperimentDialogComponent {
             && this.treeDepth.valid
             && this.timeout.valid
     }
+
+  calculateDocumentCount(): string {
+    const count = (Math.round(Math.sqrt(
+      +this.experiment.documentHeight * +this.experiment.documentWidth
+      * +this.experiment.sheetsPerDocument * +this.experiment.treeDepth
+    )) * (+this.experiment.treeDepth - 1)) + +this.experiment.documentCount;
+    return `This will generate ${count} files`
+  }
 }

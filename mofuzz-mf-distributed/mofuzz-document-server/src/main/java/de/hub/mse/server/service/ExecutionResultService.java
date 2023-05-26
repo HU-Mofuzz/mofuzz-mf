@@ -1,6 +1,7 @@
 package de.hub.mse.server.service;
 
 import de.hub.mse.server.exceptions.NotFoundException;
+import de.hub.mse.server.exceptions.ResourceConflictException;
 import de.hub.mse.server.management.ExecutionResult;
 import de.hub.mse.server.repository.ClientDescriptorRepository;
 import de.hub.mse.server.repository.ExecutionResultRepository;
@@ -30,7 +31,7 @@ public class ExecutionResultService {
         this.fileRepository = fileRepository;
     }
 
-    public void reportResult(ExecutionResult result) throws NotFoundException {
+    public void reportResult(ExecutionResult result) throws NotFoundException, ResourceConflictException {
         result.sanitize();
 
         var experiment = experimentRepository.findById(result.getExperiment()).orElseThrow(NotFoundException::new);
@@ -38,6 +39,10 @@ public class ExecutionResultService {
 
         if(!fileRepository.existsById(result.getFileDescriptor())) {
             throw new NotFoundException();
+        }
+
+        if(resultRepository.existsByExperimentAndOriginClient(result.getExperiment(), result.getOriginClient())) {
+            throw new ResourceConflictException();
         }
 
         result.setId(null);

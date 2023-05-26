@@ -1,21 +1,22 @@
 package de.hub.mse.emf.multifile.impl.opendocument;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
-import de.hub.mse.emf.multifile.AbstractGenerator;
-import de.hub.mse.emf.multifile.GeneratorConfig;
-import de.hub.mse.emf.multifile.LinkPool;
+import de.hub.mse.emf.multifile.PoolBasedGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class XlsxGenerator extends AbstractGenerator<File, XlsxLink, GeneratorConfig> {
+public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSheetLink, XlsxGeneratorConfig> {
 
     private static final String XLSX_FILE_ENDING = ".xlsx";
     private static final int MAX_SHEET_COUNT = 5;
@@ -23,8 +24,8 @@ public class XlsxGenerator extends AbstractGenerator<File, XlsxLink, GeneratorCo
 
     private static final float CELL_LINK_CHANCE = 1.0f;
 
-    public XlsxGenerator() {
-        super(File.class, GeneratorConfig.getInstance());
+    public XlsxGenerator(XlsxGeneratorConfig config) {
+        super(LinkedFile.class, config);
     }
 
     private static String generateSheetId() {
@@ -78,32 +79,50 @@ public class XlsxGenerator extends AbstractGenerator<File, XlsxLink, GeneratorCo
         }
     }
 
-    private Collection<XlsxLink> generateUnlinkedWorkbook(SourceOfRandomness random) {
+    private void addToLinkPool(File xlsxFile, String sheetId) {
+        config.getLinkPool().add(new XlsxSheetLink(xlsxFile, sheetId));
+    }
+
+    private LinkedFile generateUnlinkedWorkbook(SourceOfRandomness random) {
         File xlsxFile = generateRandomXlsxFile();
+        Set<String> sheets = new HashSet<>();
         try(XSSFWorkbook workbook = new XSSFWorkbook();
                 OutputStream outputStream = new FileOutputStream(xlsxFile)) {
             workbook.setCellFormulaValidation(false);
-            Set<XlsxLink> links = new HashSet<>();
-            for(int i = 0; i < getRandomSheetCount(); i++) {
+            for(int i = 0; i < config.getSheetsPerDocument(); i++) {
                 String sheetId = generateSheetId();
                 Sheet sheet = workbook.createSheet(sheetId);
                 fillSheet(sheet, random);
-                for(int row = 0; row < config.getModelDepth(); row++) {
-                    for(int column = 0; column < config.getModelWidth(); column++) {
-                        links.add(new XlsxLink(xlsxFile, sheetId, (row+1), column));
-                    }
-                }
+                sheets.add(sheetId);
             }
             workbook.write(outputStream);
-            return links;
+            return new LinkedFile(xlsxFile, Collections.emptySet(), sheets, 0);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        return Collections.emptyList();
+        return null;
+    }
+
+    private LinkedFile generateLinkedWorkbook(SourceOfRandomness random, int depth) throws IOException {
+        File xlsxFile = generateRandomXlsxFile();
+        Set<File> linkedFiles = new HashSet<>();
+        Set<String> sheets = new HashSet<>();
+        try(XSSFWorkbook workbook = new XSSFWorkbook();
+            OutputStream outputStream = new FileOutputStream(xlsxFile)) {
+            workbook.setCellFormulaValidation(false);
+            for(int i = 0; i < config.getSheetsPerDocument(); i++) {
+                String sheetId = generateSheetId();
+                Sheet sheet = workbook.createSheet(sheetId);
+                linkedFiles.addAll(fillSheetWithLinks(sheet, random));
+                sheets.add(sheetId);
+            }
+            workbook.write(outputStream);
+            return new LinkedFile(xlsxFile, linkedFiles, sheets, depth);
+        }
     }
 
     private void fillSheet(Sheet sheet, SourceOfRandomness random) {
-        for(int rowNumber = 0; rowNumber < config.getModelDepth(); rowNumber++) {
+        for(int rowNumber = 0; rowNumber < config.getModelHeight(); rowNumber++) {
             Row row = sheet.createRow(rowNumber);
             for(int columnNumber = 0; columnNumber < config.getModelWidth(); columnNumber++) {
                 if(random.nextFloat() < CELL_FILL_CHANCE) {
@@ -114,50 +133,85 @@ public class XlsxGenerator extends AbstractGenerator<File, XlsxLink, GeneratorCo
         }
     }
 
-    private void fillSheetWithLinks(Sheet sheet, SourceOfRandomness random) {
-        for(int rowNumber = 0; rowNumber < config.getModelDepth(); rowNumber++) {
+    private Set<File> fillSheetWithLinks(Sheet sheet, SourceOfRandomness random) {
+        Set<File> linkedFiles = new HashSet<>();
+        for(int rowNumber = 0; rowNumber < config.getModelHeight(); rowNumber++) {
             Row row = sheet.createRow(rowNumber);
             for(int columnNumber = 0; columnNumber < config.getModelWidth(); columnNumber++) {
                 if(random.nextFloat() < CELL_FILL_CHANCE) {
                     Cell cell = row.createCell(columnNumber);
                     if(random.nextFloat() < CELL_LINK_CHANCE) {
-                        cell.setCellFormula(random.choose(getLinkPool())
-                                .toExcelCellReferenceFormula());
+                        var link = random.choose(config.getLinkPool());
+                        cell.setCellFormula(link
+                                .toExcelCellReferenceFormula(random.nextInt(1, config.getModelHeight()),
+                                        random.nextInt(0, config.getModelWidth())));
+                        linkedFiles.add(link.getFile());
                     } else {
                         fillCell(cell, random);
                     }
                 }
             }
         }
+        return linkedFiles;
+    }
+
+    @Override
+    public File getWorkingDirFileForId(String name) {
+        return Paths.get(config.getWorkingDirectory(), name + XLSX_FILE_ENDING).toFile();
     }
 
     private File generateRandomXlsxFile() {
-        var fileId = UUID.randomUUID().toString();
-        return Paths.get(config.getWorkingDirectory(), fileId + XLSX_FILE_ENDING).toFile();
+        return getWorkingDirFileForId(UUID.randomUUID().toString());
     }
 
     @Override
-    protected LinkPool<XlsxLink> collectLinksFromConfig(SourceOfRandomness random) {
-        LinkPool<XlsxLink> pool = new LinkPool<>();
-        for (int i = 0; i < config.getFilesToGenerate(); i++) {
-            pool.addAll(generateUnlinkedWorkbook(random));
-        }
-        return pool;
-    }
+    public Collection<LinkedFile> prepareLinkPool(SourceOfRandomness random) {
+        List<LinkedFile> resultingFiles = new ArrayList<>();
 
-    @Override
-    public File internalExecute(SourceOfRandomness random, LinkPool<XlsxLink> linkPool) throws Exception {
-        File xlsxFile = generateRandomXlsxFile();
-        try(XSSFWorkbook workbook = new XSSFWorkbook();
-            OutputStream outputStream = new FileOutputStream(xlsxFile)) {
-            workbook.setCellFormulaValidation(false);
-            for(int i = 0; i < getRandomSheetCount(); i++) {
-                String sheetId = generateSheetId();
-                Sheet sheet = workbook.createSheet(sheetId);
-                fillSheetWithLinks(sheet, random);
+        long filesPerLevel = Math.round(Math.sqrt(
+                config.getModelHeight() * config.getModelWidth()
+                        * config.getSheetsPerDocument() * config.getTargetDocumentDepth()
+        ));
+
+        for (int level = 0; level < config.getTargetDocumentDepth(); level++) {
+            Set<LinkedFile> filesOfLevel = new HashSet<>();
+            for(int i = 0; i < filesPerLevel; i++) {
+                LinkedFile file = null;
+                try {
+                    if(level == 0) {
+                        file = generateUnlinkedWorkbook(random);
+                    } else {
+                        file = generateLinkedWorkbook(random, level);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if(file != null) {
+                    filesOfLevel.add(file);
+                }
             }
-            workbook.write(outputStream);
-            return xlsxFile;
+
+            // always add whole levels to the link pool to ensure depth
+            for(var file : filesOfLevel) {
+                for(var sheetId : file.getSheets()) {
+                    config.getLinkPool().add(new XlsxSheetLink(file.getMainFile(), sheetId));
+                }
+            }
+            resultingFiles.addAll(filesOfLevel);
         }
+        return resultingFiles;
+    }
+
+    @Override
+    public LinkedFile internalExecute(SourceOfRandomness random) throws Exception {
+        return generateLinkedWorkbook(random, config.getTargetDocumentDepth());
+    }
+
+    @Override
+    public void addLinkFromSerialized(String serialized) {
+        XlsxSheetLink link = new XlsxSheetLink();
+        link.deserializeLink(config.workingDirectory, serialized);
+        config.getLinkPool().add(link);
     }
 }

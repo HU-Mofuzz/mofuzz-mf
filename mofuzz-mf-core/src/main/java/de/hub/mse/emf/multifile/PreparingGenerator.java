@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @param <L> The Link type between multiple documents, e.g. {@link String} in SVG/XML xlink hrefs
  * @param <C> The configuration type for the generation and preparation
  */
-public abstract class AbstractGenerator<D, L, C extends IGeneratorConfig> extends Generator<D> {
+public abstract class PreparingGenerator<D, L, C extends PreparingGeneratorConfig> extends Generator<D> {
 
     protected final C config;
     private boolean prepared = false;
@@ -25,13 +25,13 @@ public abstract class AbstractGenerator<D, L, C extends IGeneratorConfig> extend
     @Getter
     private LinkPool<L> linkPool;
 
-    protected AbstractGenerator(Class<D> type, C config) {
+    protected PreparingGenerator(Class<D> type, C config) {
         super(type);
         this.config = config;
     }
 
     protected abstract LinkPool<L> collectLinksFromConfig(SourceOfRandomness sourceOfRandomness);
-    public abstract D internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<L> linkPool) throws Exception;
+    protected abstract D internalExecute(SourceOfRandomness sourceOfRandomness, LinkPool<L> linkPool) throws Exception;
 
     @Override
     public D generate(SourceOfRandomness sourceOfRandomness, GenerationStatus generationStatus) {

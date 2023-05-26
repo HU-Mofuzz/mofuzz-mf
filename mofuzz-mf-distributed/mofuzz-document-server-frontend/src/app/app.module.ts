@@ -25,6 +25,7 @@ import { ExperimentAssignmentComponent } from './components/client-overview/expe
 import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import { HealthIndicatorComponent } from './components/health-indicator/health-indicator.component';
+import {MatBadgeModule} from "@angular/material/badge";
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { HealthIndicatorComponent } from './components/health-indicator/health-i
         MatExpansionModule,
         CdkDropList,
         CdkDrag,
-        MatTooltipModule
+        MatTooltipModule,
+        MatBadgeModule
     ],
   providers: [],
   bootstrap: [AppComponent]

@@ -5,7 +5,7 @@ import lombok.*;
 import java.util.Collection;
 
 @Data
-public class GeneratorConfig implements IGeneratorConfig {
+public class GeneratorConfig implements PreparingGeneratorConfig {
 
     private int filesToGenerate = 1;
     private int modelWidth = 10;

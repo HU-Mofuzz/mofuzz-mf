@@ -6,18 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "file_descriptor", indexes = {
-        @Index(columnList = "experiment")
+        @Index(columnList = "experiment"),
+        @Index(columnList = "experiment, depth")
 })
 public class FileDescriptor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String experiment;
 
@@ -28,5 +30,9 @@ public class FileDescriptor {
     private int documentHeight;
 
     private int sheetCount;
+
+    @ElementCollection
+    @CollectionTable
+    private List<String> linkedFiles;
 
 }

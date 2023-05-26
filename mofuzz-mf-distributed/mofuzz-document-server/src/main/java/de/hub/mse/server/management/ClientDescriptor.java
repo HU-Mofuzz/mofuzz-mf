@@ -35,4 +35,26 @@ public class ClientDescriptor {
         }
     }
 
+    public boolean hasAssignedExperiments() {
+        return assignedExperiments != null && !assignedExperiments.isEmpty();
+    }
+
+    public String getCurrentExperiment() {
+        if(hasAssignedExperiments()) {
+            return assignedExperiments.get(0);
+        }
+        return null;
+    }
+
+    public String moveToNextExperiment() {
+        if(hasAssignedExperiments()) {
+            this.assignedExperiments.remove(0);
+        }
+        if(hasAssignedExperiments()) {
+            return this.assignedExperiments.get(0);
+        } else {
+            return null;
+        }
+    }
+
 }

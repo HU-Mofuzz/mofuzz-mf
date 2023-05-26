@@ -47,26 +47,29 @@ public class ExcelTest {
         Assert.assertEquals("CE", columnToExcelIdentifier(80));
     }
 
+    @Ignore
     @Test
     public void testGeneratorManually() {
         var config = GeneratorConfig.getInstance();
 
-        config.setWorkingDirectory("/home/laokoon/tmp/linktest");
         config.setPreparationMode(PreparationMode.GENERATE_FILES);
-        config.setFilesToGenerate(2);
-        config.setModelDepth(10);
-        config.setModelWidth(10);
 
-        XlsxGenerator generator = new XlsxGenerator();
+        XlsxGenerator generator = new XlsxGenerator(XlsxGeneratorConfig.builder()
+                .workingDirectory("/home/laokoon/tmp/linktest")
+                .targetDocumentDepth(2)
+                .modelHeight(10)
+                .modelWidth(10)
+                .sheetsPerDocument(3)
+                .build());
         SourceOfRandomness random = new SourceOfRandomness(new Random());
 
         var file = generator.generate(random, null);
         Assert.assertNotNull(file);
-        System.out.println("Link-Pool: "+generator.getLinkPool().stream()
+        System.out.println("Link-Pool: "+generator.getConfig().getLinkPool().stream()
                 .map(link -> link.getFile().getName())
                 .distinct()
                 .collect(Collectors.joining(", ")));
-        System.out.println("Result: "+file.getName());
+        System.out.println("Result: "+file.getMainFile().getName());
     }
 
     @Test

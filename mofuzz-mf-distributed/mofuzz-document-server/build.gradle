@@ -20,6 +20,9 @@ repositories {
 
 dependencies {
 	implementation(project(':mofuzz-mf-distributed:mofuzz-document-server-frontend'))
+	implementation(project(':mofuzz-mf-core'))
+	implementation(project(':mofuzz-mf-impl'))
+	implementation 'com.pholser:junit-quickcheck-generators:1.0'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'

@@ -21,6 +21,7 @@ public class ExperimentService {
     public void createExperiment(Experiment experiment) {
         experiment.sanitize();
         experiment.setId(null);
+        experiment.setPrepared(Experiment.PreparationState.UNPREPARED);
         experimentRepository.save(experiment);
     }
 

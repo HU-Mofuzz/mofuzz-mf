@@ -7,17 +7,25 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "experiment")
+@NamedEntityGraph(name = "Experiment.serializedLinks",
+        attributeNodes = @NamedAttributeNode("serializedLinks")
+)
 public class Experiment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Builder.Default
+    private PreparationState prepared = PreparationState.UNPREPARED;
 
     private String description;
 
@@ -33,6 +41,10 @@ public class Experiment {
 
     private int timeout;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable
+    private List<String> serializedLinks;
+
 
     private static void sanitizeGreaterZero(int number) {
         if(number <= 0) {
@@ -46,5 +58,13 @@ public class Experiment {
         sanitizeGreaterZero(treeDepth);
         sanitizeGreaterZero(sheetsPerDocument);
         sanitizeGreaterZero(timeout);
+    }
+
+    public List<String> getSerializedLinks() {
+        return serializedLinks;
+    }
+
+    public enum PreparationState {
+        UNPREPARED, PREPARING, PREPARED
     }
 }

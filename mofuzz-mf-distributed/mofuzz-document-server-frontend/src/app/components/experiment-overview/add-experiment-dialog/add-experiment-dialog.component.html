@@ -32,6 +32,7 @@
     </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
+    <mat-icon [matTooltip]="calculateDocumentCount()" matTooltipPosition="above">description</mat-icon>
     <button mat-button (click)="cancel()">Cancel</button>
     <button mat-raised-button color="primary"
             [disabled]="!valid()"

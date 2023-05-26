@@ -1,6 +1,7 @@
 package de.hub.mse.server.controller;
 
 import de.hub.mse.server.exceptions.NotFoundException;
+import de.hub.mse.server.exceptions.ResourceConflictException;
 import de.hub.mse.server.management.ExecutionResult;
 import de.hub.mse.server.service.ExecutionResultService;
 import de.hub.mse.server.service.HealthService;
@@ -27,7 +28,7 @@ public class ReportingController {
     }
 
     @PostMapping("/result")
-    public void reportResult(@RequestBody ExecutionResult result) throws NotFoundException {
+    public void reportResult(@RequestBody ExecutionResult result) throws NotFoundException, ResourceConflictException {
         resultService.reportResult(result);
     }
 

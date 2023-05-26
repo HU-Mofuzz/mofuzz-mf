@@ -1,14 +1,13 @@
 package de.hub.mse.emf.multifile.impl.svg;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
-import de.hub.mse.emf.multifile.AbstractGenerator;
+import de.hub.mse.emf.multifile.PreparingGenerator;
 import de.hub.mse.emf.multifile.GeneratorConfig;
 import de.hub.mse.emf.multifile.LinkPool;
 import de.hub.mse.emf.multifile.emf.EmfCache;
 import de.hub.mse.emf.multifile.emf.EmfUtil;
 import de.hub.mse.emf.multifile.impl.svg.attributes.AttributeGeneratorMap;
 import de.hub.mse.emf.multifile.util.XmlUtil;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.ecore.*;
 import org.w3c.dom.Element;
@@ -25,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SvgGenerator extends AbstractGenerator<File, String, GeneratorConfig> {
+public class SvgGenerator extends PreparingGenerator<File, String, GeneratorConfig> {
 
     private static final float ATTRIB_GENERATE_CHANCE = 0.5f;
     private static final float LINK_USE_CHANCE = 0.5f;
