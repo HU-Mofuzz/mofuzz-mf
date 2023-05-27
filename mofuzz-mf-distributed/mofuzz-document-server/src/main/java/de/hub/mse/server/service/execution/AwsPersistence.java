@@ -35,7 +35,6 @@ public class AwsPersistence implements FilePersistence {
             s3.deleteObject(bucketId, key);
         } catch (AmazonServiceException e) {
             log.error("Error deleting file from persistence!", e);
-            throw e;
         }
     }
 }
