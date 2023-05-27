@@ -27,7 +27,7 @@ public class ExecutionResult {
     private String originClient;
     private String fileDescriptor;
 
-    private  boolean crash;
+    private boolean crash;
 
     private boolean hang;
 

@@ -1,4 +1,5 @@
 rootProject.name = 'mofuzz-multifile'
 include  'mofuzz-mf-core',  'mofuzz-mf-impl',
-        'mofuzz-mf-distributed:mofuzz-document-server', 'mofuzz-mf-distributed:mofuzz-document-server-frontend'
+        'mofuzz-mf-distributed:mofuzz-document-server', 'mofuzz-mf-distributed:mofuzz-document-server-frontend',
+        'mofuzz-mf-distributed:mofuzz-document-client'
 

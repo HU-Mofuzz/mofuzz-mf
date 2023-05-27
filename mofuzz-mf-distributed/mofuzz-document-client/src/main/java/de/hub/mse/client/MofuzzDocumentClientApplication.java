@@ -1,0 +1,80 @@
+package de.hub.mse.client;
+
+import com.beust.jcommander.JCommander;
+import de.hub.mse.client.backend.BackendConnector;
+import de.hub.mse.client.config.Config;
+import de.hub.mse.client.files.FileCache;
+import de.hub.mse.client.health.HealthWorker;
+import de.hub.mse.client.result.ResultWorker;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+@Slf4j
+public class MofuzzDocumentClientApplication {
+
+    public static final int THREAD_POOL_COUNT = 8;
+
+    public static final Config CONFIG = new Config();
+
+    private static File cacheDir;
+    private static BackendConnector connector;
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_COUNT);
+
+    private static void parseConfig(String[] args) {
+        var commander = JCommander.newBuilder()
+                .expandAtSign(true)
+                .addObject(CONFIG)
+                .build();
+        commander.parse(args);
+
+        if(CONFIG.isHelp()) {
+            commander.usage();
+            System.exit(0);
+        }
+        CONFIG.validate();
+    }
+
+    private static void prepareWorkspace() throws IOException {
+        File workingDir = CONFIG.getWorkingDirAsFile();
+        if(!workingDir.exists() && !workingDir.mkdirs()) {
+            throw new IllegalStateException("Unable to create working directory!");
+        }
+        if(!workingDir.isDirectory()) {
+            throw new IllegalStateException("Working directory argument must point to directory");
+        }
+        FileUtils.cleanDirectory(workingDir);
+
+        cacheDir = Paths.get(workingDir.getAbsolutePath(), "cache").toFile();
+        if(!cacheDir.mkdir()) {
+            throw new IllegalStateException("Unable to create cache directory at "+cacheDir.getAbsolutePath());
+        }
+    }
+
+    public static void main(String[] args) {
+        parseConfig(args);
+        log.info("Preparing workspace...");
+        try {
+            prepareWorkspace();
+        } catch (IOException e) {
+            log.error("Error preparing workspace!");
+            System.exit(1);
+        }
+        FileCache cache = new FileCache(cacheDir);
+
+        log.info("Validating client id...");
+        connector = new BackendConnector();
+        connector.validateClientId();
+
+        log.info("Startup...");
+        var resultWorker = new ResultWorker(connector);
+        executor.submit(new HealthWorker(connector));
+        executor.submit(resultWorker);
+    }
+}
