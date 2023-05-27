@@ -27,9 +27,17 @@
     <ng-template #notEditing>
         <div class="not-editing-list" *ngIf="assignedExperiments.length; else noAssignments">
             <ng-container *ngFor="let item of assignedExperiments; let i = index">
-                <mat-icon [class.rotate]="i == 0">{{i == 0? 'sync' : 'double_arrow'}}</mat-icon>
+                <mat-icon [class.rotate]="i === 0">{{i === 0? 'sync' : 'double_arrow'}}</mat-icon>
                 <div class="list-item">
                     {{getDescriptionForId(item)}}
+                    <ng-container *ngIf="i === 0">
+                        <mat-icon *ngIf="lastProgress.totalDocumentCount"
+                                  matTooltip="Progress (results|generated|total): {{lastProgress.existingResults}}|{{lastProgress.generatedDocuments}}|{{lastProgress.totalDocumentCount}}"
+                        >description</mat-icon>
+                        <mat-icon *ngIf="lastResultTime"
+                                  matTooltip="Last Result: {{lastResultTime | date:'dd.MM.yy HH:mm:ss':'CET' }}"
+                        >schedule</mat-icon>
+                    </ng-container>
                 </div>
             </ng-container>
         </div>

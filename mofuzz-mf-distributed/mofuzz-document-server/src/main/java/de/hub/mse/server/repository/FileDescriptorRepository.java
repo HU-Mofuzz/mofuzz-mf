@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface FileDescriptorRepository extends JpaRepository<FileDescriptor, String> {
 
-    int countByExperimentIsAndDepth(String experimentId, int depth);
+    int countByExperimentIsAndDepth(String experiment, int depth);
 
     @Query(value = "select id from file_descriptor where experiment = :experiment", nativeQuery = true)
     List<String> getFileIdsForExperiment(@Param("experiment") String experimentId);

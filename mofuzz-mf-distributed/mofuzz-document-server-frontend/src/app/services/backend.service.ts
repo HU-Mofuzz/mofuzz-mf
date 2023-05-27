@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {Experiment} from "../model/experiment";
 import {ClientDescriptor} from "../model/client-descriptor";
+import {ExperimentProgress} from "../model/experiment-progress";
 
 
 export const API_BASE = "/api/v1";
@@ -44,6 +45,7 @@ class ExperimentController {
   getExperiments(): Observable<Experiment[]> {
     return this.httpClient.get<Experiment[]>(`${API_BASE}/experiment`);
   }
+
 }
 
 class ClientDescriptorController {
@@ -61,5 +63,11 @@ class ClientDescriptorController {
 
   changeClientDescriptor(descriptor: ClientDescriptor): Observable<void> {
     return this.httpClient.post<void>(`${API_BASE}/clients/${descriptor.id}`, descriptor)
+  }
+
+  getProgress(client: string, experiment: string): Observable<ExperimentProgress> {
+    return this.httpClient.get<ExperimentProgress>(`${API_BASE}/clients/progress/${client}`, {
+      params: new HttpParams().set("experiment", experiment)
+    });
   }
 }

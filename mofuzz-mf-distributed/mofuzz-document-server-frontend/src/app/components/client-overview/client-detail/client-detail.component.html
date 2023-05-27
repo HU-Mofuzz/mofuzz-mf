@@ -25,6 +25,7 @@
         </mat-form-field>
     </div>
     <app-experiment-assignment [editingEnabled]="editing"
+                               [client]="editingCopy.id"
                                [assignedExperiments]="editingCopy.assignedExperiments"
                                (assignmentChanged)="editingCopy.assignedExperiments = $event">
     </app-experiment-assignment>

@@ -25,9 +25,10 @@ export class HealthIndicatorComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if(this.system.length > 0) {
       this.topicSubscription.unsubscribe();
-      this.topicSubscription = this.socketService.topic(`${HEALTH_TOPIC}/${this.system}`).subscribe(
-          message => {
-            this.snapshot = <HealthSnapshot>{...JSON.parse(message.body)}
+      this.topicSubscription = this.socketService.typedTopic<HealthSnapshot>(`${HEALTH_TOPIC}/${this.system}`)
+          .subscribe(
+          snapshot => {
+            this.snapshot = snapshot
           }
       )
     }

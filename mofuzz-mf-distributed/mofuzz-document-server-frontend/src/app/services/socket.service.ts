@@ -4,6 +4,7 @@ import * as SockJS from 'sockjs-client';
 import {CompatClient} from "@stomp/stompjs/src/compatibility/compat-client";
 import {Observable, Subscription} from "rxjs";
 import {messageCallbackType} from "@stomp/stompjs/src/types";
+import {HealthSnapshot} from "../model/health-snapshot";
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,16 @@ export class SocketService {
       }
     }
     this.stompClient.activate();
+  }
+
+  typedTopic<T>(topic: string): Observable<T> {
+    return new Observable<T>(sub => {
+      this.topic(topic).subscribe({
+        next: message => sub.next(<T>{...JSON.parse(message.body)}),
+        error: err => sub.error(err),
+        complete: () => sub.complete()
+      })
+    })
   }
 
   topic(topic: string): Observable<IMessage> {

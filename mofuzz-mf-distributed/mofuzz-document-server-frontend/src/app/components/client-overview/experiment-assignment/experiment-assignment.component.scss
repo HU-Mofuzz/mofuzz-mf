@@ -55,9 +55,15 @@
 .list-item {
   padding: 1rem;
   border: solid 1px #666;
-  display: block;
+  display: flex;
   box-sizing: border-box;
   text-align: center;
+  flex-flow: row;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  gap: 0.5rem
 }
 
 .draggable-cursor {
