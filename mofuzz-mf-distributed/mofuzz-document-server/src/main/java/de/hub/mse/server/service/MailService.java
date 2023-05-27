@@ -8,6 +8,11 @@ import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @Slf4j
 public class MailService {
@@ -19,6 +24,11 @@ public class MailService {
     public MailService(ServiceConfig serviceConfig, MailSender mailSender) {
         this.serviceConfig = serviceConfig;
         this.mailSender = mailSender;
+    }
+
+    public static String timestampToDateString(Long timestamp) {
+        var date = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp/1000), ZoneId.systemDefault());
+        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(date);
     }
 
     public void sendSimpleMessageOrThrow(String subject, String message) throws MailException {

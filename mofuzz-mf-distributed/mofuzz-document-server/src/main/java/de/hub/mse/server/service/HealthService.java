@@ -15,10 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -62,11 +58,6 @@ public class HealthService {
         this.healthMonitor = new HealthMonitor(mailService, serviceConfig);
     }
 
-    private static String timestampToDateString(Long timestamp) {
-        var date = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp/1000), ZoneId.systemDefault());
-        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(date);
-    }
-
     @Scheduled(fixedRate = 15000)
     private void checkSystemLoad() {
         var cpuLoad = operatingSystemBean.getCpuLoad() * 100d;
@@ -99,7 +90,7 @@ public class HealthService {
                             The system violates the configured minimum heartbeat period for health measurement reporting of %d minutes.
                             
                             This may requires immediate action!
-                            """, entry.getKey(), timestampToDateString(entry.getValue()),
+                            """, entry.getKey(), MailService.timestampToDateString(entry.getValue()),
                        NO_HEARTBEAT_WARNING_MINUTES);
                mailService.sendSimpleMessageOrThrow(mailTitle, mailBody);
            }
@@ -173,7 +164,7 @@ public class HealthService {
                             by having observed a confident average of    %s.
                             
                             This may requires immediate action!
-                            """, systemHealth.getSystemName(), timestampToDateString(firstViolation),
+                            """, systemHealth.getSystemName(), MailService.timestampToDateString(firstViolation),
                                 serviceConfig.getHealthCpuWarnQuota() * 100d,
                                 serviceConfig.getHealthMemoryWarnQuota() * 100d,
                                 serviceConfig.getHealthDiskWarnQuota() * 100d, systemHealth);
