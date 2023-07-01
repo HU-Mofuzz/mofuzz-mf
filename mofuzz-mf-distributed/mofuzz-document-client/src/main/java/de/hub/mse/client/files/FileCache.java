@@ -4,6 +4,8 @@ import com.google.common.cache.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 
@@ -19,18 +21,21 @@ public class FileCache implements RemovalListener<String, File> {
 
     private final LoadingCache<String, File> fileCache;
 
-    public FileCache(File cacheDir) {
+    public FileCache(File cacheDir, FileAccessor fileAccessor) {
         this.cacheDir = cacheDir;
-        this.fileAccessor = new AwsFileAccessor();
+        this.fileAccessor = fileAccessor;
         this.fileCache = CacheBuilder.newBuilder()
                 .maximumSize(CONFIG.getCacheSize())
                 .removalListener(this)
                 .build(new CacheLoaderAdapter<>(this::load));
     }
 
+    private static String keyToFilename(String key) {
+        return key + XLSX_FILE_ENDING;
+    }
+
     private File load(String key) throws Exception {
-        var filename = key + XLSX_FILE_ENDING;
-        var targetFile = Paths.get(cacheDir.getAbsolutePath(), filename).toFile();
+        var targetFile = Paths.get(cacheDir.getAbsolutePath(), keyToFilename(key)).toFile();
         fileAccessor.obtainFile(key, targetFile);
         return targetFile;
     }
@@ -42,6 +47,12 @@ public class FileCache implements RemovalListener<String, File> {
             log.error("Error loading file \""+id+"\"", e);
             return null;
         }
+    }
+
+    public File loadAndCopy(String id, String targetDirectory) throws IOException {
+        var targetPath = Paths.get(targetDirectory, keyToFilename(id));
+        Files.copy(getOrLoad(id).toPath(), targetPath);
+        return targetPath.toFile();
     }
 
     @Override

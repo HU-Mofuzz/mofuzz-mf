@@ -32,13 +32,14 @@ public class MailService {
     }
 
     public void sendSimpleMessageOrThrow(String subject, String message) throws MailException {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setFrom(serviceConfig.getMailFrom());
-        simpleMailMessage.setTo(serviceConfig.getMailReceiver());
-        simpleMailMessage.setSubject(subject);
-        simpleMailMessage.setText(message);
-
-        mailSender.send(simpleMailMessage);
+        if(serviceConfig.isMailEnabled()) {
+            SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+            simpleMailMessage.setFrom(serviceConfig.getMailFrom());
+            simpleMailMessage.setTo(serviceConfig.getMailReceiver());
+            simpleMailMessage.setSubject(subject);
+            simpleMailMessage.setText(message);
+            mailSender.send(simpleMailMessage);
+        }
         log.info("Sent mail with subject [{}]", subject);
     }
 

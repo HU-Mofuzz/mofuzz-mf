@@ -17,5 +17,5 @@ public interface ExecutionResultRepository extends JpaRepository<ExecutionResult
     List<String> getFileIdsByExperimentAndClient(@Param("experiment") String experimentId,
                                                         @Param("origin") String clientId);
 
-    boolean existsByExperimentAndOriginClient(String experiment, String originClient);
+    boolean existsByExperimentAndOriginClientAndFileDescriptor(String experiment, String originClient, String fileDescriptor);
 }

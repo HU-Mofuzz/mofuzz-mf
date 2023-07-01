@@ -28,6 +28,9 @@ public class ServiceConfig {
     @Value("${service.mail.from:}")
     private String mailFrom;
 
+    @Value("${service.mail.enabled:true}")
+    private boolean mailEnabled;
+
     @Value("${service.documents.dir:${user.home}}")
     private String documentDirectory;
 

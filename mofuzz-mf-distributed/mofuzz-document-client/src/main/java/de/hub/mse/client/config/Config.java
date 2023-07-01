@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 @Data
 public class Config {
 
-    @Parameter(names = "--backend", description = "Backen Host, e.g. localhost or 1.1.1.1")
+    @Parameter(names = "--backend", description = "Backend Host, e.g. http://localhost:8080 or https://1.1.1.1")
     private String backendHost;
 
     @Parameter(names = "--type", description = "Type of the client either <LibreOffice> or <MSOffice>")

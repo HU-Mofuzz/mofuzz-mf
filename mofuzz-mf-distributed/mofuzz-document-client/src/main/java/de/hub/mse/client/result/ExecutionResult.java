@@ -17,6 +17,10 @@ public class ExecutionResult {
     private String originClient;
     private String fileDescriptor;
 
+    private String previousFile;
+
+    private String exception;
+
     private boolean crash;
 
     private boolean hang;

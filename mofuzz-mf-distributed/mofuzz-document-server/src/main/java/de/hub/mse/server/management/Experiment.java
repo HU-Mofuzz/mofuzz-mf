@@ -15,9 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "experiment")
-@NamedEntityGraph(name = "Experiment.serializedLinks",
-        attributeNodes = @NamedAttributeNode("serializedLinks")
-)
 public class Experiment {
 
     @Id

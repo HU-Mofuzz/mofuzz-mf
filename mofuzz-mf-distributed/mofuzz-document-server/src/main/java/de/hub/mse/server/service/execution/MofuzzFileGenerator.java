@@ -90,6 +90,7 @@ public class MofuzzFileGenerator<G extends PoolBasedGenerator<? extends LinkedFi
 
     @Override
     public void generateBatch(int batchSize, Experiment experiment) {
+        log.info("Generating batch of {} files for experiment [{}]", batchSize, experiment.getDescription());
         for(int i = 0; i < batchSize; i++) {
             var xlsxFile = generator.generate(randomness, null);
             var fileDescriptor = descriptorForLinkedFile(xlsxFile, experiment);
@@ -102,6 +103,9 @@ public class MofuzzFileGenerator<G extends PoolBasedGenerator<? extends LinkedFi
                 log.error("Error generating file in batch: ", e);
                 persistence.deleteFile(fileDescriptor.getId());
                 fileRepository.delete(fileDescriptor);
+            }
+            if(i > 0 && i % 10 == 0) {
+                log.info("Batch-Generation progress - {}/{}", i, batchSize);
             }
         }
     }

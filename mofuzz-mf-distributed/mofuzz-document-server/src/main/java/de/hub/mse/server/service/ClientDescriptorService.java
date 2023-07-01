@@ -34,6 +34,10 @@ public class ClientDescriptorService {
         return descriptorRepository.findAll(Sort.by("name"));
     }
 
+    public ClientDescriptor getDescriptor(String id) throws NotFoundException {
+        return descriptorRepository.findById(id).orElseThrow(NotFoundException::new);
+    }
+
     public void changeAssignedExperiment(String id, List<String> experimentIds) throws NotFoundException {
         if(experimentIds == null || !experimentIds.stream().allMatch(experimentRepository::existsById)) {
             throw new ValidationException();

@@ -92,6 +92,13 @@ public class ExecutionService {
         return generator;
     }
 
+    public Optional<Experiment> getCurrentExperimentForClient(String clientId) {
+        var client = clientRepository.findById(clientId).orElse(null);
+        if(client == null || !client.hasAssignedExperiments()) {
+            return Optional.empty();
+        }
+        return experimentRepository.findById(client.getCurrentExperiment());
+    }
 
     public Optional<FileDescriptor> getNextFileDescriptorForClient(String clientId) throws NotFoundException {
 
@@ -269,7 +276,7 @@ public class ExecutionService {
                 indexedExperiments.add(experiment.getId());
                 log.info("Finished indexing experiment [{}]", experiment.getDescription());
             } catch (Exception e) {
-                log.error("Error indexing eperiment!", e);
+                log.error("Error indexing experiment!", e);
             } finally {
                 indexingExperiments.remove(experiment.getId());
             }

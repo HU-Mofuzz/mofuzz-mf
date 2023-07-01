@@ -40,6 +40,11 @@ public class ClientDescriptorController {
         return descriptorService.getDescriptors();
     }
 
+    @GetMapping("/{id}")
+    public void getClientDescriptor(@PathVariable String id) throws NotFoundException {
+        descriptorService.getDescriptor(id);
+    }
+
     @PostMapping("/{id}")
     public void changeClientDescriptor(@PathVariable String id,
                                          @RequestBody ClientDescriptor descriptor) throws NotFoundException {

@@ -46,7 +46,8 @@ public class ExecutionResultService {
             throw new NotFoundException();
         }
 
-        if(resultRepository.existsByExperimentAndOriginClient(result.getExperiment(), result.getOriginClient())) {
+        if(resultRepository.existsByExperimentAndOriginClientAndFileDescriptor(
+                result.getExperiment(), result.getOriginClient(), result.getFileDescriptor())) {
             throw new ResourceConflictException();
         }
 

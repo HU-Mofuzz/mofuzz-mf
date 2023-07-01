@@ -43,6 +43,8 @@ public class HealthService {
 
     private final Map<String, Long> lastHearthBeat = Maps.newConcurrentMap();
 
+    private final Map<String, Long> lastHeartbeatWarningTimestamps = Maps.newConcurrentMap();
+
     private final OperatingSystemMXBean operatingSystemBean =
             (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
@@ -78,11 +80,16 @@ public class HealthService {
         reportSystemHealth(NAME_DOCUMENT_SERVER, cpuLoad, memoryLoad, diskLoad);
     }
 
+    private boolean rateHeartbeatLimitAllowsWarning(String systemName) {
+        var lastWarning = lastHeartbeatWarningTimestamps.getOrDefault(systemName, 0L);
+        return lastWarning < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(HEALTH_WARNING_MIN_INTERVAL_MINUTES);
+    }
+
     @Scheduled(fixedRate = 60000)
-    public void checkHearthBeats() {
+    public void checkHeartBeats() {
         for(Map.Entry<String, Long> entry : lastHearthBeat.entrySet()) {
             Long minimumAge = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(NO_HEARTBEAT_WARNING_MINUTES);
-           if (entry.getValue() < minimumAge) {
+           if (entry.getValue() < minimumAge && rateHeartbeatLimitAllowsWarning(entry.getKey())) {
                String mailTitle = "[Mofuzz] Warning for system \""+entry.getKey()+"\"";
                String mailBody = String.format("""
                             The health monitor detected a violation of the system "%s" since %s!
@@ -92,6 +99,7 @@ public class HealthService {
                             This may requires immediate action!
                             """, entry.getKey(), MailService.timestampToDateString(entry.getValue()),
                        NO_HEARTBEAT_WARNING_MINUTES);
+               lastHeartbeatWarningTimestamps.put(entry.getKey(), System.currentTimeMillis());
                mailService.sendSimpleMessageOrThrow(mailTitle, mailBody);
            }
         }

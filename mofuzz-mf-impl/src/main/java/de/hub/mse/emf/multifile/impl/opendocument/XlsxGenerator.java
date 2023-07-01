@@ -2,6 +2,7 @@ package de.hub.mse.emf.multifile.impl.opendocument;
 
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import de.hub.mse.emf.multifile.PoolBasedGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.ss.usermodel.Cell;
@@ -16,6 +17,7 @@ import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Slf4j
 public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSheetLink, XlsxGeneratorConfig> {
 
     private static final String XLSX_FILE_ENDING = ".xlsx";
@@ -172,8 +174,10 @@ public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSh
                 config.getModelHeight() * config.getModelWidth()
                         * config.getSheetsPerDocument() * config.getTargetDocumentDepth()
         ));
+        log.info("Preparing link pool  with {} files per level at {} levels", filesPerLevel, config.getTargetDocumentDepth() - 1);
 
         for (int level = 0; level < config.getTargetDocumentDepth(); level++) {
+            log.info("Start to generate level {}", level);
             Set<LinkedFile> filesOfLevel = new HashSet<>();
             for(int i = 0; i < filesPerLevel; i++) {
                 LinkedFile file = null;
@@ -189,6 +193,9 @@ public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSh
 
                 if(file != null) {
                     filesOfLevel.add(file);
+                }
+                if(i > 0 && i % 10 == 0) {
+                    log.info("Generation progress - Level {} - {}/{}", level, i, filesOfLevel);
                 }
             }
 

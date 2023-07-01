@@ -3,9 +3,11 @@ package de.hub.mse.client;
 import com.beust.jcommander.JCommander;
 import de.hub.mse.client.backend.BackendConnector;
 import de.hub.mse.client.config.Config;
+import de.hub.mse.client.experiment.ExecutionWorker;
+import de.hub.mse.client.files.AwsFileAccessor;
 import de.hub.mse.client.files.FileCache;
 import de.hub.mse.client.health.HealthWorker;
-import de.hub.mse.client.result.ResultWorker;
+import de.hub.mse.client.util.ApplicationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -23,9 +25,8 @@ public class MofuzzDocumentClientApplication {
     public static final Config CONFIG = new Config();
 
     private static File cacheDir;
-    private static BackendConnector connector;
 
-    private static ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_COUNT);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_COUNT);
 
     private static void parseConfig(String[] args) {
         var commander = JCommander.newBuilder()
@@ -66,15 +67,26 @@ public class MofuzzDocumentClientApplication {
             log.error("Error preparing workspace!");
             System.exit(1);
         }
-        FileCache cache = new FileCache(cacheDir);
+        FileCache cache = new FileCache(cacheDir, new AwsFileAccessor());
 
         log.info("Validating client id...");
-        connector = new BackendConnector();
+        BackendConnector connector = new BackendConnector();
         connector.validateClientId();
 
-        log.info("Startup...");
-        var resultWorker = new ResultWorker(connector);
+        log.info("Preparing application...");
+        var application = ApplicationUtil.getApplicationForType(CONFIG.getClientType());
+        try {
+            if(!application.prepare()) {
+                throw new IllegalStateException("Unable to prepare application!");
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(application::cleanup));
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to prepare application!", e);
+        }
+
+        log.info("Starting worker...");
         executor.submit(new HealthWorker(connector));
-        executor.submit(resultWorker);
+        executor.submit(new ExecutionWorker(connector, cache, application));
+
     }
 }
