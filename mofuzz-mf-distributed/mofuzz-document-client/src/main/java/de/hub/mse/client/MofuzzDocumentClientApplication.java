@@ -64,7 +64,7 @@ public class MofuzzDocumentClientApplication {
         try {
             prepareWorkspace();
         } catch (IOException e) {
-            log.error("Error preparing workspace!");
+            log.error("Error preparing workspace!", e);
             System.exit(1);
         }
         FileCache cache = new FileCache(cacheDir, new AwsFileAccessor());

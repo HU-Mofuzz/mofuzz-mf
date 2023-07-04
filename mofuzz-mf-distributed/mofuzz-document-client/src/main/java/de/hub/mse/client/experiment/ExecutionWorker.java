@@ -121,12 +121,6 @@ public class ExecutionWorker extends ReportingWorker {
     @Override
     protected void work() throws InterruptedException {
         String previousFile = null;
-        try {
-            application.prepare();
-        } catch (Exception e) {
-            log.error("Exception while preparing application", e);
-            throw new RuntimeException(e);
-        }
         while (true) {
             log.info("Loading next file");
             var response = backendConnector.getNextFileDescriptor();
