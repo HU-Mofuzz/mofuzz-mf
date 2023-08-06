@@ -4,6 +4,7 @@ import com.sun.management.OperatingSystemMXBean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.lang.management.ManagementFactory;
 
@@ -12,6 +13,7 @@ import static de.hub.mse.client.MofuzzDocumentClientApplication.CONFIG;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@ToString
 public class HealthReport {
 
     private static final OperatingSystemMXBean operatingSystemBean =
