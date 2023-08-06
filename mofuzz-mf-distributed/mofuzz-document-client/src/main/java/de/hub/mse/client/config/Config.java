@@ -78,7 +78,11 @@ public class Config {
     }
 
     public File getWorkingDirAsFile() {
-        return Paths.get(workingDirectory).toFile();
+        if(workingDirectory == null) {
+            return new File(System.getProperty("user.home"));
+        } else {
+            return Paths.get(workingDirectory).toFile();
+        }
     }
 
 }
