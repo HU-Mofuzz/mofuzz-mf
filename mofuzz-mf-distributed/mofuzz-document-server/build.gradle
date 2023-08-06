@@ -35,7 +35,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 	implementation 'com.google.guava:guava:31.1-jre'
-	implementation 'com.mysql:mysql-connector-j:8.0.33'
+	implementation 'com.mysql:mysql-connector-j:8.1.0'
 
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.476'
 
