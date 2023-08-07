@@ -195,7 +195,7 @@ public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSh
                     filesOfLevel.add(file);
                 }
                 if(i > 0 && i % 10 == 0) {
-                    log.info("Generation progress - Level {} - {}/{}", level, i, filesOfLevel);
+                    log.info("Generation progress - Level {} - {}/{}", level, i, filesPerLevel);
                 }
             }
 
