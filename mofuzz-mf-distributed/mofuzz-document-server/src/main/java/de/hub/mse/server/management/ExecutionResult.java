@@ -29,6 +29,8 @@ public class ExecutionResult {
 
     private String previousFile;
 
+    @Lob
+    @Column
     private String exception;
 
     private boolean crash;
