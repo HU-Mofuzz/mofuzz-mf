@@ -29,8 +29,7 @@ public class ExecutionResult {
 
     private String previousFile;
 
-    @Lob
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String exception;
 
     private boolean crash;
