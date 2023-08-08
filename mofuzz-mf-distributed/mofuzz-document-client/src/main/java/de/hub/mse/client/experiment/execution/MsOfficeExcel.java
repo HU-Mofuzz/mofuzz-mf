@@ -52,7 +52,7 @@ public class MsOfficeExcel implements Application {
                 }
             }
         }
-        excel.closeActiveWorkbook(true);
+        excel.closeActiveWorkbook(false);
         return errorCount;
     }
 
