@@ -20,7 +20,7 @@ public class MsOfficeExcel implements Application {
             Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
         }
         excel = new MSExcel();
-        excel.setVisible(true);
+        excel.setVisible(false);
         excel.disableAskUpdateLinks();
         return true;
     }
@@ -63,6 +63,9 @@ public class MsOfficeExcel implements Application {
 
     @Override
     public void cleanup() {
+        for (int i = 0; i < excel.getWorkbooks().count(); i++) {
+            excel.closeActiveWorkbook(false);
+        }
         excel.quit();
         excel = null;
     }
