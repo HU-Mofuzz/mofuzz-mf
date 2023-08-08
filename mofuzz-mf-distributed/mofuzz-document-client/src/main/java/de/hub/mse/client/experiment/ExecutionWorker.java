@@ -152,24 +152,28 @@ public class ExecutionWorker extends ReportingWorker {
     protected void work() throws InterruptedException {
         String previousFile = null;
         while (true) {
-            log.info("Loading next file");
-            var response = backendConnector.getNextFileDescriptor();
-            boolean unableToPrepare = false;
-            if(response == null) {
-                log.info("Got empty response, will retry later...");
-                unableToPrepare = true;
-            } else {
-                log.info("Preparing workspace");
-                prepareWorkingDirectory(response.getFileSet());
+            try {
+                log.info("Loading next file");
+                var response = backendConnector.getNextFileDescriptor();
+                boolean unableToPrepare = false;
+                if(response == null) {
+                    log.info("Got empty response, will retry later...");
+                    unableToPrepare = true;
+                } else {
+                    log.info("Preparing workspace");
+                    prepareWorkingDirectory(response.getFileSet());
+                }
+                if(unableToPrepare || !application.isExecutionPrepared()) {
+                    log.error("Unable to prepare execution, trying again later...");
+                    Thread.sleep(NO_RESPONSE_WAIT_MS);
+                    continue;
+                }
+                log.info("Entering execution phase");
+                backendConnector.reportResult(coreExecute(response, previousFile));
+                previousFile = response.getDescriptor().getId();
+            } catch (Exception e) {
+                log.error("Uncaught exception while executing!", e);
             }
-            if(unableToPrepare || !application.isExecutionPrepared()) {
-                log.error("Unable to prepare execution, trying again later...");
-                Thread.sleep(NO_RESPONSE_WAIT_MS);
-                continue;
-            }
-            log.info("Entering execution phase");
-            backendConnector.reportResult(coreExecute(response, previousFile));
-            previousFile = response.getDescriptor().getId();
         }
     }
 }
