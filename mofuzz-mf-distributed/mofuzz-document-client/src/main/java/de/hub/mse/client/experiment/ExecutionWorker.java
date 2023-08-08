@@ -13,9 +13,12 @@ import org.apache.commons.io.IOExceptionList;
 import org.apache.commons.io.function.IOConsumer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.hub.mse.client.MofuzzDocumentClientApplication.CONFIG;
 
@@ -23,8 +26,12 @@ import static de.hub.mse.client.MofuzzDocumentClientApplication.CONFIG;
 @AllArgsConstructor
 public class ExecutionWorker extends ReportingWorker {
 
+
     private static final int NO_RESPONSE_WAIT_MS = 30000;
     private static final int MAX_RETRIES = 3;
+
+    private static final int PARALLEL_PREPARE = 10;
+    private final ExecutorService preparationPool = Executors.newFixedThreadPool(PARALLEL_PREPARE);
 
     private final BackendConnector backendConnector;
     private final FileCache cache;
@@ -43,12 +50,35 @@ public class ExecutionWorker extends ReportingWorker {
             throw new IllegalStateException("Unable to clean working directory", e);
         }
 
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        AtomicBoolean exceptionOccured = new AtomicBoolean();
+        AtomicInteger loadedFiles = new AtomicInteger();
+        for(String id : fileSet) {
+            futures.add(
+                    CompletableFuture.runAsync(() -> {
+                                try {
+                                    var start = System.currentTimeMillis();
+                                    if(exceptionOccured.get()) {
+                                        return;
+                                    }
+                                    cache.loadAndCopy(id, CONFIG.getWorkingDirectory());
+                                    log.info("Prepared {}/{} (took {}ms)", loadedFiles.incrementAndGet(),
+                                            fileSet.size(), (System.currentTimeMillis() - start));
+                                } catch (IOException e) {
+                                    exceptionOccured.set(true);
+                                }
+                            }, preparationPool));
+        }
         try {
-            for(String id : fileSet) {
-                cache.loadAndCopy(id, CONFIG.getWorkingDirectory());
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to prepare fileset", e);
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).get();
+        } catch (InterruptedException e) {
+            exceptionOccured.set(true);
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            exceptionOccured.set(true);
+        }
+        if(exceptionOccured.get()) {
+            throw new IllegalStateException("Unable to prepare fileset!");
         }
     }
 
