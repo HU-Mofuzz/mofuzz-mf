@@ -131,7 +131,7 @@ public class ExecutionWorker extends ReportingWorker {
             executionResult.setHang(isHang);
             if(isHang) {
                 log.info("Execution reached timeout, continuing...");
-                if(!hook.interrupt().await(10, TimeUnit.MILLISECONDS)) {
+                if(!hook.interrupt().await(30, TimeUnit.SECONDS)) {
                     reInitialize();
                 }
             } else {
