@@ -173,6 +173,7 @@ public class ExecutionWorker extends ReportingWorker {
                 previousFile = response.getDescriptor().getId();
             } catch (Exception e) {
                 log.error("Uncaught exception while executing!", e);
+                reInitialize();
             }
         }
     }
