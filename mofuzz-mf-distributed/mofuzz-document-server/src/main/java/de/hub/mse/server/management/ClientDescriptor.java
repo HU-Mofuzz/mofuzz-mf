@@ -25,6 +25,8 @@ public class ClientDescriptor {
 
     private String description;
 
+    private boolean notificationsDisabled;
+
     @ElementCollection
     @CollectionTable
     private List<String> assignedExperiments;

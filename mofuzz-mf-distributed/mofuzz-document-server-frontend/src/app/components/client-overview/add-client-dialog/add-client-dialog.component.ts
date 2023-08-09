@@ -16,6 +16,7 @@ export class AddClientDialogComponent {
     id: "",
     name: "",
     description: "",
+    notificationsDisabled: false,
     assignedExperiments: []
   }
 

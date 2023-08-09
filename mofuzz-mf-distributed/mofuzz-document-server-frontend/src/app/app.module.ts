@@ -26,6 +26,7 @@ import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import { HealthIndicatorComponent } from './components/health-indicator/health-indicator.component';
 import {MatBadgeModule} from "@angular/material/badge";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 
 @NgModule({
   declarations: [
@@ -58,7 +59,8 @@ import {MatBadgeModule} from "@angular/material/badge";
         CdkDropList,
         CdkDrag,
         MatTooltipModule,
-        MatBadgeModule
+        MatBadgeModule,
+        MatCheckboxModule
     ],
   providers: [],
   bootstrap: [AppComponent]

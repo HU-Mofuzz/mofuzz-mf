@@ -10,6 +10,8 @@
             <mat-label>Description</mat-label>
             <input matInput [(ngModel)]="client.description">
         </mat-form-field>
+      <mat-checkbox [checked]="client.notificationsDisabled"
+                    (change)="client.notificationsDisabled = $event.checked">Health Notifications Disabled</mat-checkbox>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

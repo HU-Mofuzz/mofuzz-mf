@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ClientDescriptorRepository extends JpaRepository<ClientDescriptor, String> {
+
+    default boolean hasDisabledNotifications(String id) {
+        return findById(id).map(ClientDescriptor::isNotificationsDisabled).orElse(false);
+    }
 }

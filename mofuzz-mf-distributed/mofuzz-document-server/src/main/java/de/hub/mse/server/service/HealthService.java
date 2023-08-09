@@ -3,7 +3,9 @@ package de.hub.mse.server.service;
 import com.google.common.collect.Maps;
 import com.sun.management.OperatingSystemMXBean;
 import de.hub.mse.server.config.ServiceConfig;
+import de.hub.mse.server.management.ClientDescriptor;
 import de.hub.mse.server.management.HealthSnapshot;
+import de.hub.mse.server.repository.ClientDescriptorRepository;
 import de.hub.mse.server.repository.HealthSnapshotRepository;
 import de.hub.mse.server.service.health.SystemHealth;
 import lombok.AllArgsConstructor;
@@ -48,16 +50,19 @@ public class HealthService {
     private final OperatingSystemMXBean operatingSystemBean =
             (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
+    private final ClientDescriptorRepository clientRepository;
+
 
     @Autowired
     public HealthService(ServiceConfig serviceConfig, MailService mailService,
                          SimpMessagingTemplate messagingTemplate, HealthSnapshotRepository
-                         healthRepository) {
+                         healthRepository, ClientDescriptorRepository clientRepository) {
         this.serviceConfig = serviceConfig;
         this.mailService = mailService;
         this.messagingTemplate = messagingTemplate;
         this.healthRepository = healthRepository;
-        this.healthMonitor = new HealthMonitor(mailService, serviceConfig);
+        this.clientRepository = clientRepository;
+        this.healthMonitor = new HealthMonitor(mailService, serviceConfig, clientRepository);
     }
 
     @Scheduled(fixedRate = 15000)
@@ -90,14 +95,16 @@ public class HealthService {
         for(Map.Entry<String, Long> entry : lastHearthBeat.entrySet()) {
             Long minimumAge = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(NO_HEARTBEAT_WARNING_MINUTES);
            if (entry.getValue() < minimumAge && rateHeartbeatLimitAllowsWarning(entry.getKey())) {
-               String mailTitle = "[Mofuzz] Warning for system \""+entry.getKey()+"\"";
+               var clientName = clientRepository.findById(entry.getKey())
+                       .map(ClientDescriptor::getName).orElse(entry.getKey());
+               String mailTitle = "[Mofuzz] Warning for system \""+clientName+"\"";
                String mailBody = String.format("""
                             The health monitor detected a violation of the system "%s" since %s!
                             
                             The system violates the configured minimum heartbeat period for health measurement reporting of %d minutes.
                             
                             This may requires immediate action!
-                            """, entry.getKey(), MailService.timestampToDateString(entry.getValue()),
+                            """, clientName, MailService.timestampToDateString(entry.getValue()),
                        NO_HEARTBEAT_WARNING_MINUTES);
                lastHeartbeatWarningTimestamps.put(entry.getKey(), System.currentTimeMillis());
                mailService.sendSimpleMessageOrThrow(mailTitle, mailBody);
@@ -146,6 +153,8 @@ public class HealthService {
         private final MailService mailService;
         private final ServiceConfig serviceConfig;
 
+        private final ClientDescriptorRepository clientRepository;
+
         private final Map<String, Long> lastWarningTimestamps = Maps.newConcurrentMap();
         private final Map<String, Long> firstViolationTimestamps = Maps.newConcurrentMap();
 
@@ -157,14 +166,16 @@ public class HealthService {
         public void monitorQuotas(SystemHealth systemHealth) {
             if(systemHealth.violatesQuotas(serviceConfig.getHealthCpuWarnQuota(),
                     serviceConfig.getHealthMemoryWarnQuota(), serviceConfig.getHealthDiskWarnQuota())) {
-                log.error("System [{}] violates configured quotas: {}", systemHealth.getSystemName(), systemHealth);
 
                 var firstViolation = firstViolationTimestamps.getOrDefault(systemHealth.getSystemName(), System.currentTimeMillis());
                 firstViolationTimestamps.put(systemHealth.getSystemName(), firstViolation);
 
-                if(rateLimitAllowsWarning(systemHealth)) {
+                if(rateLimitAllowsWarning(systemHealth) && !clientRepository.hasDisabledNotifications(systemHealth.getSystemName())) {
                     try {
-                        String mailTitle = "[Mofuzz] Warning for system \""+systemHealth.getSystemName()+"\"";
+                        var clientName = clientRepository.findById(systemHealth.getSystemName())
+                                .map(ClientDescriptor::getName).orElse(systemHealth.getSystemName());
+                        log.error("System [{}] violates configured quotas: {}", clientName, systemHealth);
+                        String mailTitle = "[Mofuzz] Warning for system \""+clientName+"\"";
                         String mailBody = String.format("""
                             The health monitor detected a violation of the system "%s" since %s!
                             
@@ -172,7 +183,7 @@ public class HealthService {
                             by having observed a confident average of    %s.
                             
                             This may requires immediate action!
-                            """, systemHealth.getSystemName(), MailService.timestampToDateString(firstViolation),
+                            """, clientName, MailService.timestampToDateString(firstViolation),
                                 serviceConfig.getHealthCpuWarnQuota() * 100d,
                                 serviceConfig.getHealthMemoryWarnQuota() * 100d,
                                 serviceConfig.getHealthDiskWarnQuota() * 100d, systemHealth);

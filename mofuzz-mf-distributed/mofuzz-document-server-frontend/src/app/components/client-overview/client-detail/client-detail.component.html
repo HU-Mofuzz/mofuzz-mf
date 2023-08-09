@@ -11,18 +11,21 @@
         </button>
     </div>
     <div class="field-list">
-        <mat-form-field appearance="fill">
-            <mat-label>Name</mat-label>
-            <input matInput [formControl]="name"
+      <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <input matInput [formControl]="name"
                    [readonly]="!editing"
                    [(ngModel)]="editingCopy.name">
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-            <mat-label>Description</mat-label>
-            <input matInput
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Description</mat-label>
+        <input matInput
                    [readonly]="!editing"
                    [(ngModel)]="editingCopy.description">
-        </mat-form-field>
+      </mat-form-field>
+      <mat-checkbox [disabled]="!editing" style="margin-bottom: 1rem"
+                    [checked]="editingCopy.notificationsDisabled"
+                    (change)="editingCopy.notificationsDisabled = $event.checked">Health Notifications Disabled</mat-checkbox>
     </div>
     <app-experiment-assignment [editingEnabled]="editing"
                                [client]="editingCopy.id"
