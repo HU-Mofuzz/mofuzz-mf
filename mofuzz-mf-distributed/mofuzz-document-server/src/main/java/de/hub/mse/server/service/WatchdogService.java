@@ -67,7 +67,7 @@ public class WatchdogService {
             int warningInterval = watchdogWarnIntervalMinutes.getOrDefault(
                     watchdog.getKey(), WATCHDOG_DEFAULT_WARNING_INTERVAL_MIN);
             for(var timestamp : watchdog.getValue().entrySet()) {
-                if(timestamp.getValue() < now - warningInterval) {
+                if(timestamp.getValue() < now - TimeUnit.MINUTES.toMillis(warningInterval)) {
                     var clientName = clientRepository.findById(timestamp.getKey())
                             .map(ClientDescriptor::getName).orElse(timestamp.getKey());
                     mailService.sendSimpleMessage("[Mofuzz] Warning for client \""+clientName+"\"",
