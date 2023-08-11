@@ -30,7 +30,7 @@ public class FileCache implements RemovalListener<String, File> {
                 .build(new CacheLoaderAdapter<>(this::load));
     }
 
-    private static String keyToFilename(String key) {
+    public static String keyToFilename(String key) {
         return key + XLSX_FILE_ENDING;
     }
 

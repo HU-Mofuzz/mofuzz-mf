@@ -8,17 +8,17 @@ import de.hub.mse.client.files.FileCache;
 import de.hub.mse.client.result.ExecutionResult;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOExceptionList;
-import org.apache.commons.io.function.IOConsumer;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static de.hub.mse.client.MofuzzDocumentClientApplication.CONFIG;
 
@@ -40,35 +40,52 @@ public class ExecutionWorker extends ReportingWorker {
 
     private final Application application;
 
+    private Set<String> previousFileSet = Collections.emptySet();
+
+    public ExecutionWorker(BackendConnector connector, FileCache cache, Application application) {
+        this.backendConnector = connector;
+        this.cache = cache;
+        this.application = application;
+    }
+
 
     private void prepareWorkingDirectory(Set<String> fileSet) {
+        Set<String> filesToCache;
 
-        try {
-            IOConsumer.forAll(FileUtils::forceDelete,
-                    CONFIG.getWorkingDirAsFile().listFiles(f -> !f.isDirectory()));
-        } catch (IOExceptionList e) {
-            throw new IllegalStateException("Unable to clean working directory", e);
-        }
+        // delete all files that where in the previous but are not in the new one
+        Set<String> filesToDelete = previousFileSet.stream()
+                .filter(id -> !fileSet.contains(id))
+                .collect(Collectors.toSet());
+
+        // cache all the files, are in the new set, but were not in the previous one
+        filesToCache = fileSet.stream()
+                .filter(id -> !previousFileSet.contains(id))
+                .collect(Collectors.toSet());
+
+        AtomicInteger deletedFiles = new AtomicInteger();
+        filesToDelete.forEach(id -> preparationPool.submit(() -> {
+            log.info("Deleted {}/{}", deletedFiles.incrementAndGet(), filesToDelete.size());
+            Paths.get(CONFIG.getWorkingDirectory(), FileCache.keyToFilename(id)).toFile().delete();
+        }));
 
         List<CompletableFuture<?>> futures = new ArrayList<>();
         AtomicBoolean exceptionOccured = new AtomicBoolean();
         AtomicInteger loadedFiles = new AtomicInteger();
-        for(String id : fileSet) {
-            futures.add(
-                    CompletableFuture.runAsync(() -> {
-                                try {
-                                    var start = System.currentTimeMillis();
-                                    if(exceptionOccured.get()) {
-                                        return;
-                                    }
-                                    cache.loadAndCopy(id, CONFIG.getWorkingDirectory());
-                                    log.info("Prepared {}/{} (took {}ms)", loadedFiles.incrementAndGet(),
-                                            fileSet.size(), (System.currentTimeMillis() - start));
-                                } catch (IOException e) {
-                                    exceptionOccured.set(true);
-                                }
-                            }, preparationPool));
-        }
+        filesToCache.forEach(id ->
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    var start = System.currentTimeMillis();
+                    if(exceptionOccured.get()) {
+                        return;
+                    }
+                    cache.loadAndCopy(id, CONFIG.getWorkingDirectory());
+                    log.info("Prepared {}/{} (took {}ms)", loadedFiles.incrementAndGet(),
+                            filesToCache.size(), (System.currentTimeMillis() - start));
+                } catch (IOException e) {
+                    exceptionOccured.set(true);
+                }
+            }, preparationPool)));
+
         try {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).get();
         } catch (InterruptedException e) {
@@ -160,6 +177,7 @@ public class ExecutionWorker extends ReportingWorker {
                 } else {
                     log.info("Preparing workspace");
                     prepareWorkingDirectory(response.getFileSet());
+                    previousFileSet = response.getFileSet();
                 }
                 if(unableToPrepare || !application.isExecutionPrepared()) {
                     log.error("Unable to prepare execution, trying again later...");
