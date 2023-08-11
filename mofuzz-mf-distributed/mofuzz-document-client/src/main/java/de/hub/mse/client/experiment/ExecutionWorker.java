@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +37,7 @@ public class ExecutionWorker extends ReportingWorker {
 
     private final Application application;
 
-    private Set<String> previousFileSet = Collections.emptySet();
+    private Set<String> previousFileSet = new HashSet<>();
 
     public ExecutionWorker(BackendConnector connector, FileCache cache, Application application) {
         this.backendConnector = connector;
@@ -50,7 +47,6 @@ public class ExecutionWorker extends ReportingWorker {
 
 
     private void prepareWorkingDirectory(Set<String> fileSet) {
-        Set<String> filesToCache;
 
         // delete all files that where in the previous but are not in the new one
         Set<String> filesToDelete = previousFileSet.stream()
@@ -58,7 +54,7 @@ public class ExecutionWorker extends ReportingWorker {
                 .collect(Collectors.toSet());
 
         // cache all the files, are in the new set, but were not in the previous one
-        filesToCache = fileSet.stream()
+        Set<String> filesToCache = fileSet.stream()
                 .filter(id -> !previousFileSet.contains(id))
                 .collect(Collectors.toSet());
 
@@ -71,6 +67,7 @@ public class ExecutionWorker extends ReportingWorker {
         List<CompletableFuture<?>> futures = new ArrayList<>();
         AtomicBoolean exceptionOccured = new AtomicBoolean();
         AtomicInteger loadedFiles = new AtomicInteger();
+        List<Exception> exceptions = new ArrayList<>();
         filesToCache.forEach(id ->
             futures.add(CompletableFuture.runAsync(() -> {
                 try {
@@ -83,6 +80,7 @@ public class ExecutionWorker extends ReportingWorker {
                             filesToCache.size(), (System.currentTimeMillis() - start));
                 } catch (IOException e) {
                     exceptionOccured.set(true);
+                    exceptions.add(e);
                 }
             }, preparationPool)));
 
@@ -95,7 +93,11 @@ public class ExecutionWorker extends ReportingWorker {
             exceptionOccured.set(true);
         }
         if(exceptionOccured.get()) {
-            throw new IllegalStateException("Unable to prepare fileset!");
+            if(exceptions.isEmpty()) {
+                throw new IllegalStateException("Unable to prepare fileset!");
+            } else {
+                throw new IllegalStateException("Unable to prepare fileset!", exceptions.get(0));
+            }
         }
     }
 
@@ -176,8 +178,14 @@ public class ExecutionWorker extends ReportingWorker {
                     unableToPrepare = true;
                 } else {
                     log.info("Preparing workspace");
-                    prepareWorkingDirectory(response.getFileSet());
-                    previousFileSet = response.getFileSet();
+                    if(response.getFileSet() == null) {
+                        prepareWorkingDirectory(Collections.emptySet());
+                        previousFileSet = new HashSet<>();
+                    } else {
+                        prepareWorkingDirectory(response.getFileSet());
+                        previousFileSet = new HashSet<>(response.getFileSet());
+                    }
+                    previousFileSet.add(response.getDescriptor().getId());
                 }
                 if(unableToPrepare || !application.isExecutionPrepared()) {
                     log.error("Unable to prepare execution, trying again later...");
