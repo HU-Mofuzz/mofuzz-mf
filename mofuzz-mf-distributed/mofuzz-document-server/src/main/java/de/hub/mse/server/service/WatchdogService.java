@@ -12,20 +12,27 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class WatchdogService {
 
-    private static final int WATCHDOG_WARNING_INTERVAL_MIN = 10;
+    private static final int WATCHDOG_DEFAULT_WARNING_INTERVAL_MIN = 10;
+    private static final int WATCHDOG_RESULT_WARNING_INTERVAL_MIN = 30;
+    private static final int WATCHDOG_HEALTH_WARNING_INTERVAL_MIN = 5;
     private static final int WATCHDOG_RATE_INTERVAL_MIN = 60;
 
     private static final String WATCHDOG_KEY_HEALTH = "health";
     private static final String WATCHDOG_KEY_RESULT = "result";
 
+    private final Map<String, Integer> watchdogWarnIntervalMinutes = new HashMap<>();
     private final Map<String, Map<String, Long>> watchdogTimestamps = new HashMap<>();
 
     private final Map<String, Map<String, Long>> rateLimitTimestamps = new HashMap<>();
+
 
     @Autowired
     public WatchdogService(ClientDescriptorRepository clientRepository, MailService mailService) {
         this.clientRepository = clientRepository;
         this.mailService = mailService;
+
+        watchdogWarnIntervalMinutes.put(WATCHDOG_KEY_HEALTH, WATCHDOG_HEALTH_WARNING_INTERVAL_MIN);
+        watchdogWarnIntervalMinutes.put(WATCHDOG_KEY_RESULT, WATCHDOG_RESULT_WARNING_INTERVAL_MIN);
     }
     private final ClientDescriptorRepository clientRepository;
 
@@ -57,8 +64,10 @@ public class WatchdogService {
         var now = System.currentTimeMillis();
         Set<String> systemIdsToRemove = new HashSet<>();
         for(var watchdog : watchdogTimestamps.entrySet()) {
+            int warningInterval = watchdogWarnIntervalMinutes.getOrDefault(
+                    watchdog.getKey(), WATCHDOG_DEFAULT_WARNING_INTERVAL_MIN);
             for(var timestamp : watchdog.getValue().entrySet()) {
-                if(timestamp.getValue() < now - TimeUnit.MINUTES.toMillis(WATCHDOG_WARNING_INTERVAL_MIN)) {
+                if(timestamp.getValue() < now - warningInterval) {
                     var clientName = clientRepository.findById(timestamp.getKey())
                             .map(ClientDescriptor::getName).orElse(timestamp.getKey());
                     mailService.sendSimpleMessage("[Mofuzz] Warning for client \""+clientName+"\"",
@@ -69,7 +78,7 @@ public class WatchdogService {
                                                                 
                                     This may requires immediate action!
                                     """, clientName, MailService.timestampToDateString(timestamp.getValue()),
-                                    watchdog.getKey(), WATCHDOG_WARNING_INTERVAL_MIN));
+                                    watchdog.getKey(), warningInterval));
                     systemIdsToRemove.add(timestamp.getKey());
                     var rateLimitTimestamps = this.rateLimitTimestamps.getOrDefault(watchdog.getKey(), new HashMap<>());
                     rateLimitTimestamps.put(timestamp.getKey(), System.currentTimeMillis());

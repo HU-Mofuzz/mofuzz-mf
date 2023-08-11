@@ -31,11 +31,8 @@ public class HealthService {
 
     private static final int HEALTH_WARNING_MIN_INTERVAL_MINUTES = 60;
 
-    private static final int NO_HEARTBEAT_WARNING_MINUTES = 5;
-
 
     private final ServiceConfig serviceConfig;
-    private final MailService mailService;
     private final SimpMessagingTemplate messagingTemplate;
     private final HealthSnapshotRepository healthRepository;
 
@@ -43,14 +40,8 @@ public class HealthService {
 
     private final Map<String, SystemHealth> systemHealthMap = Maps.newConcurrentMap();
 
-    private final Map<String, Long> lastHearthBeat = Maps.newConcurrentMap();
-
-    private final Map<String, Long> lastHeartbeatWarningTimestamps = Maps.newConcurrentMap();
-
     private final OperatingSystemMXBean operatingSystemBean =
             (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-
-    private final ClientDescriptorRepository clientRepository;
 
 
     @Autowired
@@ -58,10 +49,8 @@ public class HealthService {
                          SimpMessagingTemplate messagingTemplate, HealthSnapshotRepository
                          healthRepository, ClientDescriptorRepository clientRepository) {
         this.serviceConfig = serviceConfig;
-        this.mailService = mailService;
         this.messagingTemplate = messagingTemplate;
         this.healthRepository = healthRepository;
-        this.clientRepository = clientRepository;
         this.healthMonitor = new HealthMonitor(mailService, serviceConfig, clientRepository);
     }
 
@@ -85,33 +74,6 @@ public class HealthService {
         reportSystemHealth(NAME_DOCUMENT_SERVER, cpuLoad, memoryLoad, diskLoad);
     }
 
-    private boolean rateHeartbeatLimitAllowsWarning(String systemName) {
-        var lastWarning = lastHeartbeatWarningTimestamps.getOrDefault(systemName, 0L);
-        return lastWarning < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(HEALTH_WARNING_MIN_INTERVAL_MINUTES);
-    }
-
-    @Scheduled(fixedRate = 60000)
-    public void checkHeartBeats() {
-        for(Map.Entry<String, Long> entry : lastHearthBeat.entrySet()) {
-            Long minimumAge = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(NO_HEARTBEAT_WARNING_MINUTES);
-           if (entry.getValue() < minimumAge && rateHeartbeatLimitAllowsWarning(entry.getKey())) {
-               var clientName = clientRepository.findById(entry.getKey())
-                       .map(ClientDescriptor::getName).orElse(entry.getKey());
-               String mailTitle = "[Mofuzz] Warning for system \""+clientName+"\"";
-               String mailBody = String.format("""
-                            The health monitor detected a violation of the system "%s" since %s!
-                            
-                            The system violates the configured minimum heartbeat period for health measurement reporting of %d minutes.
-                            
-                            This may requires immediate action!
-                            """, clientName, MailService.timestampToDateString(entry.getValue()),
-                       NO_HEARTBEAT_WARNING_MINUTES);
-               lastHeartbeatWarningTimestamps.put(entry.getKey(), System.currentTimeMillis());
-               mailService.sendSimpleMessageOrThrow(mailTitle, mailBody);
-           }
-        }
-    }
-
     private static double getMemoryLoadFromBean(OperatingSystemMXBean bean) {
         var freeSpace = (double)(bean.getFreeMemorySize() + bean.getFreeSwapSpaceSize());
         var totalSpace = (double)(bean.getTotalMemorySize() + bean.getTotalSwapSpaceSize());
@@ -132,7 +94,6 @@ public class HealthService {
         systemHealthMap.put(name, health);
 
         healthMonitor.monitorQuotas(health);
-        lastHearthBeat.put(name, System.currentTimeMillis());
 
         HealthSnapshot snapshot = HealthSnapshot.builder()
                 .system(name)
