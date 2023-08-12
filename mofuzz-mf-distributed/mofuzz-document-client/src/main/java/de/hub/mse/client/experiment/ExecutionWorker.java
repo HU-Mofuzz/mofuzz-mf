@@ -38,8 +38,6 @@ public class ExecutionWorker extends ReportingWorker {
 
     private final Application application;
 
-    private Set<String> previousFileSet = new HashSet<>();
-
     public ExecutionWorker(BackendConnector connector, FileCache cache, Application application) {
         this.backendConnector = connector;
         this.cache = cache;
@@ -174,12 +172,9 @@ public class ExecutionWorker extends ReportingWorker {
                     log.info("Preparing workspace");
                     if(response.getFileSet() == null) {
                         prepareWorkingDirectory(Collections.emptySet());
-                        previousFileSet = new HashSet<>();
                     } else {
                         prepareWorkingDirectory(response.getFileSet());
-                        previousFileSet = new HashSet<>(response.getFileSet());
                     }
-                    previousFileSet.add(response.getDescriptor().getId());
                 }
                 if(unableToPrepare || !application.isExecutionPrepared()) {
                     log.error("Unable to prepare execution, trying again later...");
