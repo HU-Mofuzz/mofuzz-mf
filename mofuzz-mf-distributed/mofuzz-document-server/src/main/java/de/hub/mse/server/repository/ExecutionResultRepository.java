@@ -18,4 +18,6 @@ public interface ExecutionResultRepository extends JpaRepository<ExecutionResult
                                                         @Param("origin") String clientId);
 
     boolean existsByExperimentAndOriginClientAndFileDescriptor(String experiment, String originClient, String fileDescriptor);
+
+    List<ExecutionResult> findAllByExperiment(String experiment);
 }

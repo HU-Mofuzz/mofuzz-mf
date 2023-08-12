@@ -15,7 +15,7 @@ export class ExperimentOverviewComponent implements OnInit{
   experiments: Experiment[] = []
 
   displayedColumns = ["description", "documentCount", "documentWidth", "documentHeight", "sheetsPerDocument",
-    "treeDepth", "timeout"]
+    "treeDepth", "timeout", "actions"]
 
   constructor(private dialog: MatDialog,
               private backendService: BackendService,
@@ -44,5 +44,14 @@ export class ExperimentOverviewComponent implements OnInit{
             this.refresh();
           }
         })
+  }
+
+  resetExperiment(experiment: Experiment) {
+    if(confirm("All generated files and results will be deleted, are you sure?")) {
+      this.backendService.experiment.resetExperiment(experiment.id).subscribe(
+          _ => this.toastService.info("Experiment reset successfully!"),
+          _ => this.toastService.error("Error while reseting experiment!")
+      );
+    }
   }
 }

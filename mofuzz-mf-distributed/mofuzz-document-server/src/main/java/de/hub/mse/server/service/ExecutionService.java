@@ -13,7 +13,6 @@ import de.hub.mse.server.repository.ClientDescriptorRepository;
 import de.hub.mse.server.repository.ExecutionResultRepository;
 import de.hub.mse.server.repository.ExperimentRepository;
 import de.hub.mse.server.repository.FileDescriptorRepository;
-import de.hub.mse.server.service.execution.AwsPersistence;
 import de.hub.mse.server.service.execution.FileGenerator;
 import de.hub.mse.server.service.execution.FilePersistence;
 import de.hub.mse.server.service.execution.MofuzzFileGenerator;
@@ -63,15 +62,14 @@ public class ExecutionService {
     @Autowired
     public ExecutionService(ClientDescriptorRepository clientRepository, FileDescriptorRepository fileRepository,
                             ExperimentRepository experimentRepository, ExecutionResultRepository resultRepository,
-                            MailService mailService, ServiceConfig serviceConfig) {
+                            MailService mailService, ServiceConfig serviceConfig, FilePersistence filePersistence) {
         this.clientRepository = clientRepository;
         this.fileRepository = fileRepository;
         this.experimentRepository = experimentRepository;
         this.resultRepository = resultRepository;
         this.mailService = mailService;
         this.serviceConfig = serviceConfig;
-
-        this.filePersistence = new AwsPersistence(serviceConfig);
+        this.filePersistence = filePersistence;
     }
 
 

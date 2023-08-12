@@ -37,3 +37,25 @@ textarea {
   flex-flow: row wrap;
   gap: 0.5rem 0.5rem;
 }
+
+.row {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  width: 100%;
+
+  .fill {
+    flex: 1;
+  }
+}
+
+.column {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  width: 100%;
+
+  .fill {
+    flex: 1;
+  }
+}

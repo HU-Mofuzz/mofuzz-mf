@@ -46,6 +46,9 @@ class ExperimentController {
     return this.httpClient.get<Experiment[]>(`${API_BASE}/experiment`);
   }
 
+  resetExperiment(id: string): Observable<void> {
+    return this.httpClient.post<void>(`${API_BASE}/experiment/reset/${id}`, null);
+  }
 }
 
 class ClientDescriptorController {
