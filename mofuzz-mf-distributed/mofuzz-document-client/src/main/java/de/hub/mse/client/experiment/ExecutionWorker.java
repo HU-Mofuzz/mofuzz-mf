@@ -38,12 +38,6 @@ public class ExecutionWorker extends ReportingWorker {
 
     private final Application application;
 
-    public ExecutionWorker(BackendConnector connector, FileCache cache, Application application) {
-        this.backendConnector = connector;
-        this.cache = cache;
-        this.application = application;
-    }
-
 
     private void prepareWorkingDirectory(Set<String> fileSet) {
 
