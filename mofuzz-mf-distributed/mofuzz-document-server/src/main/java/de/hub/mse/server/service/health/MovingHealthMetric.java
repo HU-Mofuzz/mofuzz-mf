@@ -34,6 +34,7 @@ public class MovingHealthMetric<T> {
     }
 
     public boolean isConfident() {
+        removeDeprecatedMeasurements();
         return measurements.size() >= countForConfidence;
     }
 
