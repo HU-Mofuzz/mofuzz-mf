@@ -1,6 +1,6 @@
 package de.hub.mse.server.config;
 
-import de.hub.mse.server.service.execution.AwsPersistence;
+import de.hub.mse.server.service.execution.AwsFilePersistence;
 import de.hub.mse.server.service.execution.FilePersistence;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +10,6 @@ public class FilePersistenceConfig {
 
     @Bean
     public FilePersistence getFilePersistence(ServiceConfig config) {
-        return new AwsPersistence(config);
+        return new AwsFilePersistence(config);
     }
 }

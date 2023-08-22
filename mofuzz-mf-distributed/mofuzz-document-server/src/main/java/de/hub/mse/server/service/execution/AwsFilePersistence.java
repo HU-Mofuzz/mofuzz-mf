@@ -11,12 +11,12 @@ import java.io.File;
 import java.io.IOException;
 
 @Slf4j
-public class AwsPersistence implements FilePersistence {
+public class AwsFilePersistence implements FilePersistence {
 
     private final String bucketId;
     final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build();
 
-    public AwsPersistence(ServiceConfig config) {
+    public AwsFilePersistence(ServiceConfig config) {
         this.bucketId = config.getAwsBucketId();
     }
     @Override
