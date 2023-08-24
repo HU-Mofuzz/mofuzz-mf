@@ -19,7 +19,8 @@ export class AddExperimentDialogComponent {
         id: "",
         sheetsPerDocument: 10,
         timeout: 30000,
-        treeDepth: 1
+        treeDepth: 1,
+        prepared: ""
     };
 
     private defaultValidators = [Validators.min(1), Validators.required]

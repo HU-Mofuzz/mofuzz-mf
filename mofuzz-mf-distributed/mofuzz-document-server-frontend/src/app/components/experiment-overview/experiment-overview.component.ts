@@ -14,7 +14,7 @@ export class ExperimentOverviewComponent implements OnInit{
 
   experiments: Experiment[] = []
 
-  displayedColumns = ["description", "documentCount", "documentWidth", "documentHeight", "sheetsPerDocument",
+  displayedColumns = ["state", "description", "documentCount", "documentWidth", "documentHeight", "sheetsPerDocument",
     "treeDepth", "timeout", "actions"]
 
   constructor(private dialog: MatDialog,
@@ -52,6 +52,32 @@ export class ExperimentOverviewComponent implements OnInit{
           _ => this.toastService.info("Experiment reset successfully!"),
           _ => this.toastService.error("Error while reseting experiment!")
       );
+    }
+  }
+
+  getIconForState(prepared: string): string {
+    switch (prepared) {
+      case "UNPREPARED":
+        return "not_started";
+      case "PREPARING":
+        return "pending";
+      case "PREPARED":
+        return "check_circle";
+      default:
+        return "help";
+    }
+  }
+
+  getTooltipForState(prepared: string): string {
+    switch (prepared) {
+      case "UNPREPARED":
+        return "Unprepared";
+      case "PREPARING":
+        return "Preparing";
+      case "PREPARED":
+        return "Prepared";
+      default:
+        return "help";
     }
   }
 }
