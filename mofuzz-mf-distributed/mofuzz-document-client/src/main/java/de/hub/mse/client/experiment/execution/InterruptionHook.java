@@ -5,7 +5,7 @@ import java.util.concurrent.CountDownLatch;
 public class InterruptionHook {
     private boolean raised = false;
 
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     public boolean isRaised() {
         return raised;
