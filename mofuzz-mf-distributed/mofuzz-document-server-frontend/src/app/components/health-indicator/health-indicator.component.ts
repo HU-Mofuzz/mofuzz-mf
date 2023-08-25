@@ -1,16 +1,15 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import {Subscription} from "rxjs";
-import {SocketService} from "../../services/socket.service";
+import {HEALTH_TOPIC, SocketService} from "../../services/socket.service";
 import {HealthSnapshot} from "../../model/health-snapshot";
 import {formatDate} from "@angular/common";
 
-const HEALTH_TOPIC = "/mofuzz/health";
 @Component({
   selector: 'app-health-indicator',
   templateUrl: './health-indicator.component.html',
   styleUrls: ['./health-indicator.component.scss']
 })
-export class HealthIndicatorComponent implements OnChanges {
+export class HealthIndicatorComponent implements OnChanges, OnDestroy {
 
   @Input()
   system: string = '';
@@ -32,6 +31,10 @@ export class HealthIndicatorComponent implements OnChanges {
           }
       )
     }
+  }
+
+  ngOnDestroy() {
+    this.topicSubscription.unsubscribe();
   }
 
   getColorClass() {

@@ -27,7 +27,8 @@
                     [checked]="editingCopy.notificationsDisabled"
                     (change)="editingCopy.notificationsDisabled = $event.checked">Health Notifications Disabled</mat-checkbox>
     </div>
-    <app-experiment-assignment [editingEnabled]="editing"
+  <app-health-chart [system]="editingCopy.id"></app-health-chart>
+  <app-experiment-assignment [editingEnabled]="editing"
                                [client]="editingCopy.id"
                                [assignedExperiments]="editingCopy.assignedExperiments"
                                (assignmentChanged)="editingCopy.assignedExperiments = $event">

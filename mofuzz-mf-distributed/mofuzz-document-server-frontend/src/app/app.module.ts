@@ -28,6 +28,8 @@ import { HealthIndicatorComponent } from './components/health-indicator/health-i
 import {MatBadgeModule} from "@angular/material/badge";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatRippleModule} from "@angular/material/core";
+import { NgChartsModule } from 'ng2-charts';
+import { HealthChartComponent } from './components/health-chart/health-chart.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,8 @@ import {MatRippleModule} from "@angular/material/core";
     ClientDetailComponent,
     AddClientDialogComponent,
     ExperimentAssignmentComponent,
-    HealthIndicatorComponent
+    HealthIndicatorComponent,
+    HealthChartComponent
   ],
   imports: [
     BrowserModule,
@@ -62,7 +65,8 @@ import {MatRippleModule} from "@angular/material/core";
     MatTooltipModule,
     MatBadgeModule,
     MatCheckboxModule,
-    MatRippleModule
+    MatRippleModule,
+    NgChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

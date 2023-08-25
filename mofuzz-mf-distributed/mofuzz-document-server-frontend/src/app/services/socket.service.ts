@@ -6,6 +6,9 @@ import {Observable, Subscription} from "rxjs";
 import {messageCallbackType} from "@stomp/stompjs/src/types";
 import {HealthSnapshot} from "../model/health-snapshot";
 
+
+export const HEALTH_TOPIC = "/mofuzz/health";
+
 @Injectable({
   providedIn: 'root'
 })

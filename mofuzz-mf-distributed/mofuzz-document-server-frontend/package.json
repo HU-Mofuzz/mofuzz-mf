@@ -21,6 +21,8 @@
     "@angular/platform-browser-dynamic": "^15.2.0",
     "@angular/router": "^15.2.0",
     "@stomp/stompjs": "^7.0.0",
+    "chart.js": "^3.6.0",
+    "ng2-charts": "^4.1.1",
     "rxjs": "~7.8.0",
     "sockjs": "^0.3.24",
     "sockjs-client": "^1.6.1",
