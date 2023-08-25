@@ -27,6 +27,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import { HealthIndicatorComponent } from './components/health-indicator/health-indicator.component';
 import {MatBadgeModule} from "@angular/material/badge";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatRippleModule} from "@angular/material/core";
 
 @NgModule({
   declarations: [
@@ -40,28 +41,29 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
     ExperimentAssignmentComponent,
     HealthIndicatorComponent
   ],
-    imports: [
-        BrowserModule,
-        BrowserAnimationsModule,
-        MatCardModule,
-        MatButtonModule,
-        HttpClientModule,
-        MatSnackBarModule,
-        MatToolbarModule,
-        MatTableModule,
-        MatIconModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        FormsModule,
-        MatInputModule,
-        ReactiveFormsModule,
-        MatExpansionModule,
-        CdkDropList,
-        CdkDrag,
-        MatTooltipModule,
-        MatBadgeModule,
-        MatCheckboxModule
-    ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatCardModule,
+    MatButtonModule,
+    HttpClientModule,
+    MatSnackBarModule,
+    MatToolbarModule,
+    MatTableModule,
+    MatIconModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    FormsModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatExpansionModule,
+    CdkDropList,
+    CdkDrag,
+    MatTooltipModule,
+    MatBadgeModule,
+    MatCheckboxModule,
+    MatRippleModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

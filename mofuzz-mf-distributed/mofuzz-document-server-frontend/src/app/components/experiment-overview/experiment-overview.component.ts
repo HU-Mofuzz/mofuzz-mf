@@ -1,25 +1,39 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
 import {Experiment} from "../../model/experiment";
 import {MatDialog} from "@angular/material/dialog";
 import {BackendService} from "../../services/backend.service";
 import {ToastService} from "../../services/toast.service";
 import {AddExperimentDialogComponent} from "./add-experiment-dialog/add-experiment-dialog.component";
+import {animate, state, style, transition, trigger} from "@angular/animations";
+import {MatTable} from "@angular/material/table";
+import {CollectionViewer, DataSource} from "@angular/cdk/collections";
+import {Observable, of} from "rxjs";
 
 @Component({
   selector: 'app-experiment-overview',
   templateUrl: './experiment-overview.component.html',
-  styleUrls: ['./experiment-overview.component.scss']
+  styleUrls: ['./experiment-overview.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ]
 })
-export class ExperimentOverviewComponent implements OnInit{
+export class ExperimentOverviewComponent implements OnInit {
 
-  experiments: Experiment[] = []
+  dataSource = new ExpandTableDataSource()
 
   displayedColumns = ["state", "description", "documentCount", "documentWidth", "documentHeight", "sheetsPerDocument",
     "treeDepth", "timeout", "actions"]
+  isExpansionDetailRow = (i: number, row: Object) => row.hasOwnProperty('detailRow');
+  expandedElement: any;
 
   constructor(private dialog: MatDialog,
               private backendService: BackendService,
-              private toastService: ToastService) {
+              private toastService: ToastService,
+              private changeDetectorRefs: ChangeDetectorRef) {
   }
 
   ngOnInit() {
@@ -27,9 +41,9 @@ export class ExperimentOverviewComponent implements OnInit{
   }
 
   private refresh() {
-    this.experiments = [];
+    this.dataSource = new ExpandTableDataSource();
     this.backendService.experiment.getExperiments().subscribe(
-        experiments => this.experiments = experiments,
+        experiments => this.dataSource = new ExpandTableDataSource(experiments),
         _ => this.toastService.error("Error requesting experiment list!")
     )
   }
@@ -80,4 +94,27 @@ export class ExperimentOverviewComponent implements OnInit{
         return "help";
     }
   }
+
+  toggleRow(row: any) {
+    if(this.expandedElement == row) {
+      this.expandedElement = null;
+    } else {
+      this.expandedElement = row;
+    }
+  }
+}
+
+class ExpandTableDataSource extends DataSource<any> {
+
+  constructor(private experiments: Experiment[] = []) {
+    super();
+  }
+  connect(collectionViewer: CollectionViewer): Observable<any[]> {
+    const rows: any[] = [];
+    this.experiments.forEach(element => rows.push(element, { detailRow: true, element }));
+    return of(rows);
+  }
+
+  disconnect(collectionViewer: CollectionViewer): void {}
+
 }
