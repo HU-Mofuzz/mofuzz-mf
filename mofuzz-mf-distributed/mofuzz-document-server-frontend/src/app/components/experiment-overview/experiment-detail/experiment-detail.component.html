@@ -3,14 +3,17 @@
   <div style="width: 30%">
     <mat-card>
       <mat-card-title>Result Types</mat-card-title>
-      <mat-card-content *ngIf="statistic">
+      <mat-card-content *ngIf="statistic" class="column">
         <div style="display: block;">
-          <canvas baseChart
+          <canvas baseChart #crashResultChart
                   [type]="'pie'"
                   [options]="crashResultRegularPieChartOptions"
                   [data]="crashResultRegularPieChartData"
                   [legend]="true">
           </canvas>
+        </div>
+        <div class="button-bar" style="justify-content: end; padding-right: 1rem;">
+          <button mat-button (click)="downloadChart(crashResultChart, 'results', getClientNameForId(clientId))"><mat-icon>download</mat-icon> Export</button>
         </div>
       </mat-card-content>
     </mat-card>
@@ -65,7 +68,7 @@
       <mat-card-title>Unique Exceptions ({{statistic.uniqueExceptions.length}})</mat-card-title>
       <mat-card-content>
         <mat-accordion>
-          <mat-expansion-panel>
+          <mat-expansion-panel [expanded]="statistic.uniqueExceptions.length < 5">
             <mat-expansion-panel-header>Show</mat-expansion-panel-header>
             <div class="column">
               <table mat-table [dataSource]="statistic.uniqueExceptions" class="mat-elevation-z8">
@@ -102,6 +105,9 @@
                 [options]="healthChartOptions"
                 [legend]="true">
         </canvas>
+      </div>
+      <div class="button-bar" style="justify-content: end; padding-right: 1rem;">
+        <button mat-button (click)="downloadChart(healthChart, 'health', getClientNameForId(clientId))"><mat-icon>download</mat-icon> Export</button>
       </div>
     </mat-card-content>
   </mat-card>

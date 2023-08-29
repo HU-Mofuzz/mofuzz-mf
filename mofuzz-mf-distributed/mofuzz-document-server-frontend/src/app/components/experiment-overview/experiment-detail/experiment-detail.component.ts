@@ -178,7 +178,7 @@ export class ExperimentDetailComponent implements OnChanges {
     }
   }
 
-  getClientNameForId(id: string): string {
+  getClientNameForId(id: string | null): string | null {
     const client = this.clients.find(client => client.id === id);
     if(client) {
       return client.name
@@ -235,5 +235,17 @@ export class ExperimentDetailComponent implements OnChanges {
         }
       }
     )
+  }
+
+  downloadChart(chart: HTMLCanvasElement, hint = "chart", clientName: string | null = null) {
+    const link = document.createElement('a');
+    link.href = chart.toDataURL("image/png");
+
+    let filename = this.experiment?.description.replaceAll(" ", "_").replaceAll(".", "")
+                  + "_" + hint.toLowerCase()
+                  + (clientName ? "_" + clientName.replaceAll(" ", "_").replaceAll(".", "") : '')
+                  + ".png"
+    link.download = filename;
+    link.click();
   }
 }
