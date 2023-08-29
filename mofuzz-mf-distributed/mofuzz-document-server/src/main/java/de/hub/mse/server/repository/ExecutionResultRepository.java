@@ -86,4 +86,7 @@ public interface ExecutionResultRepository extends JpaRepository<ExecutionResult
     @Query("select new de.hub.mse.server.service.analysis.ClientResultCount(e.originClient, COUNT(e.originClient)) " +
             "from ExecutionResult as e where e.experiment = :experiment group by e.originClient")
     List<ClientResultCount> getClientsWithResultsForExperiment(@Param("experiment") String experimentId);
+
+    int countByExperimentAndOriginClientAndTimestampLessThan(String experiment, String originClient, long timestamp);
+
 }

@@ -7,6 +7,7 @@ import {ExperimentProgress} from "../model/experiment-progress";
 import {ClientResultCount, ResultStatistic} from "../model/result-statistic";
 import {PageResponse} from "../model/page-response";
 import {ExecutionResult} from "../model/execution-result";
+import {ExperimentHealthData} from "../model/experiment-health-data";
 
 
 export const API_BASE = "/api/v1";
@@ -119,5 +120,12 @@ class AnalysisController {
 
   getClientsWithResultsOfExperiment(experiment: string): Observable<ClientResultCount[]> {
     return this.httpClient.get<ClientResultCount[]>(`${API_BASE}/analysis/clients/${experiment}`);
+  }
+
+  getHealthData(experiment: string, client: string, page: number = 0, pageSize: number = 25): Observable<ExperimentHealthData> {
+    return this.httpClient.get<ExperimentHealthData>(`${API_BASE}/analysis/health/${experiment}`,
+      {
+        params: new HttpParams().set("client", client).set("page", page).set("pageSize", pageSize)
+      });
   }
 }

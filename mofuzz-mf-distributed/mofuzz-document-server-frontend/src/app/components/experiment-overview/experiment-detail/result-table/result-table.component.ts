@@ -25,8 +25,8 @@ export class ResultTableComponent implements OnChanges {
 
   data: ExecutionResult[] = [];
   totalItemCount = 0;
-  sort: string | null = null;
-  order: string | null = null;
+  sort: string  = "timestamp";
+  order: string = "asc";
 
   private clients: ClientDescriptor[] = [];
 

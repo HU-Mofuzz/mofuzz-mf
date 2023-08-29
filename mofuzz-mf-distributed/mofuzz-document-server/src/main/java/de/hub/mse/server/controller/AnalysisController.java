@@ -8,6 +8,7 @@ import de.hub.mse.server.service.analysis.ClientResultCount;
 import de.hub.mse.server.service.analysis.ExperimentProgress;
 import de.hub.mse.server.service.analysis.PageResponse;
 import de.hub.mse.server.service.analysis.ResultStatistic;
+import de.hub.mse.server.service.analysis.data.ExperimentHealthData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,5 +65,13 @@ public class AnalysisController {
     @GetMapping("/clients/{id}")
     public List<ClientResultCount> getClientsWithResultsOfExperiment(@PathVariable String id) {
         return analysisService.getClientsWithResultsOfExperiment(id);
+    }
+
+    @GetMapping("/health/{id}")
+    public ExperimentHealthData getHealthData(@PathVariable String id,
+                                              @RequestParam String client,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "25") int pageSize) {
+        return analysisService.getDataForExperiment(id, client, page, pageSize);
     }
 }

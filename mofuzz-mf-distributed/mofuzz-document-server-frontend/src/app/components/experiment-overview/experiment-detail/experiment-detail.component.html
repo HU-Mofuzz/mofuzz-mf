@@ -86,6 +86,25 @@
       </mat-card-content>
     </mat-card>
   </div>
+  <mat-card *ngIf="healthData" style="width: 100%;">
+    <mat-card-title>Health</mat-card-title>
+    <mat-card-content>
+      <mat-paginator [pageSize]="pageSize"
+                     [pageIndex]="page"
+                     [length]="totalItemCount"
+                     [pageSizeOptions]="PAGE_SIZE_OPTIONS"
+                     [showFirstLastButtons]="true"
+                     (page)="pageChanged($event)"></mat-paginator>
+      <div style="display: block;">
+        <canvas #healthChart baseChart width="400" height="400"
+                [type]="'line'"
+                [data]="healthChartData"
+                [options]="healthChartOptions"
+                [legend]="true">
+        </canvas>
+      </div>
+    </mat-card-content>
+  </mat-card>
   <mat-card *ngIf="statistic && progress" style="width: 100%;">
     <mat-card-title>Results {{clientId ? 'of "'+getClientNameForId(clientId)+'"' : ''}} ({{progress.existingResults}})</mat-card-title>
     <mat-card-content>
