@@ -110,7 +110,7 @@ export class ExperimentAssignmentComponent implements OnInit, OnChanges, OnDestr
 
   private updateLastProgress() {
     if(this.client && this.assignedExperiments?.length > 0) {
-      this.backendService.clients.getProgress(this.client, this.assignedExperiments[0]).subscribe({
+      this.backendService.analysis.getProgress(this.assignedExperiments[0], this.client).subscribe({
         next: progress => this.lastProgress = progress,
         error: _ => this.toastService.error("Error updating experiment progress!")
       });

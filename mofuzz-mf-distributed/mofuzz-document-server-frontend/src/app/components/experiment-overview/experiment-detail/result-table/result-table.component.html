@@ -1,0 +1,65 @@
+<div *ngIf="experiment" class="mat-elevation-z8">
+  <mat-paginator [pageSize]="pageSize"
+                 [pageIndex]="page"
+                 [length]="totalItemCount"
+                 [pageSizeOptions]="PAGE_SIZE_OPTIONS"
+                 [showFirstLastButtons]="true"
+                 (page)="pageChanged($event)"></mat-paginator>
+  <table mat-table matSort
+         [dataSource]="data"
+         [matSortActive]="'timestamp'"
+         [matSortDisableClear]="true"
+         matSortDirection="desc"
+         (matSortChange)="sortChanged($event)">
+    <ng-container matColumnDef="originClient">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Client </th>
+      <td mat-cell *matCellDef="let element">
+        {{getClientNameForId(element.originClient)}}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="fileDescriptor">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> File </th>
+      <td mat-cell *matCellDef="let element"> {{element.fileDescriptor}} </td>
+    </ng-container>
+    <ng-container matColumnDef="previousFile">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Previous File </th>
+      <td mat-cell *matCellDef="let element"> {{element.previousFile}} </td>
+    </ng-container>
+    <ng-container matColumnDef="exception">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Exception </th>
+      <td mat-cell *matCellDef="let element" style="max-width: 20vw"> {{element.exception}} </td>
+    </ng-container>
+    <ng-container matColumnDef="crash">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Crash </th>
+      <td mat-cell *matCellDef="let element">
+        <app-bool-icon [value]="element.crash"></app-bool-icon>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="hang">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Hang </th>
+      <td mat-cell *matCellDef="let element">
+        <app-bool-icon [value]="element.hang"></app-bool-icon>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="errorCount">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Error Count </th>
+      <td mat-cell *matCellDef="let element"> {{element.errorCount}} </td>
+    </ng-container>
+    <ng-container matColumnDef="duration">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Duration </th>
+      <td mat-cell *matCellDef="let element"> {{element.duration | duration}} </td>
+    </ng-container>
+    <ng-container matColumnDef="timestamp">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Timestamp </th>
+      <td mat-cell *matCellDef="let element"> {{element.timestamp | date:'dd.MM.yy HH:mm:ss':'CET'}} </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+  <mat-paginator [pageSize]="pageSize"
+                 [pageIndex]="page"
+                 [length]="totalItemCount"
+                 [pageSizeOptions]="PAGE_SIZE_OPTIONS"
+                 [showFirstLastButtons]="true"
+                 (page)="pageChanged($event)"></mat-paginator>
+</div>

@@ -30,6 +30,15 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatRippleModule} from "@angular/material/core";
 import { NgChartsModule } from 'ng2-charts';
 import { HealthChartComponent } from './components/health-chart/health-chart.component';
+import { ExperimentDetailComponent } from './components/experiment-overview/experiment-detail/experiment-detail.component';
+import {MatProgressBarModule} from "@angular/material/progress-bar";
+import { DurationPipe } from './pipes/duration.pipe';
+import {
+  BoolIconComponent,
+  ResultTableComponent
+} from './components/experiment-overview/experiment-detail/result-table/result-table.component';
+import {MatSortModule} from "@angular/material/sort";
+import {MatPaginatorModule} from "@angular/material/paginator";
 
 @NgModule({
   declarations: [
@@ -42,7 +51,11 @@ import { HealthChartComponent } from './components/health-chart/health-chart.com
     AddClientDialogComponent,
     ExperimentAssignmentComponent,
     HealthIndicatorComponent,
-    HealthChartComponent
+    HealthChartComponent,
+    ExperimentDetailComponent,
+    DurationPipe,
+    ResultTableComponent,
+    BoolIconComponent
   ],
   imports: [
     BrowserModule,
@@ -66,7 +79,10 @@ import { HealthChartComponent } from './components/health-chart/health-chart.com
     MatBadgeModule,
     MatCheckboxModule,
     MatRippleModule,
-    NgChartsModule
+    NgChartsModule,
+    MatProgressBarModule,
+    MatSortModule,
+    MatPaginatorModule
   ],
   providers: [],
   bootstrap: [AppComponent]

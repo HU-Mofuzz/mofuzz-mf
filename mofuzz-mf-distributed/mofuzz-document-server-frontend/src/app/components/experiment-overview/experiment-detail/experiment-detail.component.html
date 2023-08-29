@@ -1,0 +1,112 @@
+<div class="row" *ngIf="experiment && experiment.prepared === 'PREPARED'; else preparing"
+     style="background: #303030;">
+  <div style="width: 30%">
+    <mat-card>
+      <mat-card-title>Result Types</mat-card-title>
+      <mat-card-content *ngIf="statistic">
+        <div style="display: block;">
+          <canvas baseChart
+                  [type]="'pie'"
+                  [options]="crashResultRegularPieChartOptions"
+                  [data]="crashResultRegularPieChartData"
+                  [legend]="true">
+          </canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div style="display: flex; flex-flow: column;" class="fill">
+    <div class="row">
+      <mat-card>
+        <mat-card-title>Execution Times</mat-card-title>
+        <mat-card-content *ngIf="statistic">
+          <div style="display: flex; flex-flow: column; gap: 0.5rem">
+            <div style="display: flex; flex-flow: row; gap: 0.5rem">
+              <div style="font-weight: bold">Shortest Execution:</div>
+              <div>{{statistic.shortestDuration.duration | duration}}</div>
+            </div>
+            <div style="display: flex; flex-flow: row; gap: 0.5rem">
+              <div style="font-weight: bold">Average Execution:</div>
+              <div>{{statistic.averageDuration | duration}}</div>
+            </div>
+            <div style="display: flex; flex-flow: row; gap: 0.5rem">
+              <div style="font-weight: bold">Longest Execution:</div>
+              <div>{{statistic.longestDuration.duration | duration}}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="fill">
+        <mat-card-title>Progress</mat-card-title>
+        <mat-card-content *ngIf="progress" style="padding: 0.5rem">
+          <ng-container *ngIf="clientId; else allProgress">
+            <div class="column" style="align-items: center;">
+              <mat-progress-bar [value]="(progress.existingResults / progress.totalDocumentCount) * 100"></mat-progress-bar>
+              <div class="row" style="justify-content: center; padding: 0.5rem">
+                <div>{{progress.existingResults}} of {{progress.totalDocumentCount}} results reported</div>
+                <mat-icon *ngIf="progress.existingResults === progress.totalDocumentCount"
+                          style="margin-top: -3px" matTooltip="All results reported">check_circle</mat-icon></div>
+            </div>
+          </ng-container>
+          <ng-template #allProgress>
+            <div class="column" style="align-items: center;">
+              <div style="font-size: large">Total Results: {{progress.existingResults}}</div>
+              <mat-progress-bar [value]="(progress.generatedDocuments / progress.totalDocumentCount) * 100"></mat-progress-bar>
+              <div class="row" style="justify-content: center; padding: 0.5rem">
+                <div>{{progress.generatedDocuments}} of {{progress.totalDocumentCount}} documents generated</div>
+                <mat-icon *ngIf="progress.generatedDocuments === progress.totalDocumentCount"
+                          style="margin-top: -3px" matTooltip="All documents generated">check_circle</mat-icon></div>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <mat-card *ngIf="statistic">
+      <mat-card-title>Unique Exceptions ({{statistic.uniqueExceptions.length}})</mat-card-title>
+      <mat-card-content>
+        <mat-accordion>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>Show</mat-expansion-panel-header>
+            <div class="column">
+              <table mat-table [dataSource]="statistic.uniqueExceptions" class="mat-elevation-z8">
+                <ng-container matColumnDef="exception">
+                  <th mat-header-cell *matHeaderCellDef> Exception </th>
+                  <td mat-cell *matCellDef="let element"> {{element.exception}} </td>
+                </ng-container>
+                <ng-container matColumnDef="count">
+                  <th mat-header-cell *matHeaderCellDef> Count </th>
+                  <td mat-cell *matCellDef="let element"> {{element.count}} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="['count', 'exception']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['count', 'exception' ];"></tr>
+              </table>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <mat-card *ngIf="statistic && progress" style="width: 100%;">
+    <mat-card-title>Results {{clientId ? 'of "'+getClientNameForId(clientId)+'"' : ''}} ({{progress.existingResults}})</mat-card-title>
+    <mat-card-content>
+      <ng-container *ngIf="!!clientId; else clientAccordion">
+        <app-result-table [experiment]="experiment" [clientId]="clientId"></app-result-table>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<ng-template #preparing>Experiment is not prepared yet...</ng-template>
+
+<ng-template #clientAccordion>
+  <mat-accordion *ngIf="progress">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>All Clients ({{progress.existingResults}})</mat-expansion-panel-header>
+      <app-result-table [experiment]="experiment"></app-result-table>
+    </mat-expansion-panel>
+    <mat-expansion-panel *ngFor="let result of resultCounts" (afterExpand)="detailComponent.load()">
+      <mat-expansion-panel-header>{{getClientNameForId(result.client)}} ({{result.count}})</mat-expansion-panel-header>
+      <app-experiment-detail #detailComponent [clientId]="result.client" [experiment]="experiment"></app-experiment-detail>
+    </mat-expansion-panel>
+  </mat-accordion>
+</ng-template>

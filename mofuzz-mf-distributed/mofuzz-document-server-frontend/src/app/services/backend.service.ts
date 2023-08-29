@@ -4,6 +4,9 @@ import {Observable} from "rxjs";
 import {Experiment} from "../model/experiment";
 import {ClientDescriptor} from "../model/client-descriptor";
 import {ExperimentProgress} from "../model/experiment-progress";
+import {ClientResultCount, ResultStatistic} from "../model/result-statistic";
+import {PageResponse} from "../model/page-response";
+import {ExecutionResult} from "../model/execution-result";
 
 
 export const API_BASE = "/api/v1";
@@ -15,11 +18,13 @@ export class BackendService {
   readonly mail: MailController;
   readonly experiment: ExperimentController;
   readonly clients: ClientDescriptorController;
+  readonly analysis: AnalysisController;
 
   constructor(private httpClient: HttpClient) {
     this.mail = new MailController(httpClient);
     this.experiment = new ExperimentController(httpClient);
     this.clients = new ClientDescriptorController(httpClient);
+    this.analysis = new AnalysisController(httpClient);
   }
 }
 
@@ -67,10 +72,52 @@ class ClientDescriptorController {
   changeClientDescriptor(descriptor: ClientDescriptor): Observable<void> {
     return this.httpClient.post<void>(`${API_BASE}/clients/${descriptor.id}`, descriptor)
   }
+}
 
-  getProgress(client: string, experiment: string): Observable<ExperimentProgress> {
-    return this.httpClient.get<ExperimentProgress>(`${API_BASE}/clients/progress/${client}`, {
-      params: new HttpParams().set("experiment", experiment)
+class AnalysisController {
+  constructor(private httpClient: HttpClient) {
+  }
+
+  getProgress(experiment: string, client: string | null = null): Observable<ExperimentProgress> {
+    let params = new HttpParams();
+    if(client) {
+      params = params.set("client", client)
+    }
+    return this.httpClient.get<ExperimentProgress>(`${API_BASE}/analysis/progress/${experiment}`, {
+      params
     });
+  }
+
+  getStatistic(experiment: string, client: string | null = null): Observable<ResultStatistic> {
+    let params = new HttpParams();
+    if(client) {
+      params = params.set("client", client)
+    }
+    return this.httpClient.get<ResultStatistic>(`${API_BASE}/analysis/statistic/${experiment}`, {
+      params
+    });
+  }
+
+  getResults(experiment: string, client: string | null = null,
+             sort: string | null = null, order: string | null = null,
+             page: number = 0, pageSize: number = 10): Observable<PageResponse<ExecutionResult>> {
+    let params = new HttpParams().set("page", page).set("pageSize", pageSize);
+    if(client) {
+      params = params.set("client", client)
+    }
+    if(sort) {
+      params = params.set("sort", sort)
+    }
+    if(order) {
+      params = params.set("order", order)
+    }
+    return this.httpClient.get<PageResponse<ExecutionResult>>(`${API_BASE}/analysis/results/${experiment}`,
+      {
+        params
+      });
+  }
+
+  getClientsWithResultsOfExperiment(experiment: string): Observable<ClientResultCount[]> {
+    return this.httpClient.get<ClientResultCount[]>(`${API_BASE}/analysis/clients/${experiment}`);
   }
 }

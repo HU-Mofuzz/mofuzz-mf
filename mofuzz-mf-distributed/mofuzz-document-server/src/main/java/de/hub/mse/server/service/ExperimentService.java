@@ -51,13 +51,6 @@ public class ExperimentService {
         return experimentRepository.findById(id);
     }
 
-    public int getGeneratedDocumentCount(String experimentId) {
-        var experiment = experimentRepository.findById(experimentId);
-        return experiment.map(
-                value -> fileRepository.countByExperimentIsAndDepth(experimentId, value.getTreeDepth())).
-                orElse(0);
-    }
-
     public void resetExperiment(String experimentId) throws NotFoundException {
         var experiment = experimentRepository.findById(experimentId).orElseThrow(NotFoundException::new);
         log.info("Resetting Experiment [{}]", experiment.getDescription());

@@ -13,11 +13,16 @@
 .element-row.expanded {
   border-bottom-color: transparent;
   border-top-color: transparent;
+  background: #303030;
 
   td {
     border-bottom-color: transparent;
     border-top-color: transparent;
   }
+}
+
+.element-row.expanded:hover {
+  background: #303030;
 }
 
 td, th {

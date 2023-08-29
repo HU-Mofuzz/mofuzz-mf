@@ -43,7 +43,9 @@ export class ExperimentOverviewComponent implements OnInit {
   private refresh() {
     this.dataSource = new ExpandTableDataSource();
     this.backendService.experiment.getExperiments().subscribe(
-        experiments => this.dataSource = new ExpandTableDataSource(experiments),
+        experiments => {
+          this.dataSource = new ExpandTableDataSource(experiments)
+        },
         _ => this.toastService.error("Error requesting experiment list!")
     )
   }

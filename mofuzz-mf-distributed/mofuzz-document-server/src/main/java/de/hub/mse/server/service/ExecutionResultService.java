@@ -57,8 +57,4 @@ public class ExecutionResultService {
                 result.getFileDescriptor(), experiment.getDescription());
         messagingTemplate.convertAndSend(TOPIC_RESULT+"/"+result.getOriginClient(), result);
     }
-
-    public int getResultCountForExperiment(String experimentId, String clientId) {
-        return resultRepository.countByExperimentIsAndOriginClient(experimentId, clientId);
-    }
 }
