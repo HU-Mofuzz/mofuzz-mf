@@ -6,6 +6,7 @@ import de.hub.mse.server.service.ExperimentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,9 @@ public class ExperimentController {
 
     @GetMapping
     public List<Experiment> getExperiments() {
-        return experimentService.getExperiments();
+        return experimentService.getExperiments().stream()
+                .peek(experiment -> experiment.setSerializedLinks(Collections.emptyList()))
+                .toList();
     }
 
     @PostMapping("/reset/{id}")
