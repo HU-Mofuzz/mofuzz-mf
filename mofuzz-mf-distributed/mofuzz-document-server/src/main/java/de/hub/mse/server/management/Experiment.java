@@ -1,5 +1,6 @@
 package de.hub.mse.server.management;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import de.hub.mse.server.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -62,6 +63,9 @@ public class Experiment {
     }
 
     public enum PreparationState {
-        UNPREPARED, PREPARING, PREPARED
+        @JsonEnumDefaultValue
+        UNPREPARED,
+        PREPARING,
+        PREPARED
     }
 }

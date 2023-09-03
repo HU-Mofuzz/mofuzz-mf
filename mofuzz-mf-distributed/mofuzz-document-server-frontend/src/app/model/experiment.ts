@@ -7,5 +7,5 @@ export interface Experiment {
     treeDepth: number;
     sheetsPerDocument: number;
     timeout: number;
-    prepared: string;
+    prepared: string | null;
 }
