@@ -13,8 +13,11 @@ public interface FileDescriptorRepository extends JpaRepository<FileDescriptor, 
 
     int countByExperimentIsAndDepth(String experiment, int depth);
 
-    @Query(value = "select id from file_descriptor where experiment = :experiment", nativeQuery = true)
+    @Query(value = "select id from FileDescriptor experiment = :experiment")
     List<String> getFileIdsForExperiment(@Param("experiment") String experimentId);
+
+    @Query(value = "select id from FileDescriptor where experiment = :experiment and depth = :depth")
+    List<String> getFileIdsForExperimentAndDepth(@Param("experiment") String experimentId, @Param("depth") int depth);
 
     List<FileDescriptor> getByExperimentAndDepthLessThan(String experiment, int depth);
 }
