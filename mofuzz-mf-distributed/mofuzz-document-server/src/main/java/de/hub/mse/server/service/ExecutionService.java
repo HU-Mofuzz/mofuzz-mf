@@ -202,7 +202,7 @@ public class ExecutionService {
     private Optional<FileDescriptor> findFileDescriptorForClientWithNoResult(ClientDescriptor client,
                                                                              Experiment experiment) {
         var existingResultFileIds = resultRepository.getFileIdsByExperimentAndClient(experiment.getId(), client.getId());
-        var experimentFileIds = fileRepository.getFileIdsForExperiment(experiment.getId());
+        var experimentFileIds = fileRepository.getFileIdsForExperimentAndDepth(experiment.getId(), experiment.getTreeDepth());
         var uniqueIds = new HashSet<>(experimentFileIds);
         existingResultFileIds.forEach(uniqueIds::remove);
         if(uniqueIds.isEmpty()) {
