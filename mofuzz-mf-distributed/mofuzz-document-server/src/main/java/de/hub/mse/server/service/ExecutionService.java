@@ -167,10 +167,10 @@ public class ExecutionService {
             }
         } else {
             // no files to generate left
-            int currentResultCount = resultRepository.countByExperimentIsAndOriginClient(experimentId, clientId);
-            if(currentResultCount < experiment.getDocumentCount()) {
+            var nextDescriptor = findFileDescriptorForClientWithNoResult(client, experiment);
+            if(nextDescriptor.isPresent()) {
                 // find file descriptor no result exists for
-                return findFileDescriptorForClientWithNoResult(client, experiment);
+                return nextDescriptor;
             } else {
                 // all results were received move to next experiment
                 moveClientToNextExperiment(client);
