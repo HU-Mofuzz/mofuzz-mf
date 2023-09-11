@@ -212,7 +212,11 @@ public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSh
 
     @Override
     public LinkedFile internalExecute(SourceOfRandomness random) throws Exception {
-        return generateLinkedWorkbook(random, config.getTargetDocumentDepth());
+        if(config.getTargetDocumentDepth() == 0) {
+            return generateUnlinkedWorkbook(random);
+        } else {
+            return generateLinkedWorkbook(random, config.getTargetDocumentDepth());
+        }
     }
 
     @Override
