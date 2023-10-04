@@ -6,19 +6,27 @@ import de.hub.mse.server.repository.ExperimentRepository;
 import de.hub.mse.server.repository.FileDescriptorRepository;
 import de.hub.mse.server.repository.HealthSnapshotRepository;
 import de.hub.mse.server.service.analysis.ClientResultCount;
+import de.hub.mse.server.service.analysis.FilenameUtil;
 import de.hub.mse.server.service.analysis.PageResponse;
 import de.hub.mse.server.service.analysis.ResultStatistic;
 import de.hub.mse.server.service.analysis.data.ExperimentHealthData;
 import de.hub.mse.server.service.analysis.data.TimeDataTrack;
+import de.hub.mse.server.service.execution.FilePersistence;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+@Slf4j
 @Service
 public class AnalysisService {
 
@@ -27,15 +35,23 @@ public class AnalysisService {
     private final FileDescriptorRepository fileRepository;
     private final HealthSnapshotRepository healthRepository;
 
+    private final ExecutionService executionService;
+
+    private final FilePersistence filePersistence;
+
     @Autowired
     public AnalysisService(ExecutionResultRepository resultRepository,
                            ExperimentRepository experimentRepository,
                            FileDescriptorRepository fileRepository,
-                           HealthSnapshotRepository healthRepository) {
+                           HealthSnapshotRepository healthRepository,
+                           ExecutionService executionService,
+                           FilePersistence filePersistence) {
         this.resultRepository = resultRepository;
         this.experimentRepository = experimentRepository;
         this.fileRepository = fileRepository;
         this.healthRepository = healthRepository;
+        this.executionService = executionService;
+        this.filePersistence = filePersistence;
     }
 
     private static Pageable sortBy(String sort, String order, int page, int pageSize) {
@@ -145,5 +161,29 @@ public class AnalysisService {
                 .totalPages(results.getTotalPages())
                 .totalElements(results.getTotalElements())
                 .build();
+    }
+
+    public void zipFileTreeOfDescriptor(String fileId, ZipOutputStream stream) {
+        var descriptor = fileRepository.findById(fileId);
+        addFileToZip(fileId, fileId, stream);
+        for(String element : descriptor.map(executionService::getRecursiveFileIdsOfDescriptor)
+                                        .orElse(Collections.emptySet())) {
+            addFileToZip(element, fileId, stream);
+        }
+    }
+
+    private void addFileToZip(String fileId, String mainFile, ZipOutputStream stream) {
+        try(var file = filePersistence.getFile(fileId, key -> FilenameUtil.mapFileKey(key, mainFile))) {
+            if(file.getContentLength() > 0) {
+                var entry = new ZipEntry(file.getFilename());
+                entry.setSize(file.getContentLength());
+                entry.setTime(System.currentTimeMillis());
+                stream.putNextEntry(entry);
+                StreamUtils.copy(file.getContent(), stream);
+                stream.closeEntry();
+            }
+        } catch (Exception e) {
+            log.error("Error creating zip file!", e);
+        }
     }
 }

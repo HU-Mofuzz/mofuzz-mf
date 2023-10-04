@@ -37,10 +37,10 @@ export class ResultTableComponent implements OnChanges {
     this.refresh();
     if(this.clientId) {
       this.displayedColumns = ["timestamp", "duration", "fileDescriptor", "previousFile", "exception",
-        "crash", "hang", "errorCount"]
+        "crash", "hang", "errorCount", "actions"]
     } else {
       this.displayedColumns = this.displayedColumns = ["timestamp", "duration", "originClient", "fileDescriptor", "previousFile", "exception",
-        "crash", "hang", "errorCount"]
+        "crash", "hang", "errorCount", "actions"]
     }
   }
 
@@ -82,6 +82,10 @@ export class ResultTableComponent implements OnChanges {
     } else {
       return id;
     }
+  }
+
+  downloadFileTree(fileId: string) {
+    this.backendService.analysis.getFileTreeForFileDescriptor(fileId);
   }
 }
 

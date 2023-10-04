@@ -20,7 +20,7 @@ import java.util.*;
 @Slf4j
 public class XlsxGenerator extends PoolBasedGenerator<LinkedFile, String, XlsxSheetLink, XlsxGeneratorConfig> {
 
-    private static final String XLSX_FILE_ENDING = ".xlsx";
+    public static final String XLSX_FILE_ENDING = ".xlsx";
     private static final int MAX_SHEET_COUNT = 5;
     private static final float CELL_FILL_CHANCE = 1.0f;
 

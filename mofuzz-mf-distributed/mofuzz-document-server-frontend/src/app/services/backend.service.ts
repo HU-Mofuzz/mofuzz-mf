@@ -128,4 +128,8 @@ class AnalysisController {
         params: new HttpParams().set("client", client).set("page", page).set("pageSize", pageSize)
       });
   }
+
+  getFileTreeForFileDescriptor(fileId: string) {
+    window.open(`/api/v1/analysis/fileTree/${fileId}`, "_blank")
+  }
 }

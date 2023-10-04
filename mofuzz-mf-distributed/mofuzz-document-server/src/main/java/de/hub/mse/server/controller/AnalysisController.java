@@ -9,10 +9,15 @@ import de.hub.mse.server.service.analysis.ExperimentProgress;
 import de.hub.mse.server.service.analysis.PageResponse;
 import de.hub.mse.server.service.analysis.ResultStatistic;
 import de.hub.mse.server.service.analysis.data.ExperimentHealthData;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequestMapping("/api/v1/analysis")
@@ -73,5 +78,20 @@ public class AnalysisController {
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "25") int pageSize) {
         return analysisService.getDataForExperiment(id, client, page, pageSize);
+    }
+
+    @GetMapping("/fileTree/{id}")
+    public void getFileTreeForFileDescriptor(@PathVariable String id,
+                                             HttpServletResponse response) {
+        try(ZipOutputStream outputStream = new ZipOutputStream(response.getOutputStream())) {
+
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment;filename=%s", id+"_files.zip"));
+            response.setStatus(HttpServletResponse.SC_OK);
+
+            analysisService.zipFileTreeOfDescriptor(id, outputStream);
+        } catch (IOException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 }
