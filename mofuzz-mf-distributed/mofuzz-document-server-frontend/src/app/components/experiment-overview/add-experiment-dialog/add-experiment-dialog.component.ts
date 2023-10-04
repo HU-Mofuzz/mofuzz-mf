@@ -29,7 +29,7 @@ export class AddExperimentDialogComponent {
     documentWidth = new FormControl('', this.defaultValidators)
     documentHeight = new FormControl('', this.defaultValidators)
     sheetsPerDocument = new FormControl('', this.defaultValidators)
-    treeDepth = new FormControl('', this.defaultValidators)
+    treeDepth = new FormControl('', [Validators.min(0), Validators.required])
     timeout = new FormControl('', this.defaultValidators)
 
     constructor(private dialogRef: MatDialogRef<AddExperimentDialogComponent>,
