@@ -43,19 +43,23 @@ public class Experiment {
     @CollectionTable
     private List<String> serializedLinks;
 
-
-    private static void sanitizeGreaterZero(int number) {
-        if(number <= 0) {
+    private static void sanitizeGreater(int check, int number) {
+        if(number <= check) {
             throw new ValidationException();
         }
+    }
+
+
+    private static void sanitizeGreaterZero(int number) {
+        sanitizeGreater(0, number);
     }
     public void sanitize() {
         sanitizeGreaterZero(documentCount);
         sanitizeGreaterZero(documentWidth);
         sanitizeGreaterZero(documentHeight);
-        sanitizeGreaterZero(treeDepth);
         sanitizeGreaterZero(sheetsPerDocument);
         sanitizeGreaterZero(timeout);
+        sanitizeGreater(-1, treeDepth);
     }
 
     public List<String> getSerializedLinks() {
