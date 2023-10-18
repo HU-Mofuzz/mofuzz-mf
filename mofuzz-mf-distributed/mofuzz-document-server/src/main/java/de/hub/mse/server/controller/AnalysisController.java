@@ -9,7 +9,9 @@ import de.hub.mse.server.service.analysis.ExperimentProgress;
 import de.hub.mse.server.service.analysis.PageResponse;
 import de.hub.mse.server.service.analysis.ResultStatistic;
 import de.hub.mse.server.service.analysis.data.ExperimentHealthData;
+import de.hub.mse.server.service.analysis.data.ResearchQuestionData;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/analysis")
 public class AnalysisController {
@@ -93,5 +96,14 @@ public class AnalysisController {
         } catch (IOException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/researchQuestionData")
+    public ResearchQuestionData getResearchQuestionData() {
+        log.info("Starting to gather research question data...");
+        var start = System.currentTimeMillis();
+        var data = analysisService.getResearchQuestionData();
+        log.info("Gathered Research Data, took {} ms", (System.currentTimeMillis() - start));
+        return data;
     }
 }

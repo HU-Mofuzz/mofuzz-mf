@@ -89,4 +89,6 @@ public interface ExecutionResultRepository extends JpaRepository<ExecutionResult
 
     int countByExperimentAndOriginClientAndTimestampLessThan(String experiment, String originClient, long timestamp);
 
+    List<ExecutionResult> findByExperimentAndOriginClientOrderByTimestampAsc(String experiment, String clientId);
+
 }
