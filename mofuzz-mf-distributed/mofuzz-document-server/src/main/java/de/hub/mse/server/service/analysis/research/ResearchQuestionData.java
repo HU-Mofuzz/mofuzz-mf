@@ -1,9 +1,13 @@
-package de.hub.mse.server.service.analysis.data;
+package de.hub.mse.server.service.analysis.research;
 
+import de.hub.mse.server.service.analysis.data.DataTrack;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Map;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -13,7 +17,17 @@ public class ResearchQuestionData {
 
     private QuestionOneData questionOneData;
     private QuestionTwoData questionTwoData;
+    private QuestionThreeData questionThreeData;
 
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class ClientData<X extends Number, Y extends Number> {
+        private DataTrack<X, Y> linuxClient;
+        private DataTrack<X, Y> laptopClient;
+        private DataTrack<X, Y> towerClient;
+    }
 
     @Builder
     @AllArgsConstructor
@@ -43,6 +57,14 @@ public class ResearchQuestionData {
         private ClientTracks<X, Y> experiment;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class ClientDataPair<X extends Number, Y extends Number> {
+        private ClientData<X, Y> baseline;
+        private ClientData<X, Y> experiment;
+    }
+
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
@@ -60,5 +82,20 @@ public class ResearchQuestionData {
     @Data
     public static class QuestionTwoData {
         private ClientTrackPair<Integer, Integer> absoluteTimeouts;
+
+        private ClientData<Integer, Integer> baselineTotalErrors;
+
+        private ClientData<Integer, Long> baselineTotalDuration;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class QuestionThreeData {
+
+        private ClientDataPair<Integer, Integer> totalTimeouts;
+        private ClientDataPair<Integer, Double> averageExecutionTime;
+        private Map<String, Set<String>> differentExceptions;
     }
 }

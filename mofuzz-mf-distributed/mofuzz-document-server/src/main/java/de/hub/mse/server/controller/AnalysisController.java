@@ -4,12 +4,13 @@ import de.hub.mse.server.management.ExecutionResult;
 import de.hub.mse.server.management.Experiment;
 import de.hub.mse.server.service.AnalysisService;
 import de.hub.mse.server.service.ExperimentService;
+import de.hub.mse.server.service.ResearchQuestionService;
 import de.hub.mse.server.service.analysis.ClientResultCount;
 import de.hub.mse.server.service.analysis.ExperimentProgress;
 import de.hub.mse.server.service.analysis.PageResponse;
 import de.hub.mse.server.service.analysis.ResultStatistic;
 import de.hub.mse.server.service.analysis.data.ExperimentHealthData;
-import de.hub.mse.server.service.analysis.data.ResearchQuestionData;
+import de.hub.mse.server.service.analysis.research.ResearchQuestionData;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +29,13 @@ public class AnalysisController {
 
     private final AnalysisService analysisService;
     private final ExperimentService experimentService;
+    private final ResearchQuestionService researchService;
 
     @Autowired
-    public AnalysisController(AnalysisService analysisService, ExperimentService experimentService) {
+    public AnalysisController(AnalysisService analysisService, ExperimentService experimentService, ResearchQuestionService researchService) {
         this.analysisService = analysisService;
         this.experimentService = experimentService;
+        this.researchService = researchService;
     }
 
     @GetMapping("/progress/{id}")
@@ -102,7 +105,7 @@ public class AnalysisController {
     public ResearchQuestionData getResearchQuestionData() {
         log.info("Starting to gather research question data...");
         var start = System.currentTimeMillis();
-        var data = analysisService.getResearchQuestionData();
+        var data = researchService.getResearchQuestionData();
         log.info("Gathered Research Data, took {} ms", (System.currentTimeMillis() - start));
         return data;
     }
