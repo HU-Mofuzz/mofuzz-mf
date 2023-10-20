@@ -1,0 +1,12 @@
+<ng-container *ngIf="data">
+  <div class="mat-h3">{{title}}</div>
+  <canvas #baselineChart baseChart width="400" height="400"
+          [type]="'line'"
+          [data]="chartData"
+          [options]="chartOptions"
+          [legend]="true">
+  </canvas>
+  <div class="button-bar" style="justify-content: end; padding-right: 1rem;">
+    <button mat-button (click)="downloadChart(baselineChart, downloadHint)"><mat-icon>download</mat-icon> Export</button>
+  </div>
+</ng-container>

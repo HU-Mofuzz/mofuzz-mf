@@ -8,6 +8,7 @@ import {ClientResultCount, ResultStatistic} from "../model/result-statistic";
 import {PageResponse} from "../model/page-response";
 import {ExecutionResult} from "../model/execution-result";
 import {ExperimentHealthData} from "../model/experiment-health-data";
+import {ResearchQuestionData} from "../model/data";
 
 
 export const API_BASE = "/api/v1";
@@ -131,5 +132,9 @@ class AnalysisController {
 
   getFileTreeForFileDescriptor(fileId: string) {
     window.open(`/api/v1/analysis/fileTree/${fileId}`, "_blank")
+  }
+
+  getResearchQuestionData(): Observable<ResearchQuestionData> {
+    return this.httpClient.get<ResearchQuestionData>(`${API_BASE}/analysis/researchQuestionData`);
   }
 }

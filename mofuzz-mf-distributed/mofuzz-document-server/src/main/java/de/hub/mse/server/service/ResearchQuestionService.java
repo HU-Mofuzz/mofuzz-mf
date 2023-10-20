@@ -230,8 +230,8 @@ public class ResearchQuestionService {
         var laptopTrack = new DataTrack<Integer, Long>();
         var towerTrack = new DataTrack<Integer, Long>();
 
-        for (int i = 0; i < BASELINE_IDS.size(); i++) {
-            String id = BASELINE_IDS.get(i);
+        for (int i = 0; i < experiments.size(); i++) {
+            String id = experiments.get(i);
             linuxTrack.add(i, wrappedResultAccess(id, LINUX_CLIENT).stream()
                     .mapToLong(mapper::apply)
                     .sum());
@@ -255,8 +255,8 @@ public class ResearchQuestionService {
         var laptopTrack = new DataTrack<Integer, Integer>();
         var towerTrack = new DataTrack<Integer, Integer>();
 
-        for (int i = 0; i < BASELINE_IDS.size(); i++) {
-            String id = BASELINE_IDS.get(i);
+        for (int i = 0; i < experiments.size(); i++) {
+            String id = experiments.get(i);
             linuxTrack.add(i, wrappedResultAccess(id, LINUX_CLIENT).stream()
                     .mapToInt(mapper::apply)
                     .sum());

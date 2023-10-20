@@ -1,0 +1,7 @@
+<ng-container *ngIf="data">
+  <mat-card class="column">
+  <mat-card-title>{{title}}</mat-card-title>
+    <app-client-tracks-chart title="Baseline" [data]="data.baseline" [downloadHint]="title"></app-client-tracks-chart>
+    <app-client-tracks-chart title="Experiments" [data]="data.experiment" [downloadHint]="title"></app-client-tracks-chart>
+  </mat-card>
+</ng-container>

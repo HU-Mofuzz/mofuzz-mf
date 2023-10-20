@@ -1,8 +1,20 @@
-<div class="column">
-  <mat-toolbar color="primary">
-    <span>Mofuzz Document Server</span>
-  </mat-toolbar>
-  <app-experiment-overview></app-experiment-overview>
-  <app-client-overview></app-client-overview>
-</div>
-<app-debug></app-debug>
+<mat-toolbar color="primary">
+  <div>Mofuzz Document Server</div>
+  <div class="row" style="flex-grow: 1; justify-content: end">
+    <button mat-icon-button (click)="toggleResearch()"
+    matTooltip="Research Questions">
+      <ng-container [ngSwitch]="mode">
+        <mat-icon *ngSwitchCase="'research'">cancel</mat-icon>
+        <mat-icon *ngSwitchDefault>science</mat-icon>
+      </ng-container>
+    </button>
+  </div>
+</mat-toolbar>
+<ng-container [ngSwitch]="mode">
+  <app-research *ngSwitchCase="'research'"></app-research>
+  <div class="column" *ngSwitchDefault>
+    <app-experiment-overview></app-experiment-overview>
+    <app-client-overview></app-client-overview>
+    <app-debug></app-debug>
+  </div>
+</ng-container>

@@ -1,4 +1,5 @@
-import {ExperimentHealthData, TimeDataPoint} from "../model/experiment-health-data";
+import {ExperimentHealthData} from "../model/experiment-health-data";
+import {DataPoint, DataTrack} from "../model/data";
 
 export const INDEX_CPU = 0;
 export const INDEX_RAM = 1;
@@ -57,4 +58,14 @@ export function transformHealthData(healthData: ExperimentHealthData): {labels: 
     } while(healthData.cpu.length !== 0 && healthData.results.length !== 0);
 
     return { labels, data }
+}
+
+export function transformDataTrack(track: DataTrack): {x: number[], y: number[]} {
+  const x = []
+  const y = []
+  for(const point of track) {
+    x.push(point.x);
+    y.push(point.y)
+  }
+  return {x, y}
 }

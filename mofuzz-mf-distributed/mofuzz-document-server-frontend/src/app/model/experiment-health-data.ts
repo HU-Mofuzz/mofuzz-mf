@@ -1,16 +1,12 @@
+import {DataTrack} from "./data";
+
 export interface ExperimentHealthData {
-  cpu: TimeDataTrack;
-  memory: TimeDataTrack;
-  disk: TimeDataTrack;
-  results: TimeDataTrack;
+  cpu: DataTrack;
+  memory: DataTrack;
+  disk: DataTrack;
+  results: DataTrack;
 
   totalPages: number;
   totalElements: number;
 }
 
-export type TimeDataTrack = TimeDataPoint[];
-
-export interface TimeDataPoint {
-  x: number;
-  y: number;
-}

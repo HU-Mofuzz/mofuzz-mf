@@ -12,7 +12,7 @@ import {
   INDEX_RAM,
   INDEX_RESULTS,
   transformHealthData
-} from "../../../utils/health-transform-util";
+} from "../../../utils/data-transform";
 import {formatDate} from "@angular/common";
 import {PageEvent} from "@angular/material/paginator";
 import {BaseChartDirective} from "ng2-charts";

@@ -39,6 +39,14 @@ import {
 } from './components/experiment-overview/experiment-detail/result-table/result-table.component';
 import {MatSortModule} from "@angular/material/sort";
 import {MatPaginatorModule} from "@angular/material/paginator";
+import {RouterModule} from "@angular/router";
+import { ResearchComponent } from './components/research/research.component';
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import { ClientTrackPairChartComponent } from './components/research/client-track-pair-chart/client-track-pair-chart.component';
+import { ClientTracksChartComponent } from './components/research/client-tracks-chart/client-tracks-chart.component';
+import { ClientDataChartComponent } from './components/research/client-data-chart/client-data-chart.component';
+import { ClientDataPairChartComponent } from './components/research/client-data-pair-chart/client-data-pair-chart.component';
+import { DifferentExceptionComponent } from './components/research/different-exception/different-exception.component';
 
 @NgModule({
   declarations: [
@@ -55,7 +63,13 @@ import {MatPaginatorModule} from "@angular/material/paginator";
     ExperimentDetailComponent,
     DurationPipe,
     ResultTableComponent,
-    BoolIconComponent
+    BoolIconComponent,
+    ResearchComponent,
+    ClientTrackPairChartComponent,
+    ClientTracksChartComponent,
+    ClientDataChartComponent,
+    ClientDataPairChartComponent,
+    DifferentExceptionComponent
   ],
   imports: [
     BrowserModule,
@@ -82,7 +96,9 @@ import {MatPaginatorModule} from "@angular/material/paginator";
     NgChartsModule,
     MatProgressBarModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    RouterModule.forRoot([]),
+    MatProgressSpinnerModule
   ],
   providers: [],
   bootstrap: [AppComponent]
