@@ -55,6 +55,8 @@ public class ResearchQuestionData {
     public static class ClientTrackPair<X extends Number, Y extends Number> {
         private ClientTracks<X, Y> baseline;
         private ClientTracks<X, Y> experiment;
+
+        private MannWhitneyUTestStatistic mannWhitneyUTestStatistic;
     }
 
     @AllArgsConstructor
@@ -63,6 +65,17 @@ public class ResearchQuestionData {
     public static class ClientDataPair<X extends Number, Y extends Number> {
         private ClientData<X, Y> baseline;
         private ClientData<X, Y> experiment;
+
+        private MannWhitneyUTestStatistic mannWhitneyUTestStatistic;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class MannWhitneyUTestStatistic {
+        private double linuxClientP;
+        private double laptopClientP;
+        private double towerClientP;
     }
 
     @Builder

@@ -9,6 +9,7 @@ import de.hub.mse.server.service.analysis.data.DataTrack;
 import de.hub.mse.server.service.analysis.research.ResearchQuestionData;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -51,12 +52,9 @@ public class ResearchQuestionService {
             "89784fd6-0ef3-4c40-8638-5c2df2bf04aa",
             "87aad030-d67a-4024-9199-f77b86df9cdb"
     );
-
-    private final ExecutionResultRepository resultRepository;
     private LoadingCache<Pair<String, String>, List<ExecutionResult>> resultCache;
 
     public ResearchQuestionService(ExecutionResultRepository resultRepository) {
-        this.resultRepository = resultRepository;
         resultCache = CacheBuilder.newBuilder()
                 .build(new CacheLoader<>() {
                     @Override
@@ -96,6 +94,16 @@ public class ResearchQuestionService {
         return track;
     }
 
+    private static int min(List<Integer> list) {
+        var min = Integer.MAX_VALUE;
+        for(var item : list) {
+            if(item < min) {
+                min = item;
+            }
+        }
+        return min;
+    }
+
     private static double median(List<Integer> list) {
         list.sort(Integer::compareTo);
         if(list.size() % 2 == 0) {
@@ -103,6 +111,16 @@ public class ResearchQuestionService {
         } else {
             return (double)list.get(list.size()/2);
         }
+    }
+
+    private static int max(List<Integer> list) {
+        var max = Integer.MIN_VALUE;
+        for(var item : list) {
+            if(item > max) {
+                max = item;
+            }
+        }
+        return max;
     }
 
     private static DataTrack<Integer, Integer> createCountTrack(List<ExecutionResult> results, Predicate<ExecutionResult> predicate) {
@@ -120,13 +138,12 @@ public class ResearchQuestionService {
                     .map(track -> track.get(index).getY())
                     .toList();
 
-
-
-            minTrack.add(index, values.stream().mapToInt(Integer::intValue).min().orElse(0));
+            minTrack.add(index, min(new ArrayList<>(values)));
             avgTrack.add(index, median(new ArrayList<>(values)));
-            maxTrack.add(index, values.stream().mapToInt(Integer::intValue).max().orElse(0));
+            maxTrack.add(index, max(new ArrayList<>(values)));
 
         }
+
         return ResearchQuestionData.StatisticalTracks.<Integer, Integer>builder()
                 .min(minTrack)
                 .median(avgTrack)
@@ -151,16 +168,6 @@ public class ResearchQuestionService {
                 .collect(Collectors.toList());
     }
 
-    private List<DataTrack<Integer, Integer>> dataTracksForExperimentsClientPredicateAndDelta(List<String> experiments,
-                                                                                              String clientId,
-                                                                                              Predicate<ExecutionResult> predicate,
-                                                                                              Function<ExecutionResult, Integer> deltaMapper) {
-        return experiments.stream()
-                .map(id -> wrappedResultAccess(id, clientId))
-                .map(results -> createCountTrackWithDelta(results, predicate, deltaMapper))
-                .collect(Collectors.toList());
-    }
-
     private  ResearchQuestionData.ClientTracks<Integer, Integer>
     clientTracksForExperimentIds(List<String> ids, Predicate<ExecutionResult> predicate) {
 
@@ -171,10 +178,60 @@ public class ResearchQuestionService {
                 .build();
     }
 
+    private static <X extends Number, Y extends Number> double[] getLastValueOfTracks(List<DataTrack<X, Y>> tracks) {
+        var result = new double[tracks.size()];
+        for (int i = 0; i < tracks.size(); i++) {
+            var track = tracks.get(i);
+            result[i] = track.get(track.size() -1).getY().doubleValue();
+        }
+        return result;
+    }
+
+    private static <X extends Number, Y extends Number> double mannWhitneyTestPValueOf(DataTrack<X, Y> trackA,
+                                                                                       DataTrack<X, Y> trackB) {
+        return mannWhitneyTestPValueOf(new ArrayList<>(trackA.stream()
+                .map(DataTrack::singleton)
+                .toList()),
+                new ArrayList<>(trackB.stream()
+                        .map(DataTrack::singleton)
+                        .toList()));
+    }
+
+    private static <X extends Number, Y extends Number> double mannWhitneyTestPValueOf(List<DataTrack<X, Y>> tracksA,
+                                                                                        List<DataTrack<X, Y>> tracksB) {
+        var aLastValues = getLastValueOfTracks(tracksA);
+        var bLastValues = getLastValueOfTracks(tracksB);
+
+        var test = new MannWhitneyUTest();
+        return test.mannWhitneyUTest(aLastValues, bLastValues);
+    }
+
     private ResearchQuestionData.ClientTrackPair<Integer, Integer> clientTracksPairsForPredicate(Predicate<ExecutionResult> predicate) {
+
+        var linuxBaselineTracks = dataTracksForExperimentsClientAndPredicate(BASELINE_IDS, LINUX_CLIENT, predicate);
+        var laptopBaselineTracks = dataTracksForExperimentsClientAndPredicate(BASELINE_IDS, LAPTOP_CLIENT, predicate);
+        var towerBaselineTracks = dataTracksForExperimentsClientAndPredicate(BASELINE_IDS, TOWER_CLIENT, predicate);
+
+        var linuxExperimentTracks = dataTracksForExperimentsClientAndPredicate(EXPERIMENT_IDS, LINUX_CLIENT, predicate);
+        var laptopExperimentTracks = dataTracksForExperimentsClientAndPredicate(EXPERIMENT_IDS, LAPTOP_CLIENT, predicate);
+        var towerExperimentTracks = dataTracksForExperimentsClientAndPredicate(EXPERIMENT_IDS, TOWER_CLIENT, predicate);
+
         return new ResearchQuestionData.ClientTrackPair<>(
-                clientTracksForExperimentIds(BASELINE_IDS, predicate),
-                clientTracksForExperimentIds(EXPERIMENT_IDS, predicate)
+                ResearchQuestionData.ClientTracks.<Integer, Integer>builder()
+                        .linuxClient(fromDataTracks(linuxBaselineTracks))
+                        .laptopClient(fromDataTracks(laptopBaselineTracks))
+                        .towerClient(fromDataTracks(towerBaselineTracks))
+                        .build(),
+                ResearchQuestionData.ClientTracks.<Integer, Integer>builder()
+                        .linuxClient(fromDataTracks(linuxExperimentTracks))
+                        .laptopClient(fromDataTracks(laptopExperimentTracks))
+                        .towerClient(fromDataTracks(towerExperimentTracks))
+                        .build(),
+                new ResearchQuestionData.MannWhitneyUTestStatistic(
+                        mannWhitneyTestPValueOf(linuxBaselineTracks, linuxExperimentTracks),
+                        mannWhitneyTestPValueOf(laptopBaselineTracks, laptopExperimentTracks),
+                        mannWhitneyTestPValueOf(towerBaselineTracks, towerExperimentTracks)
+                )
         );
     }
 
@@ -216,10 +273,11 @@ public class ResearchQuestionService {
     }
 
     private ResearchQuestionData.QuestionOneData gatherQuestionOneData() {
-        log.info("Gathering question one data");
+        var typeData = clientTracksPairsForPredicate(new ExceptionTypePredicate());
+
         return ResearchQuestionData.QuestionOneData.builder()
                 .crashes(clientTracksPairsForPredicate(ExecutionResult::isCrash))
-                .exceptionTypes(clientTracksPairsForPredicate(new ExceptionTypePredicate()))
+                .exceptionTypes(typeData)
                 .errorsInSheets(gatherErrorsInSheets())
                 .build();
     }
@@ -275,8 +333,6 @@ public class ResearchQuestionService {
     }
 
     private ResearchQuestionData.QuestionTwoData gatherQuestionTwoData() {
-        log.info("Gathering question two data");
-
 
         return ResearchQuestionData.QuestionTwoData.builder()
                 .absoluteTimeouts(clientTracksPairsForPredicate(ExecutionResult::isHang))
@@ -315,7 +371,12 @@ public class ResearchQuestionService {
         }
         return new ResearchQuestionData.ClientDataPair<>(
                 new ResearchQuestionData.ClientData<>(linuxBaselineTrack, laptopBaselineTrack, towerBaselineTrack),
-                new ResearchQuestionData.ClientData<>(linuxExperimentTrack, laptopExperimentTrack, towerExperimentTrack)
+                new ResearchQuestionData.ClientData<>(linuxExperimentTrack, laptopExperimentTrack, towerExperimentTrack),
+                new ResearchQuestionData.MannWhitneyUTestStatistic(
+                        mannWhitneyTestPValueOf(linuxBaselineTrack, linuxExperimentTrack),
+                        mannWhitneyTestPValueOf(laptopBaselineTrack, laptopExperimentTrack),
+                        mannWhitneyTestPValueOf(towerBaselineTrack, towerExperimentTrack)
+                )
         );
     }
 
@@ -367,29 +428,42 @@ public class ResearchQuestionService {
 
     private ResearchQuestionData.QuestionThreeData gatherQuestionThreeData() {
 
+        var baselineTracks = absoluteDataOfResultsInt(BASELINE_IDS, r -> (r.isHang() ? 1 : 0));
+        var experimentTracks = absoluteDataOfResultsInt(EXPERIMENT_IDS, r -> (r.isHang() ? 1 : 0));
+
         return ResearchQuestionData.QuestionThreeData.builder()
                 .totalTimeouts(new ResearchQuestionData.ClientDataPair<>(
-                        absoluteDataOfResultsInt(BASELINE_IDS, r -> (r.isHang() ? 1 : 0)),
-                        absoluteDataOfResultsInt(EXPERIMENT_IDS, r -> (r.isHang() ? 1 : 0))
+                        baselineTracks, experimentTracks,
+                        new ResearchQuestionData.MannWhitneyUTestStatistic(
+                                mannWhitneyTestPValueOf(baselineTracks.getLinuxClient(), experimentTracks.getLinuxClient()),
+                                mannWhitneyTestPValueOf(baselineTracks.getLaptopClient(), experimentTracks.getLaptopClient()),
+                                mannWhitneyTestPValueOf(baselineTracks.getTowerClient(), experimentTracks.getTowerClient())
+                        )
                 ))
                 .averageExecutionTime(gatherAverageExecutionTimes())
                 .differentExceptions(gatherDifferentExceptions())
                 .build();
     }
 
-    private static class ExceptionTypePredicate implements Predicate<ExecutionResult> {
-        private final Set<String> uniqueException = new HashSet<>();
+    private static class  ExceptionTypePredicate implements Predicate<ExecutionResult> {
+        private final Map<String, Map<String, Set<String>>> uniqueException = new HashMap<>();
 
         @Override
         public boolean test(ExecutionResult result) {
+            var newCrash = false;
             if(result.isCrash()) {
                 var type = extractExceptionType(result.getException());
-                if(!uniqueException.contains(type)) {
-                    uniqueException.add(type);
-                    return true;
+
+                var clientExperiments = uniqueException.getOrDefault(result.getOriginClient(), new HashMap<>());
+                var experimentExceptions = clientExperiments.getOrDefault(result.getExperiment(), new HashSet<>());
+                if(!experimentExceptions.contains(type)) {
+                    experimentExceptions.add(type);
+                    newCrash = true;
                 }
+                clientExperiments.put(result.getExperiment(), experimentExceptions);
+                uniqueException.put(result.getOriginClient(), clientExperiments);
             }
-            return false;
+            return newCrash;
         }
     }
 

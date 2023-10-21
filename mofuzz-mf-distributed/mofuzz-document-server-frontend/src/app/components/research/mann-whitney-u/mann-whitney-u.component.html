@@ -1,0 +1,35 @@
+<div *ngIf="statistic" style="display: flex; flex-flow: column; align-items: stretch; gap: 0.5rem">
+  <div class="mat-h3">Mann-Whitney-U-Test</div>
+  <div style="display: flex; flex-flow: row wrap; align-items: stretch; gap: 1rem">
+    <div style="display: flex; flex-flow: row; gap: 0.5rem; text-align: center; cursor: pointer"
+         [matTooltip]="getTooltip(statistic.linuxClientP)">
+      <div style="font-weight: bold">Linux-Client</div>
+      <div class="fail"
+           [class.success]="isSuccess(statistic.linuxClientP)">
+        {{statistic.towerClientP}}</div>
+      <mat-icon class="fail"
+                [class.success]="isSuccess(statistic.linuxClientP)"
+                [inline]="true">{{isSuccess(statistic.linuxClientP) ? 'thumb_up' : 'thumb_down' }}</mat-icon>
+    </div>
+    <div style="display: flex; flex-flow: row; gap: 0.5rem; text-align: center; cursor: pointer"
+         [matTooltip]="getTooltip(statistic.laptopClientP)">
+      <div style="font-weight: bold">Laptop-Client</div>
+      <div class="fail"
+           [class.success]="isSuccess(statistic.laptopClientP)">
+        {{statistic.laptopClientP}}</div>
+      <mat-icon class="fail"
+                [class.success]="isSuccess(statistic.laptopClientP)"
+                [inline]="true">{{isSuccess(statistic.laptopClientP) ? 'thumb_up' : 'thumb_down' }}</mat-icon>
+    </div>
+    <div style="display: flex; flex-flow: row; gap: 0.5rem; text-align: center; cursor: pointer"
+         [matTooltip]="getTooltip(statistic.towerClientP)">
+      <div style="font-weight: bold">Tower-Client</div>
+      <div class="fail"
+           [class.success]="isSuccess(statistic.towerClientP)">
+        {{statistic.towerClientP}}</div>
+      <mat-icon class="fail"
+                [class.success]="isSuccess(statistic.towerClientP)"
+                [inline]="true">{{isSuccess(statistic.towerClientP) ? 'thumb_up' : 'thumb_down' }}</mat-icon>
+    </div>
+  </div>
+</div>

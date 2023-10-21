@@ -26,13 +26,22 @@ export interface ClientTracks {
 export interface ClientTrackPair {
   baseline: ClientTracks;
   experiment: ClientTracks;
+
+  mannWhitneyUTestStatistic: MannWhitneyUTestStatistic;
 }
 
 export interface ClientDataPair {
   baseline: ClientData;
   experiment: ClientData;
+
+  mannWhitneyUTestStatistic: MannWhitneyUTestStatistic;
 }
 
+export interface MannWhitneyUTestStatistic {
+  linuxClientP: number;
+  laptopClientP: number;
+  towerClientP: number;
+}
 export interface QuestionOneData {
   crashes: ClientTrackPair;
   exceptionTypes: ClientTrackPair;
