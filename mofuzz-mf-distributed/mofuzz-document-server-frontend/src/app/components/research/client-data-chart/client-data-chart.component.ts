@@ -29,6 +29,13 @@ export class ClientDataChartComponent implements OnChanges {
       y: {
         min: 0
       },
+      x: {
+        ticks: {
+          callback: function(val, index) {
+            return "Experiment "+ (+val+1)
+          }
+        }
+      }
     },
     interaction: {
       intersect: false,

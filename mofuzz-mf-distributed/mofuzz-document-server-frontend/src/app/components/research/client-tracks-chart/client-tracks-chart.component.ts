@@ -33,10 +33,30 @@ export class ClientTracksChartComponent implements OnChanges {
 
   chartOptions: ChartOptions<'line'> = {
     responsive: true,
-    aspectRatio: 5,
+    aspectRatio: 3,
     scales: {
       y: {
-        min: 0
+        min: 0,
+        grace: 1,
+        ticks: {
+          precision: 0
+        }
+      },
+      x: {
+        beginAtZero: true,
+        grace: 20,
+        ticks: {
+          stepSize: 1,
+          autoSkip: false,
+          sampleSize: 1000,
+          includeBounds: true,
+          maxTicksLimit: 50,
+          callback: function(val, index) {
+            // Hide every 2nd tick label
+            return index % 20 === 0 ? val : '';
+          },
+        }
+
       },
     },
     interaction: {
@@ -54,11 +74,11 @@ export class ClientTracksChartComponent implements OnChanges {
         label: 'Linux-Client Min',
         fill: false,
         tension: 0.3,
-        borderColor: 'rgb(144,238,144)',
+        borderColor: 'rgba(144,238,144, 0.7)',
         pointBackgroundColor: 'rgb(144,238,144)',
         backgroundColor: 'rgba(144,238,144,0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [5, 5]
       },
       {
         data: [],
@@ -75,22 +95,22 @@ export class ClientTracksChartComponent implements OnChanges {
         label: 'Linux-Client Max',
         fill: false,
         tension: 0.3,
-        borderColor: 'rgb(144,238,144)',
+        borderColor: 'rgba(144,238,144, 0.7)',
         pointBackgroundColor: 'rgb(144,238,144)',
         backgroundColor: 'rgba(144,238,144,0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [5, 5]
       },
       {
         data: [],
         label: 'Laptop-Client Min',
-        fill: "+1",
+        fill: false,
         tension: 0.3,
-        borderColor: 'rgb(240,128,128)',
+        borderColor: 'rgba(240,128,128, 0.7)',
         pointBackgroundColor: 'rgb(240,128,128)',
         backgroundColor: 'rgba(240,128,128,0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [7, 7]
       },
       {
         data: [],
@@ -105,24 +125,24 @@ export class ClientTracksChartComponent implements OnChanges {
       {
         data: [],
         label: 'Laptop-Client Max',
-        fill: "-1",
+        fill: false,
         tension: 0.3,
-        borderColor: 'rgb(240,128,128)',
+        borderColor: 'rgba(240,128,128, 0.7)',
         pointBackgroundColor: 'rgb(240,128,128)',
         backgroundColor: 'rgba(240,128,128,0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [7, 7]
       },
       {
         data: [],
         label: 'Tower-Client Min',
-        fill: '+1',
+        fill: false,
         tension: 0.3,
-        borderColor: 'rgb(135,206,250)',
+        borderColor: 'rgba(135,206,250, 0.7)',
         pointBackgroundColor: 'rgb(135,206,250)',
         backgroundColor: 'rgba(135,206,250, 0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [9, 9]
       },
       {
         data: [],
@@ -137,13 +157,13 @@ export class ClientTracksChartComponent implements OnChanges {
       {
         data: [],
         label: 'Tower-Client Max',
-        fill: '-1',
+        fill: false,
         tension: 0.3,
-        borderColor: 'rgb(135,206,250)',
+        borderColor: 'rgba(135,206,250, 0.7)',
         pointBackgroundColor: 'rgb(135,206,250)',
         backgroundColor: 'rgb(135,206,250, 0.1)',
         pointRadius: 0,
-        borderDash: DEFAULT_BORDER_DASH
+        borderDash: [9, 9]
       }
     ]
   };

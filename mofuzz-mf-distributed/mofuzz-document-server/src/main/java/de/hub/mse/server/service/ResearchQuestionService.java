@@ -82,14 +82,13 @@ public class ResearchQuestionService {
                                                                          Predicate<ExecutionResult> predicate,
                                                                          Function<ExecutionResult, Integer> deltaMapper) {
         var track = new DataTrack<Integer, Integer>();
-        track.add(0, 0);
         int count = 0;
         for (int i = 0; i < results.size(); i++) {
             var result = results.get(i);
             if(predicate.test(result)) {
                 count += deltaMapper.apply(result);
             }
-            track.add(i, count);
+            track.add(i+1, count);
         }
         return track;
     }
@@ -132,15 +131,16 @@ public class ResearchQuestionService {
         DataTrack<Integer, Integer> minTrack = new DataTrack<>();
         DataTrack<Integer, Double> avgTrack = new DataTrack<>();
         DataTrack<Integer, Integer> maxTrack = new DataTrack<>();
-        for (int i = 0; i < tracks.get(0).toArray().length; i++) {
+        for (int i = 0; i < tracks.get(0).size(); i++) {
             final int index = i;
+            final int x = tracks.get(0).get(index).getX();
             var values = tracks.stream()
                     .map(track -> track.get(index).getY())
                     .toList();
 
-            minTrack.add(index, min(new ArrayList<>(values)));
-            avgTrack.add(index, median(new ArrayList<>(values)));
-            maxTrack.add(index, max(new ArrayList<>(values)));
+            minTrack.add(x, min(new ArrayList<>(values)));
+            avgTrack.add(x, median(new ArrayList<>(values)));
+            maxTrack.add(x, max(new ArrayList<>(values)));
 
         }
 
@@ -354,9 +354,9 @@ public class ResearchQuestionService {
 
         for (int i = 0; i < BASELINE_IDS.size(); i++) {
             String id = BASELINE_IDS.get(i);
-            linuxBaselineTrack.add(i, getAverageDurationForExperimentAndClient(id, LINUX_CLIENT));
-            laptopBaselineTrack.add(i, getAverageDurationForExperimentAndClient(id, LAPTOP_CLIENT));
-            towerBaselineTrack.add(i, getAverageDurationForExperimentAndClient(id, TOWER_CLIENT));
+            linuxBaselineTrack.add(i+1, getAverageDurationForExperimentAndClient(id, LINUX_CLIENT));
+            laptopBaselineTrack.add(i+1, getAverageDurationForExperimentAndClient(id, LAPTOP_CLIENT));
+            towerBaselineTrack.add(i+1, getAverageDurationForExperimentAndClient(id, TOWER_CLIENT));
         }
 
         var linuxExperimentTrack = new DataTrack<Integer, Double>();
