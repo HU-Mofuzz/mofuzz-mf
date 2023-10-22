@@ -12,7 +12,6 @@ export class AppComponent {
   mode = 'research';
 
   constructor() {
-    Chart.defaults.plugins.legend.labels.color = 'white'
     Chart.defaults.plugins.title.color = 'white';
     Chart.defaults.plugins.title.font = {
       size: 20,
