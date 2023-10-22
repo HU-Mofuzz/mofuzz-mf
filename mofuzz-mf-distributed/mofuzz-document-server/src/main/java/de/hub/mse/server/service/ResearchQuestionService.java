@@ -70,7 +70,7 @@ public class ResearchQuestionService {
     }
 
     private static String extractExceptionType(String message) {
-        int index = message.indexOf(':');
+        int index = message.indexOf('\n');
         if(index < 0) {
             return message;
         } else {
