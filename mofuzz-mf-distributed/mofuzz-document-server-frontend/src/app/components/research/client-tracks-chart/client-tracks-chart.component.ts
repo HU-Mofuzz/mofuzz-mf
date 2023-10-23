@@ -50,10 +50,11 @@ export class ClientTracksChartComponent implements OnChanges {
           autoSkip: false,
           sampleSize: 1000,
           includeBounds: true,
-          maxTicksLimit: 50,
+          maxRotation: 0,
+          maxTicksLimit: 20,
           callback: function(val, index) {
             // Hide every 2nd tick label
-            return index % 20 === 0 ? val : '';
+            return index % 50 === 0 ? val : '';
           },
         }
 
@@ -87,7 +88,7 @@ export class ClientTracksChartComponent implements OnChanges {
         tension: 0.3,
         borderColor: 'green',
         pointBackgroundColor: 'green',
-        backgroundColor: 'rgba(0,255,0,0.1)',
+        backgroundColor: 'green',
         pointRadius: 0
       },
       {
@@ -119,7 +120,7 @@ export class ClientTracksChartComponent implements OnChanges {
         tension: 0.3,
         borderColor: 'red',
         pointBackgroundColor: 'red',
-        backgroundColor: 'rgba(255,0,0,0.1)',
+        backgroundColor: 'red',
         pointRadius: 0
       },
       {
@@ -151,7 +152,7 @@ export class ClientTracksChartComponent implements OnChanges {
         tension: 0.3,
         borderColor: 'blue',
         pointBackgroundColor: 'blue',
-        backgroundColor: 'rgba(0,0,255,0.1)',
+        backgroundColor: 'blue',
         pointRadius: 0
       },
       {

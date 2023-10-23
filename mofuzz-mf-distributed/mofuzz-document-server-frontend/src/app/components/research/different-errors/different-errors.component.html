@@ -1,0 +1,12 @@
+<ul>
+  <li *ngFor="let experiment of getKeys()">
+    {{getNameOfExperiment(experiment)}}
+    <ul>
+      <li *ngFor="let value of differentErrors[experiment]"
+          (click)="downloadFiles(value.fileId)"
+          style="cursor: pointer">
+        {{value.fileId}} - Laptop: {{value.laptopErrors}} Tower: {{value.towerErrors}} <mat-icon [inline]="true">download</mat-icon>
+      </li>
+    </ul>
+  </li>
+</ul>

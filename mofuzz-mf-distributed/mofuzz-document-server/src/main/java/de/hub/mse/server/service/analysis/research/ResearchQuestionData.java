@@ -78,6 +78,15 @@ public class ResearchQuestionData {
         private double towerClientP;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class DifferentErrorInfo {
+        private String fileId;
+        private int laptopErrors;
+        private int towerErrors;
+    }
+
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
@@ -86,7 +95,6 @@ public class ResearchQuestionData {
         private ClientTrackPair<Integer, Integer> crashes;
 
         private ClientTrackPair<Integer, Integer> exceptionTypes;
-        private ClientTracks<Integer, Integer> errorsInSheets;
     }
 
     @Builder
@@ -97,8 +105,11 @@ public class ResearchQuestionData {
         private ClientTrackPair<Integer, Integer> absoluteTimeouts;
 
         private ClientData<Integer, Integer> baselineTotalErrors;
+        private ClientDataPair<Integer, Long> totalDuration;
 
-        private ClientData<Integer, Long> baselineTotalDuration;
+        private ClientTracks<Integer, Integer> errorsInSheets;
+
+        private Map<String, Set<DifferentErrorInfo>> differentErrors;
     }
 
     @Builder

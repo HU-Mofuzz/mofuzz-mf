@@ -42,16 +42,24 @@ export interface MannWhitneyUTestStatistic {
   laptopClientP: number;
   towerClientP: number;
 }
+
+export interface DifferentErrorInfo {
+  fileId: string;
+  laptopErrors: number;
+  towerErrors: number;
+}
 export interface QuestionOneData {
   crashes: ClientTrackPair;
   exceptionTypes: ClientTrackPair;
-  errorsInSheets: ClientTracks;
 }
 
 export interface QuestionTwoData {
   absoluteTimeouts: ClientTrackPair;
   baselineTotalErrors: ClientData;
-  baselineTotalDuration: ClientData;
+  totalDuration: ClientDataPair;
+  errorsInSheets: ClientTracks;
+
+  differentErrors: {[name: string]: DifferentErrorInfo[]}
 }
 
 export interface QuestionThreeData {

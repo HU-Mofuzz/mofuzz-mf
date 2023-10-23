@@ -4,17 +4,19 @@
       <mat-card-title>RQ1: Kann Multifile Fuzzing mehr exception types erzeugen als die baseline?</mat-card-title>
       <app-client-track-pair-chart title="Absolute Crashes" [data]="data.questionOneData.crashes"></app-client-track-pair-chart>
       <app-client-track-pair-chart title="Exception Types" [data]="data.questionOneData.exceptionTypes"></app-client-track-pair-chart>
-      <mat-card>
-        <mat-card-title>Errors in Sheets</mat-card-title>
-        <app-client-tracks-chart title="Baseline" downloadHint="Errors in Sheets" [data]="data.questionOneData.errorsInSheets"></app-client-tracks-chart>
-      </mat-card>
+
     </mat-card>
 
     <mat-card>
       <mat-card-title>RQ2: Können die beiden SUT mit diesem Setup vergleichbare Back-to-back Ergebnisse erzielen?</mat-card-title>
       <app-client-track-pair-chart title="Absolute Timeouts" [data]="data.questionTwoData.absoluteTimeouts"></app-client-track-pair-chart>
-      <app-client-data-chart title="Baseline Total Errors" downloadHint="Baseline" [data]="data.questionTwoData.baselineTotalErrors"></app-client-data-chart>
-      <app-client-data-chart title="Baseline Total Duration" downloadHint="Baseline" [data]="data.questionTwoData.baselineTotalDuration"></app-client-data-chart>
+      <app-client-data-pair-chart title="Total Duration" [data]="data.questionTwoData.totalDuration"></app-client-data-pair-chart>
+      <mat-card>
+        <mat-card-title>Errors in Sheets</mat-card-title>
+        <app-client-tracks-chart title="Baseline" downloadHint="Errors in Sheets" [data]="data.questionTwoData.errorsInSheets"></app-client-tracks-chart>
+      </mat-card>
+      <app-client-data-chart title="Total Errors" downloadHint="Baseline" [data]="data.questionTwoData.baselineTotalErrors"></app-client-data-chart>
+      <app-different-errors [differentErrors]="data.questionTwoData.differentErrors"></app-different-errors>
     </mat-card>
 
     <mat-card>

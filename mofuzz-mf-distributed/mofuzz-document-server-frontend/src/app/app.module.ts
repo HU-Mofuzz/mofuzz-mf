@@ -48,6 +48,7 @@ import { ClientDataChartComponent } from './components/research/client-data-char
 import { ClientDataPairChartComponent } from './components/research/client-data-pair-chart/client-data-pair-chart.component';
 import { DifferentExceptionComponent } from './components/research/different-exception/different-exception.component';
 import { MannWhitneyUComponent } from './components/research/mann-whitney-u/mann-whitney-u.component';
+import { DifferentErrorsComponent } from './components/research/different-errors/different-errors.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { MannWhitneyUComponent } from './components/research/mann-whitney-u/mann
     ClientDataChartComponent,
     ClientDataPairChartComponent,
     DifferentExceptionComponent,
-    MannWhitneyUComponent
+    MannWhitneyUComponent,
+    DifferentErrorsComponent
   ],
   imports: [
     BrowserModule,

@@ -31,6 +31,9 @@ export class ClientDataChartComponent implements OnChanges {
       },
       x: {
         ticks: {
+          font: {
+            size: 15
+          },
           callback: function(val, index) {
             return "Experiment "+ (+val+1)
           }

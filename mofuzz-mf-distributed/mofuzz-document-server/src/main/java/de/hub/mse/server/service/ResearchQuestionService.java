@@ -278,7 +278,6 @@ public class ResearchQuestionService {
         return ResearchQuestionData.QuestionOneData.builder()
                 .crashes(clientTracksPairsForPredicate(ExecutionResult::isCrash))
                 .exceptionTypes(typeData)
-                .errorsInSheets(gatherErrorsInSheets())
                 .build();
     }
 
@@ -333,11 +332,21 @@ public class ResearchQuestionService {
     }
 
     private ResearchQuestionData.QuestionTwoData gatherQuestionTwoData() {
+        var baselineTotalDurations = absoluteDataOfResultsLong(BASELINE_IDS, ExecutionResult::getDuration);
+        var experimentTotalDurations = absoluteDataOfResultsLong(EXPERIMENT_IDS, ExecutionResult::getDuration);
+
+        var mannWhitneyStatistic = new ResearchQuestionData.MannWhitneyUTestStatistic(
+                mannWhitneyTestPValueOf(baselineTotalDurations.getLinuxClient(), experimentTotalDurations.getLinuxClient()),
+                mannWhitneyTestPValueOf(baselineTotalDurations.getLaptopClient(), experimentTotalDurations.getLaptopClient()),
+                mannWhitneyTestPValueOf(baselineTotalDurations.getLaptopClient(), experimentTotalDurations.getLaptopClient())
+        );
 
         return ResearchQuestionData.QuestionTwoData.builder()
                 .absoluteTimeouts(clientTracksPairsForPredicate(ExecutionResult::isHang))
                 .baselineTotalErrors(absoluteDataOfResultsInt(BASELINE_IDS, ExecutionResult::getErrorCount))
-                .baselineTotalDuration(absoluteDataOfResultsLong(BASELINE_IDS, ExecutionResult::getDuration))
+                .errorsInSheets(gatherErrorsInSheets())
+                .totalDuration(new ResearchQuestionData.ClientDataPair<>(baselineTotalDurations, experimentTotalDurations, mannWhitneyStatistic))
+                .differentErrors(gatherDifferentErrors())
                 .build();
     }
 
@@ -406,6 +415,33 @@ public class ResearchQuestionService {
         return differentTypes;
     }
 
+    private Set<ResearchQuestionData.DifferentErrorInfo> getFilesWithDifferentErrorsForLaptopAndTower(String experiment) {
+        var differentErrors = new HashSet<ResearchQuestionData.DifferentErrorInfo>();
+        var laptopResults = wrappedResultAccess(experiment, LAPTOP_CLIENT);
+        var towerResults = wrappedResultAccess(experiment, TOWER_CLIENT);
+
+        for(var laptopResult : laptopResults) {
+            var towerResultOptional = towerResults.stream()
+                    .filter(r -> r.getFileDescriptor().equals(laptopResult.getFileDescriptor()))
+                    .findFirst();
+            if(towerResultOptional.isEmpty()) {
+                continue;
+            }
+            var towerResult = towerResultOptional.get();
+            if(laptopResult.isCrash() || towerResult.isCrash() || laptopResult.isHang() || towerResult.isHang()) {
+                continue;
+            }
+            if(laptopResult.getErrorCount() != towerResult.getErrorCount()) {
+                differentErrors.add(new ResearchQuestionData.DifferentErrorInfo(
+                        laptopResult.getFileDescriptor(),
+                        laptopResult.getErrorCount(),
+                        towerResult.getErrorCount()
+                ));
+            }
+        }
+        return differentErrors;
+    }
+
     private Map<String, Set<String>> gatherDifferentExceptions() {
         Map<String, Set<String>> result = new HashMap<>();
 
@@ -423,6 +459,17 @@ public class ResearchQuestionService {
             }
         }
 
+        return result;
+    }
+
+    private Map<String, Set<ResearchQuestionData.DifferentErrorInfo>> gatherDifferentErrors() {
+        Map<String, Set<ResearchQuestionData.DifferentErrorInfo>> result = new HashMap<>();
+        for (String experiment : BASELINE_IDS) {
+            var difference = getFilesWithDifferentErrorsForLaptopAndTower(experiment);
+            if (!difference.isEmpty()) {
+                result.put(experiment, difference);
+            }
+        }
         return result;
     }
 
