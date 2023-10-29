@@ -56,6 +56,10 @@ class ExperimentController {
   resetExperiment(id: string): Observable<void> {
     return this.httpClient.post<void>(`${API_BASE}/experiment/reset/${id}`, null);
   }
+
+  isResetEnabled(): Observable<boolean> {
+    return this.httpClient.get<boolean>(`${API_BASE}/experiment/resetEnabled`);
+  }
 }
 
 class ClientDescriptorController {

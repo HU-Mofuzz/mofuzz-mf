@@ -58,6 +58,7 @@
                   <div class="row" style="justify-content: center">
                       <button mat-icon-button
                               matTooltip="Reset Experiment"
+                              [disabled]="experimentResetDisabled"
                               (click)="resetExperiment(element)"><mat-icon>restart_alt</mat-icon></button>
                       <button mat-icon-button
                               [disabled]="element.prepared !== 'PREPARED'"

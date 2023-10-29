@@ -30,10 +30,11 @@ export class ExperimentOverviewComponent implements OnInit {
   isExpansionDetailRow = (i: number, row: Object) => row.hasOwnProperty('detailRow');
   expandedElement: any;
 
+  experimentResetDisabled = true;
+
   constructor(private dialog: MatDialog,
               private backendService: BackendService,
-              private toastService: ToastService,
-              private changeDetectorRefs: ChangeDetectorRef) {
+              private toastService: ToastService) {
   }
 
   ngOnInit() {
@@ -47,6 +48,10 @@ export class ExperimentOverviewComponent implements OnInit {
           this.dataSource = new ExpandTableDataSource(experiments)
         },
         _ => this.toastService.error("Error requesting experiment list!")
+    )
+
+    this.backendService.experiment.isResetEnabled().subscribe(
+      enabled => this.experimentResetDisabled = !enabled
     )
   }
 

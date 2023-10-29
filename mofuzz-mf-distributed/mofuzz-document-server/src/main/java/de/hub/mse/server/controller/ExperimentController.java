@@ -1,5 +1,7 @@
 package de.hub.mse.server.controller;
 
+import de.hub.mse.server.config.ServiceConfig;
+import de.hub.mse.server.exceptions.ForbiddenException;
 import de.hub.mse.server.exceptions.NotFoundException;
 import de.hub.mse.server.management.Experiment;
 import de.hub.mse.server.service.ExperimentService;
@@ -14,10 +16,12 @@ import java.util.List;
 public class ExperimentController {
 
     private final ExperimentService experimentService;
+    private final ServiceConfig serviceConfig;
 
     @Autowired
-    public ExperimentController(ExperimentService experimentService) {
+    public ExperimentController(ExperimentService experimentService, ServiceConfig serviceConfig) {
         this.experimentService = experimentService;
+        this.serviceConfig = serviceConfig;
     }
 
     @PostMapping
@@ -32,8 +36,16 @@ public class ExperimentController {
                 .toList();
     }
 
+    @GetMapping("/resetEnabled")
+    public boolean isResetEnabled() {
+        return serviceConfig.isExperimentResetEnabled();
+    }
+
     @PostMapping("/reset/{id}")
-    public void resetExperiment(@PathVariable String id) throws NotFoundException {
+    public void resetExperiment(@PathVariable String id) throws NotFoundException, ForbiddenException {
+        if(!serviceConfig.isExperimentResetEnabled()) {
+            throw new ForbiddenException();
+        }
         experimentService.resetExperiment(id);
     }
 

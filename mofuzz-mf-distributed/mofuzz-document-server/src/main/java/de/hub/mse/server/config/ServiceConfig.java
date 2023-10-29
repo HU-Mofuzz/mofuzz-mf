@@ -45,6 +45,9 @@ public class ServiceConfig {
     @Value("${service.persistence.bucket:mofuzz-bucket1}")
     private String awsBucketId;
 
+    @Value("${service.experiment.reset.enabled:true}")
+    private boolean experimentResetEnabled;
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
