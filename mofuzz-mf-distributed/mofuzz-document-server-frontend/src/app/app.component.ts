@@ -29,6 +29,7 @@ export class AppComponent {
       size: 20,
       weight: 'bold'
     }
+    Chart.defaults.locale = "de-DE"
 
   }
 
