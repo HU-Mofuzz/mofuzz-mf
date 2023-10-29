@@ -9,22 +9,22 @@ import {ActivatedRoute, Router} from "@angular/router";
 })
 export class AppComponent {
   title = 'mofuzz-document-server-frontend';
-  mode = 'research';
+  mode = '';
 
   constructor() {
     Chart.defaults.plugins.title.color = 'white';
     Chart.defaults.plugins.legend.labels.font = {
       size: 18
     }
-    Chart.defaults.plugins.legend.labels.color = 'black';
+    Chart.defaults.plugins.legend.labels.color = 'white';
     Chart.defaults.scales.linear.ticks.font = {
       size: 18
     }
-    Chart.defaults.scales.linear.ticks.color = 'black';
+    Chart.defaults.scales.linear.ticks.color = 'white';
     Chart.defaults.scale.ticks.font = {
       size: 18
     }
-    Chart.defaults.scale.ticks.color = 'black';
+    Chart.defaults.scale.ticks.color = 'white';
     Chart.defaults.plugins.title.font = {
       size: 20,
       weight: 'bold'

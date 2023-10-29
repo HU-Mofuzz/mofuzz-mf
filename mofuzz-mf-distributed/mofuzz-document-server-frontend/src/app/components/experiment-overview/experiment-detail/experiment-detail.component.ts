@@ -74,6 +74,7 @@ export class ExperimentDetailComponent implements OnChanges {
   healthChartOptions: ChartOptions<'line'> = {
     responsive: true,
     aspectRatio: 5,
+    spanGaps: true,
     scales: {
       y: {
         min: 0,
@@ -126,7 +127,7 @@ export class ExperimentDetailComponent implements OnChanges {
         tension: 0,
         borderColor: 'grey',
         pointBackgroundColor: 'grey',
-        backgroundColor: 'rgba(0,0,255,0.1)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         stepped: 'before',
         spanGaps: true,
         yAxisID: "resultScale"

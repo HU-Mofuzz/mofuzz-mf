@@ -149,7 +149,7 @@ public class AnalysisService {
 
         // fill result counter
         for(var result : results) {
-            resultTrack.add(resultCount++, result.getTimestamp());
+            resultTrack.add(result.getTimestamp(), resultCount++);
         }
         resultTrack.add(resultCount, endTime);
 
