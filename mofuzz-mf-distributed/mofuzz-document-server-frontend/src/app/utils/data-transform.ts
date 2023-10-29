@@ -69,3 +69,20 @@ export function transformDataTrack(track: DataTrack): {x: number[], y: number[]}
   }
   return {x, y}
 }
+
+const mapToY = (point: DataPoint) => point.y;
+const sumReduce = (accumulator: number, currentValue: number) => accumulator + currentValue;
+export function getYAverage(track: DataTrack): number {
+  return track.map(mapToY).reduce(sumReduce) / track.length;
+}
+
+const sortByY = (pointA: DataPoint, pointB: DataPoint) => pointA.y - pointB.y;
+export function getYMedian(track: DataTrack): number {
+  const sorted = track.sort(sortByY).map(mapToY);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 !== 0) {
+    return sorted[mid];
+  } else {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+}

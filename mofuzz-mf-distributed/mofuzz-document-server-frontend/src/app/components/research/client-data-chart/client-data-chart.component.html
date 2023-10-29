@@ -9,4 +9,32 @@
   <div class="button-bar" style="justify-content: end; padding-right: 1rem;">
     <button mat-button (click)="downloadChart(baselineChart, downloadHint)"><mat-icon>download</mat-icon> Export</button>
   </div>
+
+  <table *ngIf="clientStats">
+    <caption>Client Statistics</caption>
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Average</th>
+        <th>Median</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Linux-Client</td>
+        <td>{{clientStats.linuxClient.average}}</td>
+        <td>{{clientStats.linuxClient.median}}</td>
+      </tr>
+      <tr>
+        <td>Laptop-Client</td>
+        <td>{{clientStats.laptopClient.average}}</td>
+        <td>{{clientStats.laptopClient.median}}</td>
+      </tr>
+      <tr>
+        <td>Tower-Client</td>
+        <td>{{clientStats.towerClient.average}}</td>
+        <td>{{clientStats.towerClient.median}}</td>
+      </tr>
+    </tbody>
+  </table>
 </ng-container>

@@ -1,7 +1,25 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {ClientData, ClientTracks} from "../../../model/data";
+import {ClientData, ClientTracks, DataTrack} from "../../../model/data";
 import {ChartConfiguration, ChartOptions} from "chart.js";
-import {transformDataTrack} from "../../../utils/data-transform";
+import {getYAverage, getYMedian, transformDataTrack} from "../../../utils/data-transform";
+
+interface Stats {
+  average: number;
+  median: number;
+}
+
+interface ClientStats {
+  linuxClient: Stats;
+  laptopClient: Stats;
+  towerClient: Stats;
+}
+
+function toStats(track: DataTrack) {
+  return <Stats> {
+    average: getYAverage(track),
+    median: getYMedian(track)
+  }
+}
 
 const INDEX_LINUX  = 0;
 const INDEX_LAPTOP  = 1;
@@ -74,6 +92,8 @@ export class ClientDataChartComponent implements OnChanges {
     ]
   };
 
+  clientStats: ClientStats|null = null;
+
   ngOnChanges(changes: SimpleChanges): void {
     if(this.data) {
       const linuxData = transformDataTrack(this.data.linuxClient);
@@ -83,6 +103,12 @@ export class ClientDataChartComponent implements OnChanges {
       this.chartData.datasets[INDEX_LINUX].data =linuxData.y;
       this.chartData.datasets[INDEX_LAPTOP].data =  transformDataTrack(this.data.laptopClient).y;
       this.chartData.datasets[INDEX_TOWER].data =  transformDataTrack(this.data.towerClient).y;
+
+      this.clientStats = <ClientStats> {
+        linuxClient: toStats(this.data.linuxClient),
+        laptopClient: toStats(this.data.laptopClient),
+        towerClient: toStats(this.data.towerClient),
+      }
     }
   }
 
