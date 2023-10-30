@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {ClientTracks} from "../../../model/data";
 import {ChartConfiguration, ChartOptions} from "chart.js";
 import {transformDataTrack} from "../../../utils/data-transform";
+import {CHART_TEXT_COLOR, CHART_TEXT_SIZE} from "../../../app.component";
 
 const INDEX_LINUX_MIN  = 0;
 const INDEX_LINUX_MED  = 1;
@@ -31,6 +32,12 @@ export class ClientTracksChartComponent implements OnChanges {
   @Input()
   downloadHint = "";
 
+  @Input()
+  xLabel = "";
+
+  @Input()
+  yLabel = "";
+
   chartOptions: ChartOptions<'line'> = {
     responsive: true,
     aspectRatio: 3,
@@ -40,6 +47,14 @@ export class ClientTracksChartComponent implements OnChanges {
         grace: 1,
         ticks: {
           precision: 0
+        },
+        title: {
+          display: this.yLabel.length > 0,
+          text: this.yLabel,
+          color: CHART_TEXT_COLOR,
+          font: {
+            size: CHART_TEXT_SIZE
+          }
         }
       },
       x: {
@@ -56,8 +71,7 @@ export class ClientTracksChartComponent implements OnChanges {
             // Hide every 2nd tick label
             return index % 50 === 0 ? val : '';
           },
-        }
-
+        },
       },
     },
     interaction: {
@@ -184,6 +198,25 @@ export class ClientTracksChartComponent implements OnChanges {
       this.chartData.datasets[INDEX_TOWER_MIN].data =  transformDataTrack(this.data.towerClient.min).y;
       this.chartData.datasets[INDEX_TOWER_MED].data =  transformDataTrack(this.data.towerClient.median).y;
       this.chartData.datasets[INDEX_TOWER_MAX].data =  transformDataTrack(this.data.towerClient.max).y;
+
+      // @ts-ignore
+      this.chartOptions.scales.x!.title = {
+        display: this.xLabel.length > 0,
+        text: this.xLabel,
+        color: CHART_TEXT_COLOR,
+        font: {
+          size: CHART_TEXT_SIZE
+        }
+      }
+
+      this.chartOptions.scales!.y!.title = {
+        display: this.yLabel.length > 0,
+        text: this.yLabel,
+        color: CHART_TEXT_COLOR,
+        font: {
+          size: CHART_TEXT_SIZE
+        }
+      }
     }
   }
 

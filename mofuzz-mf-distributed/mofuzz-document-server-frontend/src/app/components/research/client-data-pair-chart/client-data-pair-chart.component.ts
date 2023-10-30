@@ -14,4 +14,7 @@ export class ClientDataPairChartComponent {
   @Input()
   data: ClientDataPair | null = null;
 
+  @Input()
+  yLabel = "";
+
 }

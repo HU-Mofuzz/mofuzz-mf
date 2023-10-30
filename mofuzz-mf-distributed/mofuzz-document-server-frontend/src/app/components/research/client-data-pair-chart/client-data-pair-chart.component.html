@@ -1,8 +1,14 @@
 <ng-container *ngIf="data">
   <mat-card class="column">
     <mat-card-title>{{title}}</mat-card-title>
-    <app-client-data-chart title="Baseline" [data]="data.baseline" [downloadHint]="title"></app-client-data-chart>
-    <app-client-data-chart title="Experiments" [data]="data.experiment" [downloadHint]="title"></app-client-data-chart>
+    <app-client-data-chart title="Baseline"
+                           [yLabel]="yLabel"
+                           [data]="data.baseline"
+                           [downloadHint]="title"></app-client-data-chart>
+    <app-client-data-chart title="Experiments"
+                           [yLabel]="yLabel"
+                           [data]="data.experiment"
+                           [downloadHint]="title"></app-client-data-chart>
     <app-mann-whitney-u [statistic]="data.mannWhitneyUTestStatistic"></app-mann-whitney-u>
   </mat-card>
 </ng-container>

@@ -1,0 +1,11 @@
+<div style="display: block;">
+  <canvas baseChart #chart width="400" height="400"
+          [type]="'line'"
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [legend]="true">
+  </canvas>
+  <div class="button-bar" style="justify-content: end; padding-right: 1rem;">
+    <button mat-button (click)="downloadChart(chart)"><mat-icon>download</mat-icon> Export</button>
+  </div>
+</div>

@@ -2,27 +2,49 @@
   <div class="column" style="gap: 1rem">
     <mat-card>
       <mat-card-title>RQ1: Kann Multifile Fuzzing mehr exception types erzeugen als die baseline?</mat-card-title>
-      <app-client-track-pair-chart title="Absolute Crashes" [data]="data.questionOneData.crashes"></app-client-track-pair-chart>
-      <app-client-track-pair-chart title="Exception Types" [data]="data.questionOneData.exceptionTypes"></app-client-track-pair-chart>
+      <app-client-track-pair-chart title="Absolute Crashes"
+                                   xLabel="Versuche"
+                                   yLabel="Absolute Crashes"
+                                   [data]="data.questionOneData.crashes"></app-client-track-pair-chart>
+      <app-client-track-pair-chart title="Exception Types"
+                                   xLabel="Versuche"
+                                   yLabel="Exception Types"
+                                   [data]="data.questionOneData.exceptionTypes"></app-client-track-pair-chart>
 
     </mat-card>
 
     <mat-card>
       <mat-card-title>RQ2: Können die beiden SUT mit diesem Setup vergleichbare Back-to-back Ergebnisse erzielen?</mat-card-title>
-      <app-client-track-pair-chart title="Absolute Timeouts" [data]="data.questionTwoData.absoluteTimeouts"></app-client-track-pair-chart>
-      <app-client-data-pair-chart title="Total Duration" [data]="data.questionTwoData.totalDuration"></app-client-data-pair-chart>
+      <app-client-track-pair-chart title="Absolute Timeouts"
+                                   xLabel="Versuche"
+                                   yLabel="Absolute Timeouts"
+                                   [data]="data.questionTwoData.absoluteTimeouts"></app-client-track-pair-chart>
+      <app-client-data-pair-chart title="Total Duration"
+                                  yLabel="Total Duration [ms]"
+                                  [data]="data.questionTwoData.totalDuration"></app-client-data-pair-chart>
       <mat-card>
         <mat-card-title>Errors in Sheets</mat-card-title>
-        <app-client-tracks-chart title="Baseline" downloadHint="Errors in Sheets" [data]="data.questionTwoData.errorsInSheets"></app-client-tracks-chart>
+        <app-client-tracks-chart title="Baseline"
+                                 xLabel="Versuche"
+                                 yLabel="Absolute Errors in Sheets"
+                                 downloadHint="Errors in Sheets"
+                                 [data]="data.questionTwoData.errorsInSheets"></app-client-tracks-chart>
       </mat-card>
-      <app-client-data-chart title="Total Errors" downloadHint="Baseline" [data]="data.questionTwoData.baselineTotalErrors"></app-client-data-chart>
+      <app-client-data-chart title="Total Errors"
+                             yLabel="Total Errors in Sheets"
+                             downloadHint="Baseline"
+                             [data]="data.questionTwoData.baselineTotalErrors"></app-client-data-chart>
       <app-different-errors [differentErrors]="data.questionTwoData.differentErrors"></app-different-errors>
     </mat-card>
 
     <mat-card>
       <mat-card-title>RQ3: Wie ist der Vergleich der Performance von Excel auf zwei unterschiedlichen Systemen?</mat-card-title>
-      <app-client-data-pair-chart title="Total Timeouts" [data]="data.questionThreeData.totalTimeouts"></app-client-data-pair-chart>
-      <app-client-data-pair-chart title="Average Execution Time" [data]="data.questionThreeData.averageExecutionTime"></app-client-data-pair-chart>
+      <app-client-data-pair-chart title="Total Timeouts"
+                                  yLabel="Total Timeouts"
+                                  [data]="data.questionThreeData.totalTimeouts"></app-client-data-pair-chart>
+      <app-client-data-pair-chart title="Average Execution Time"
+                                  yLabel="Average Execution Time [ms]"
+                                  [data]="data.questionThreeData.averageExecutionTime"></app-client-data-pair-chart>
       <mat-card>
         <mat-card-title>Different Exceptions on files of both windows clients:</mat-card-title>
         <app-different-exception [differentExceptions]="data.questionThreeData.differentExceptions"></app-different-exception>

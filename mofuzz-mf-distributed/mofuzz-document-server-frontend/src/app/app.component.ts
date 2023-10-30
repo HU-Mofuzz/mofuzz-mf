@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import {Chart} from "chart.js";
-import {ActivatedRoute, Router} from "@angular/router";
+
+export const CHART_TEXT_COLOR = "white"
+export const CHART_TEXT_SIZE = 18
 
 @Component({
   selector: 'app-root',
@@ -9,26 +11,32 @@ import {ActivatedRoute, Router} from "@angular/router";
 })
 export class AppComponent {
   title = 'mofuzz-document-server-frontend';
-  mode = '';
+  mode = 'research';
 
   constructor() {
-    Chart.defaults.plugins.title.color = 'white';
-    Chart.defaults.plugins.legend.labels.font = {
-      size: 18
-    }
-    Chart.defaults.plugins.legend.labels.color = 'white';
-    Chart.defaults.scales.linear.ticks.font = {
-      size: 18
-    }
-    Chart.defaults.scales.linear.ticks.color = 'white';
-    Chart.defaults.scale.ticks.font = {
-      size: 18
-    }
-    Chart.defaults.scale.ticks.color = 'white';
+    // Title
+    Chart.defaults.plugins.title.color = CHART_TEXT_COLOR;
     Chart.defaults.plugins.title.font = {
       size: 20,
       weight: 'bold'
     }
+
+    //Legend
+    Chart.defaults.plugins.legend.labels.color = CHART_TEXT_COLOR;
+    Chart.defaults.plugins.legend.labels.font = {
+      size: CHART_TEXT_SIZE
+    }
+
+    // X Axis
+    Chart.defaults.scales.linear.ticks.color = CHART_TEXT_COLOR;
+    Chart.defaults.scales.linear.ticks.font = {
+      size: CHART_TEXT_SIZE
+    }
+    Chart.defaults.scale.ticks.color = CHART_TEXT_COLOR;
+    Chart.defaults.scale.ticks.font = {
+      size: CHART_TEXT_SIZE
+    }
+
     Chart.defaults.locale = "de-DE"
 
   }

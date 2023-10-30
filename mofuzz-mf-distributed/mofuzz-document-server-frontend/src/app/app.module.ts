@@ -49,6 +49,7 @@ import { ClientDataPairChartComponent } from './components/research/client-data-
 import { DifferentExceptionComponent } from './components/research/different-exception/different-exception.component';
 import { MannWhitneyUComponent } from './components/research/mann-whitney-u/mann-whitney-u.component';
 import { DifferentErrorsComponent } from './components/research/different-errors/different-errors.component';
+import { DemoPlotComponent } from './components/research/demo-plot/demo-plot.component';
 
 @NgModule({
   declarations: [
@@ -73,7 +74,8 @@ import { DifferentErrorsComponent } from './components/research/different-errors
     ClientDataPairChartComponent,
     DifferentExceptionComponent,
     MannWhitneyUComponent,
-    DifferentErrorsComponent
+    DifferentErrorsComponent,
+    DemoPlotComponent
   ],
   imports: [
     BrowserModule,

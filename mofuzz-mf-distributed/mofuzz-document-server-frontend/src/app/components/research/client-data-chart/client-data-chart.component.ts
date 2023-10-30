@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {ClientData, ClientTracks, DataTrack} from "../../../model/data";
 import {ChartConfiguration, ChartOptions} from "chart.js";
 import {getYAverage, getYMedian, transformDataTrack} from "../../../utils/data-transform";
+import {CHART_TEXT_COLOR, CHART_TEXT_SIZE} from "../../../app.component";
 
 interface Stats {
   average: number;
@@ -39,6 +40,9 @@ export class ClientDataChartComponent implements OnChanges {
 
   @Input()
   downloadHint = "";
+
+  @Input()
+  yLabel = "";
 
   chartOptions: ChartOptions<'bar'> = {
     responsive: true,
@@ -108,6 +112,15 @@ export class ClientDataChartComponent implements OnChanges {
         linuxClient: toStats(this.data.linuxClient),
         laptopClient: toStats(this.data.laptopClient),
         towerClient: toStats(this.data.towerClient),
+      }
+
+      this.chartOptions.scales!.y!.title = {
+        display: this.yLabel.length > 0,
+        text: this.yLabel,
+        color: CHART_TEXT_COLOR,
+        font: {
+          size: CHART_TEXT_SIZE
+        }
       }
     }
   }

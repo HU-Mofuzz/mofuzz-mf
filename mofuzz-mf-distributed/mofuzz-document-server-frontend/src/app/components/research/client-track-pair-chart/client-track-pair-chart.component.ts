@@ -14,4 +14,10 @@ export class ClientTrackPairChartComponent {
   @Input()
   data: ClientTrackPair | null = null;
 
+  @Input()
+  xLabel = "";
+
+  @Input()
+  yLabel = "";
+
 }
