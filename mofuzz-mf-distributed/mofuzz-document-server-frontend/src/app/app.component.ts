@@ -11,7 +11,7 @@ export const CHART_TEXT_SIZE = 18
 })
 export class AppComponent {
   title = 'mofuzz-document-server-frontend';
-  mode = 'research';
+  mode = '';
 
   constructor() {
     // Title
