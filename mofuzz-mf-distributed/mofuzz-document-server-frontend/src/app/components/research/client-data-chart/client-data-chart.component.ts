@@ -46,7 +46,7 @@ export class ClientDataChartComponent implements OnChanges {
 
   chartOptions: ChartOptions<'bar'> = {
     responsive: true,
-    aspectRatio: 3,
+    aspectRatio: 4,
     scales: {
       y: {
         min: 0

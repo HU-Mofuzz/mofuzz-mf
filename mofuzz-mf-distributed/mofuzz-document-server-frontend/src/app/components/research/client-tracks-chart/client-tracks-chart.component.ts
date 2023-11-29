@@ -40,7 +40,7 @@ export class ClientTracksChartComponent implements OnChanges {
 
   chartOptions: ChartOptions<'line'> = {
     responsive: true,
-    aspectRatio: 3,
+    aspectRatio: 5,
     scales: {
       y: {
         min: 0,
